@@ -1,0 +1,45 @@
+#######################################
+# Syntax Coloring Map for BetaEvents
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+BetaEvents	KEYWORD1
+EventManager	KEYWORD1
+EventTracker	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+getEvent	KEYWORD2
+handleEvent	KEYWORD2
+removeDelayEvent	KEYWORD2
+pushEvent	KEYWORD2
+pushDelayEvent	KEYWORD2
+setFreqenceLED	KEYWORD2
+setMillisecLED	KEYWORD2
+second	KEYWORD2
+minute	KEYWORD2
+hour	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+evNill	LITERAL1
+ev100Hz	LITERAL1
+ev10Hz	LITERAL1
+ev1Hz	LITERAL1
+ev24H	LITERAL1 
+evLEDOn	LITERAL1
+evLEDOff	LITERAL1
+evInChar	LITERAL1
+evInString	LITERAL1
