@@ -1,4 +1,4 @@
-# betaEvents V1.0 (lib betamachine)
+# betaEvents V1.1 (en developement)
     Auteur : net23 pierre Henry
     Participation : 
     librairie pour une utilisation simple de la programation evenementielle
