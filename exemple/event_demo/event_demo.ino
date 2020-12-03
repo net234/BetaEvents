@@ -61,7 +61,7 @@ enum tUserEventCode {
   evBP0Up,            // BP0 est relaché
   evBP0MultiDown,         // BP0 est appuyé plusieur fois de suite
   evBP0LongDown,      // BP0 est maintenus appuyé plus de 3 secondes
-  evBP0LongUp,        // BP0 est relaché plus de 3 secondes
+  evBP0LongUp,        // BP0 est relaché plus de 1 secondes
   // evenement action
   doReset,
 };
