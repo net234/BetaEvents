@@ -1,4 +1,4 @@
-# betaEvents V1.0 
+# betaEvents V1.1 (dev net234) 
     Auteur : net23 pierre Henry
     Participation : 
     librairie pour une utilisation simple de la programmation evenementielle
