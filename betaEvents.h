@@ -55,15 +55,17 @@ extern EventManager* EventManagerPtr;
 #endif
 
 enum tEventCode {
-  evNill = 0,      // No event
+  evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
   ev24H,           // 24H when timestamp pass over 24H
-  evLEDOn,         // Kife
+  evLEDOn,         // 
   evLEDOff,
   evInChar,
   evInString,
+evWEB = 20,
+evUser = 100,
 };
 
 

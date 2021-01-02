@@ -45,7 +45,7 @@
 EventTracker MyEvent;   // local instance de eventManager
 
 /* Evenements du Manager (voir betaEvents.h)
-  evNill = 0,      // No event
+  evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
