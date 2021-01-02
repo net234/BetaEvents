@@ -1,6 +1,6 @@
 /*************************************************
  *************************************************
-    Sketch betaEvents.ino   validation of lib betaEvents to deal nicely with events programing with Arduino
+    Sketch event_pushbutton.ino   validation of lib betaEvents to deal nicely with events programing with Arduino
     Copyright 2020 Pierre HENRY net23@frdev.com All - right reserved.
 
   This file is part of betaEvents.
@@ -19,18 +19,12 @@
     along with betaEvents.  If not, see <https://www.gnu.org/licenses/lglp.txt>.
 
 
-   History
-    V1.0 (21/11/2020)
-    - Full rebuild from PH_Event V1.3.1 (15/03/2020)
-    V1.1 (30/11/2020)
-    - Ajout du percentCPU pour une meilleur visualisation de l'usage CPU
-    V1.2 02/01/2021
-    - Ajout d'une globale EventManagerPtr pour l'acces par d'autre lib et respecter l'implantation C++
-    - Amelioration du iddle mode pour l'ESP8266 (WiFi sleep mode)
+  History
+    V1.0 event_pushbutton 10/12/2020 NET234
 
  *************************************************/
 
-#define APP_NAME "betaEvents V1.1"
+#define APP_NAME "event_pushbutton V1.0"
 
 #if  defined(__AVR__)
 #include <avr/wdt.h>
@@ -42,7 +36,7 @@
 
 #include "betaEvents.h"
 
-EventTracker MyEvent;   // local instance de eventManager
+EventTracker MyEvent;   // instance de eventManager
 
 /* Evenements du Manager (voir betaEvents.h)
   evNill = 0,      // No event
@@ -62,9 +56,9 @@ enum tUserEventCode {
   // evenement recu
   evBP0Down = 100,    // BP0 est appuyé
   evBP0Up,            // BP0 est relaché
-  evBP0MultiDown,         // BP0 est appuyé plusieur fois de suite
+  evBP0MultiDown,     // BP0 est appuyé plusieur fois de suite
   evBP0LongDown,      // BP0 est maintenus appuyé plus de 3 secondes
-  evBP0LongUp,        // BP0 est relaché plus de 3 secondes
+  evBP0LongUp,        // BP0 est relaché plus de 1 secondes
   // evenement action
   doReset,
 };
@@ -82,6 +76,7 @@ int  multi = 0; // nombre de clic rapide
 void setup() {
   // IO Setup
 #if defined(ESP8266)
+  WiFi.mode(WIFI_OFF);
   WiFi.forceSleepBegin();
   //   WiFi.mode(WIFI_OFF);
 #elif defined(ESP32)
@@ -131,15 +126,6 @@ void loop() {
     case ev24H:
       Serial.println("---- 24H ---");
       break;
-
-
-    //     case evLEDOn:
-    //      Serial.print(F("L"));
-    //      break;
-    //
-    //     case evLEDOff:
-    //      Serial.print(F("l"));
-    //      break;
 
     case evBP0Down:
       Serial.println(F("BP0 Down"));

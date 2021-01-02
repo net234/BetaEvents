@@ -18,13 +18,14 @@
     along with betaEvents.  If not, see <https://www.gnu.org/licenses/lglp.txt>.
 
 
- History
+  History
     V1.0 (21/11/2020)
     - Full rebuild from PH_Event V1.3.1 (15/03/2020)
     V1.1 (30/11/2020)
     - Ajout du percentCPU pour une meilleur visualisation de l'usage CPU
-
-
+    V1.2 02/01/2021
+    - Ajout d'une globale EventManagerPtr pour l'acces par d'autre lib et respecter l'implantation C++
+    - Amelioration du iddle mode pour l'ESP8266 (WiFi sleep mode)
 
  *************************************************/
 
@@ -46,6 +47,12 @@
 #endif
 #endif
 
+class EventManager;
+#ifdef BETAEVENTS_CCP
+EventManager* EventManagerPtr; // allow other lib to access the specific instance of the user Sketch
+#else
+extern EventManager* EventManagerPtr;
+#endif
 
 enum tEventCode {
   evNill = 0,      // No event
@@ -75,13 +82,18 @@ class EventManager
   public:
 
     EventManager(const byte ledpinnumber = LED_BUILTIN, const byte inputStringSizeMax = 30) {  // constructeur
+      if (EventManagerPtr != NULL) {
+        Serial.print(F("Error: Only one instance for EventManager (BetaEvents)"));
+        while (true) delay(100);
+      }
+      EventManagerPtr = this;
       currentEvent.code = evNill;
       _waitingEventIndex = 0;
 
       _LEDPinNumber = ledpinnumber;
       _LEDMillisecondes = 1000;
       _LEDPercent = 10;
-     
+
 
 #ifdef USE_SERIALEVENT
       _inputStringSizeMax = inputStringSizeMax;
@@ -124,11 +136,11 @@ class EventManager
     // liste des evenements en attente
     byte       _waitingEventIndex = 0;
     stdEvent  _waitingEvent[MAX_WAITING_EVENT];
-    
+
     // liste des evenements sous delay en attente
     byte       _waitingDelayEventIndex = 0;
     delayedEvent _waitingDelayEvent[MAX_WAITING_DELAYEVENT];
-    
+
 
 #ifdef  USE_SERIALEVENT
     byte _inputStringSizeMax = 1;
