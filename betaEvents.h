@@ -41,9 +41,9 @@
 
 #ifndef  LED_BUILTIN
 #if defined(ESP32)
-# define LED_BUILTIN 33   //ESP32-cam
+#define LED_BUILTIN 33   //ESP32-cam
 #elif
-# define LED_BUILTIN 13
+#define LED_BUILTIN 13
 #endif
 #endif
 
