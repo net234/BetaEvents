@@ -25,7 +25,8 @@
     V1.2 02/01/2021
     - Ajout d'une globale EventManagerPtr pour l'acces par d'autre lib et respecter l'implantation C++
     - Amelioration du iddle mode pour l'ESP8266 (WiFi sleep mode)
-
+    V1.3 13/01/2021
+    - correction pour mieux gerer les pulses dans le cas 0 ou 100 percent
 
  *************************************************/
 #define BETAEVENTS_CCP
@@ -70,10 +71,14 @@ void  EventManager::begin() {
 #endif
 }
 
-void  EventManager::setMillisecLED(const int millisecondes, const byte percent) {
-  _LEDMillisecondes = max(millisecondes, 10);
+void  EventManager::setMillisecLED(const uint16_t millisecondes, const uint8_t percent) {
+  _LEDMillisecondes = max(millisecondes, (uint16_t)10);
   _LEDPercent = percent;
   pushEvent(evLEDOn);
+}
+
+void  EventManager::setFrequenceLED(const uint8_t frequence, const uint8_t percent) {
+  setMillisecLED(1000U/frequence,percent);
 }
 
 byte  EventManager::second() const {
@@ -232,8 +237,8 @@ void  EventManager::handleEvent() {
 
     case evLEDOn:
       digitalWrite(_LEDPinNumber, LED_PULSE_ON);   // led on
-      pushDelayEvent(_LEDMillisecondes, evLEDOn);
-      pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
+      if (_LEDPercent > 0 && _LEDPercent < 100) pushDelayEvent(_LEDMillisecondes, evLEDOn);
+      if (_LEDPercent < 100) pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
       break;
 
 

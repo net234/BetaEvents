@@ -26,6 +26,8 @@
     V1.2 02/01/2021
     - Ajout d'une globale EventManagerPtr pour l'acces par d'autre lib et respecter l'implantation C++
     - Amelioration du iddle mode pour l'ESP8266 (WiFi sleep mode)
+    V1.3 13/01/2021
+    - correction pour mieux gerer les pulses dans le cas 0 ou 100 percent
 
  *************************************************/
 
@@ -109,8 +111,8 @@ class EventManager
     bool   pushEvent(stdEvent* aevent);
     bool   pushDelayEvent(const uint32_t delayMillisec, const byte code, const int param = 0);
     bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent* aevent );
-    void   setFreqenceLED(const byte frequence, const byte percent = 10); // frequence de la led
-    void   setMillisecLED(const int millisecondes, const byte percent = 10); // frequence de la led
+    void   setFrequenceLED(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
+    void   setMillisecLED(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
     //    int    syncroSeconde(const int millisec = 0);
     byte   second() const;
     byte   minute() const;
@@ -132,8 +134,8 @@ class EventManager
     unsigned long      _evNillParsec = 0;
     byte      _LEDPinNumber;         // Pin de la led de vie
     byte      _LEDPercent;           // durée de l'allumage en %
-    unsigned int _LEDMillisecondes;  // durée du cycle de clignotement en Millisecondes (max 64 secondes)
-    unsigned int _idleMillisec = 0;  // CPU millisecondes en pause
+    uint16_t _LEDMillisecondes;  // durée du cycle de clignotement en Millisecondes (max 64 secondes)
+    uint16_t _idleMillisec = 0;  // CPU millisecondes en pause
     byte       _percentCPU = 0;
     // liste des evenements en attente
     byte       _waitingEventIndex = 0;
