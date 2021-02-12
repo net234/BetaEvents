@@ -28,6 +28,9 @@
     - Amelioration du iddle mode pour l'ESP8266 (WiFi sleep mode)
     V1.3 13/01/2021
     - correction pour mieux gerer les pulses dans le cas 0 ou 100 percent
+    - ajout setLedOn(true/false)
+    V1.3.1 23/01/2021
+	- correction setLedOn pour un resultat immediat
 
  *************************************************/
 
@@ -111,6 +114,7 @@ class EventManager
     bool   pushEvent(stdEvent* aevent);
     bool   pushDelayEvent(const uint32_t delayMillisec, const byte code, const int param = 0);
     bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent* aevent );
+    void   setLedOn(const bool status = true);
     void   setFrequenceLED(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
     void   setMillisecLED(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
     //    int    syncroSeconde(const int millisec = 0);

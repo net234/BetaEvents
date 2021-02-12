@@ -71,10 +71,17 @@ void  EventManager::begin() {
 #endif
 }
 
+void  EventManager::setLedOn(const bool status) {
+  setMillisecLED(1000,status ? 100 : 0);
+  digitalWrite(_LEDPinNumber, status ? LED_PULSE_ON : !LED_PULSE_ON );
+}
+
+
 void  EventManager::setMillisecLED(const uint16_t millisecondes, const uint8_t percent) {
   _LEDMillisecondes = max(millisecondes, (uint16_t)10);
   _LEDPercent = percent;
-  pushEvent(evLEDOn);
+  removeDelayEvent(evLEDOff);
+pushEvent( (percent > 0) ? evLEDOn : evLEDOff );
 }
 
 void  EventManager::setFrequenceLED(const uint8_t frequence, const uint8_t percent) {
@@ -236,7 +243,7 @@ void  EventManager::handleEvent() {
       break;
 
     case evLEDOn:
-      digitalWrite(_LEDPinNumber, LED_PULSE_ON);   // led on
+      digitalWrite(_LEDPinNumber, LED_PULSE_ON);digitalWrite(_LEDPinNumber, LED_PULSE_ON);   // led on
       if (_LEDPercent > 0 && _LEDPercent < 100) pushDelayEvent(_LEDMillisecondes, evLEDOn);
       if (_LEDPercent < 100) pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
       break;
