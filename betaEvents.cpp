@@ -17,16 +17,19 @@
     You should have received a copy of the GNU Lesser General Public License
     along with betaEvents.  If not, see <https://www.gnu.org/licenses/lglp.txt>.
 
- History
+  History
     V1.0 (21/11/2020)
     - Full rebuild from PH_Event V1.3.1 (15/03/2020)
     V1.1 (30/11/2020)
     - Ajout du percentCPU pour une meilleur visualisation de l'usage CPU
-
-
+    V1.2 02/01/2021
+    - Ajout d'une globale EventManagerPtr pour l'acces par d'autre lib et respecter l'implantation C++
+    - Amelioration du iddle mode pour l'ESP8266 (WiFi sleep mode)
+    V1.3 13/01/2021
+    - correction pour mieux gerer les pulses dans le cas 0 ou 100 percent
 
  *************************************************/
-
+#define BETAEVENTS_CCP
 
 #include "betaEvents.h"
 #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)  //LEONARDO
@@ -68,10 +71,21 @@ void  EventManager::begin() {
 #endif
 }
 
-void  EventManager::setMillisecLED(const int millisecondes, const byte percent) {
-  _LEDMillisecondes = max(millisecondes, 10);
+void  EventManager::setLedOn(const bool status) {
+  setMillisecLED(1000,status ? 100 : 0);
+  digitalWrite(_LEDPinNumber, status ? LED_PULSE_ON : !LED_PULSE_ON );
+}
+
+
+void  EventManager::setMillisecLED(const uint16_t millisecondes, const uint8_t percent) {
+  _LEDMillisecondes = max(millisecondes, (uint16_t)10);
   _LEDPercent = percent;
-  pushEvent(evLEDOn);
+  removeDelayEvent(evLEDOff);
+pushEvent( (percent > 0) ? evLEDOn : evLEDOff );
+}
+
+void  EventManager::setFrequenceLED(const uint8_t frequence, const uint8_t percent) {
+  setMillisecLED(1000U/frequence,percent);
 }
 
 byte  EventManager::second() const {
@@ -105,9 +119,7 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
 
   _loopCounter++;
 
-  noInterrupts();
   unsigned long delta = millis() - milliSeconds;
-  interrupts();
 
   if (delta) {
     milliSeconds += delta;
@@ -171,19 +183,20 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
 
 
   // si SleepOk et que l'evenement precedent etait un nillEvent on frezze le CPU
-  if (sleepOk  && eventWasNill) {
-  unsigned long now = millis();
+  if (millis() == milliSeconds && sleepOk  && eventWasNill) {
+
 #ifdef  __AVR__
     sleep_mode();
 #else
     // pour l'ESP8266 pas sleep simple
     // !! TODO :  faire un meilleur sleep ESP32 & ESP8266
-    while (now == millis()) yield();
-    //delay(1);
+    //while (milliSeconds == millis()) yield();
+    delay(1);  // to allow wifi sleep in modem mode
 
 #endif
-    _idleMillisec += ( millis()-now); 
+    _idleMillisec += ( millis() - milliSeconds);
   }
+
   _evNillCounter++;
 
   return (currentEvent.code = evNill);
@@ -230,25 +243,25 @@ void  EventManager::handleEvent() {
       break;
 
     case evLEDOn:
-      digitalWrite(_LEDPinNumber, LED_PULSE_ON);   // led on
-      pushDelayEvent(_LEDMillisecondes, evLEDOn);
-      pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
+      digitalWrite(_LEDPinNumber, LED_PULSE_ON);digitalWrite(_LEDPinNumber, LED_PULSE_ON);   // led on
+      if (_LEDPercent > 0 && _LEDPercent < 100) pushDelayEvent(_LEDMillisecondes, evLEDOn);
+      if (_LEDPercent < 100) pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
       break;
 
 
     case ev1Hz: {
         timestamp++;
 
-       
+
         _percentCPU = 100 - (100UL * _idleMillisec / 1000 );
         if (timestamp % 86400L == 0) {  // 60 * 60 * 24
           pushEvent(ev24H);  // la gestion de l'overflow timestamp est a gerer par l'appli maitre si c'est utile
         }
-//        Serial.print("iddle="); Serial.println(_idleMillisec);
-//        Serial.print("CPU% ="); Serial.println(_percentCPU);
-//        Serial.print("_evNillCounter="); Serial.println(_evNillCounter);
-//        Serial.print("_loopCounter="); Serial.println(_loopCounter);
-//        //Serial.print("elaps="); Serial.println(elaps);
+        //        Serial.print("iddle="); Serial.println(_idleMillisec);
+        //        Serial.print("CPU% ="); Serial.println(_percentCPU);
+        //        Serial.print("_evNillCounter="); Serial.println(_evNillCounter);
+        //        Serial.print("_loopCounter="); Serial.println(_loopCounter);
+        //        //Serial.print("elaps="); Serial.println(elaps);
         _idleMillisec = 0;
         _evNillParsec = _evNillCounter;
         _evNillCounter = 0;
@@ -366,7 +379,7 @@ void EventTracker::handleEvent() {
       if (_trackTime) {
 
         char aBuffer[60];
-        
+
         snprintf(aBuffer, 60 , " %02d:%02d:%02d,CPU=%d%%,Loop=%lu,Nill=%lu,Ram=%u", hour(), minute(), second(), _percentCPU, _loopParsec, _evNillParsec, freeRam());
 
 

@@ -18,13 +18,19 @@
     along with betaEvents.  If not, see <https://www.gnu.org/licenses/lglp.txt>.
 
 
- History
+  History
     V1.0 (21/11/2020)
     - Full rebuild from PH_Event V1.3.1 (15/03/2020)
     V1.1 (30/11/2020)
     - Ajout du percentCPU pour une meilleur visualisation de l'usage CPU
-
-
+    V1.2 02/01/2021
+    - Ajout d'une globale EventManagerPtr pour l'acces par d'autre lib et respecter l'implantation C++
+    - Amelioration du iddle mode pour l'ESP8266 (WiFi sleep mode)
+    V1.3 13/01/2021
+    - correction pour mieux gerer les pulses dans le cas 0 ou 100 percent
+    - ajout setLedOn(true/false)
+    V1.3.1 23/01/2021
+	- correction setLedOn pour un resultat immediat
 
  *************************************************/
 
@@ -40,23 +46,31 @@
 
 #ifndef  LED_BUILTIN
 #if defined(ESP32)
-# define LED_BUILTIN 33   //ESP32-cam
+#define LED_BUILTIN 33   //ESP32-cam
 #elif
-# define LED_BUILTIN 13
+#define LED_BUILTIN 13
 #endif
 #endif
 
+class EventManager;
+#ifdef BETAEVENTS_CCP
+EventManager* EventManagerPtr; // allow other lib to access the specific instance of the user Sketch
+#else
+extern EventManager* EventManagerPtr;
+#endif
 
 enum tEventCode {
-  evNill = 0,      // No event
+  evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
   ev24H,           // 24H when timestamp pass over 24H
-  evLEDOn,         // Kife
+  evLEDOn,         // 
   evLEDOff,
   evInChar,
   evInString,
+evWEB = 20,
+evUser = 100,
 };
 
 
@@ -75,13 +89,18 @@ class EventManager
   public:
 
     EventManager(const byte ledpinnumber = LED_BUILTIN, const byte inputStringSizeMax = 30) {  // constructeur
+      if (EventManagerPtr != NULL) {
+        Serial.print(F("Error: Only one instance for EventManager (BetaEvents)"));
+        while (true) delay(100);
+      }
+      EventManagerPtr = this;
       currentEvent.code = evNill;
       _waitingEventIndex = 0;
 
       _LEDPinNumber = ledpinnumber;
       _LEDMillisecondes = 1000;
       _LEDPercent = 10;
-     
+
 
 #ifdef USE_SERIALEVENT
       _inputStringSizeMax = inputStringSizeMax;
@@ -95,8 +114,9 @@ class EventManager
     bool   pushEvent(stdEvent* aevent);
     bool   pushDelayEvent(const uint32_t delayMillisec, const byte code, const int param = 0);
     bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent* aevent );
-    void   setFreqenceLED(const byte frequence, const byte percent = 10); // frequence de la led
-    void   setMillisecLED(const int millisecondes, const byte percent = 10); // frequence de la led
+    void   setLedOn(const bool status = true);
+    void   setFrequenceLED(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
+    void   setMillisecLED(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
     //    int    syncroSeconde(const int millisec = 0);
     byte   second() const;
     byte   minute() const;
@@ -118,17 +138,17 @@ class EventManager
     unsigned long      _evNillParsec = 0;
     byte      _LEDPinNumber;         // Pin de la led de vie
     byte      _LEDPercent;           // durée de l'allumage en %
-    unsigned int _LEDMillisecondes;  // durée du cycle de clignotement en Millisecondes (max 64 secondes)
-    unsigned int _idleMillisec = 0;  // CPU millisecondes en pause
+    uint16_t _LEDMillisecondes;  // durée du cycle de clignotement en Millisecondes (max 64 secondes)
+    uint16_t _idleMillisec = 0;  // CPU millisecondes en pause
     byte       _percentCPU = 0;
     // liste des evenements en attente
     byte       _waitingEventIndex = 0;
     stdEvent  _waitingEvent[MAX_WAITING_EVENT];
-    
+
     // liste des evenements sous delay en attente
     byte       _waitingDelayEventIndex = 0;
     delayedEvent _waitingDelayEvent[MAX_WAITING_DELAYEVENT];
-    
+
 
 #ifdef  USE_SERIALEVENT
     byte _inputStringSizeMax = 1;

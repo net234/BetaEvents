@@ -20,7 +20,7 @@ handleEvent	KEYWORD2
 removeDelayEvent	KEYWORD2
 pushEvent	KEYWORD2
 pushDelayEvent	KEYWORD2
-setFreqenceLED	KEYWORD2
+setFrequenceLED	KEYWORD2
 setMillisecLED	KEYWORD2
 second	KEYWORD2
 minute	KEYWORD2

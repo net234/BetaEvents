@@ -19,11 +19,14 @@
     along with betaEvents.  If not, see <https://www.gnu.org/licenses/lglp.txt>.
 
 
-  History
+   History
     V1.0 (21/11/2020)
     - Full rebuild from PH_Event V1.3.1 (15/03/2020)
-       V1.1 (30/11/2020)
+    V1.1 (30/11/2020)
     - Ajout du percentCPU pour une meilleur visualisation de l'usage CPU
+    V1.2 02/01/2021
+    - Ajout d'une globale EventManagerPtr pour l'acces par d'autre lib et respecter l'implantation C++
+    - Amelioration du iddle mode pour l'ESP8266 (WiFi sleep mode)
 
  *************************************************/
 
@@ -39,10 +42,10 @@
 
 #include "betaEvents.h"
 
-EventTracker MyEvent;   // instance de eventManager
+EventTracker MyEvent;   // local instance de eventManager
 
 /* Evenements du Manager (voir betaEvents.h)
-  evNill = 0,      // No event
+  evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
