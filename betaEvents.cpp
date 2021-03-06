@@ -88,15 +88,17 @@ void  EventManager::setFrequenceLED(const uint8_t frequence, const uint8_t perce
   setMillisecLED(1000U/frequence,percent);
 }
 
-byte  EventManager::second() const {
-  return ( timestamp % 60);
+#ifndef _Time_h
+byte  second()  {
+  return ( EventManagerPtr->timestamp % 60);
 }
-byte  EventManager::minute() const {
-  return ( (timestamp / 60) % 60);
+byte  minute()  {
+  return ( (EventManagerPtr->timestamp / 60) % 60);
 }
-byte  EventManager::hour() const {
-  return ( (timestamp / 3600) % 24);
+byte  hour()  {
+  return ( (EventManagerPtr->timestamp / 3600) % 24);
 }
+#endif
 
 static unsigned long milliSeconds = 0;
 static unsigned int delta1Hz = 0;
@@ -250,13 +252,19 @@ void  EventManager::handleEvent() {
 
 
     case ev1Hz: {
+#ifndef _Time_h   
         timestamp++;
-
+#endif
 
         _percentCPU = 100 - (100UL * _idleMillisec / 1000 );
+
+
+// TODO: add ev24H with TimeLib
+#ifndef _Time_h
         if (timestamp % 86400L == 0) {  // 60 * 60 * 24
-          pushEvent(ev24H);  // la gestion de l'overflow timestamp est a gerer par l'appli maitre si c'est utile
+          pushEvent(ev24H);  // User may take care of days
         }
+#endif
         //        Serial.print("iddle="); Serial.println(_idleMillisec);
         //        Serial.print("CPU% ="); Serial.println(_percentCPU);
         //        Serial.print("_evNillCounter="); Serial.println(_evNillCounter);

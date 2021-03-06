@@ -31,17 +31,37 @@
     - ajout setLedOn(true/false)
     V1.3.1 23/01/2021
 	- correction setLedOn pour un resultat immediat
+ Le croquis utilise 9476 octets (30%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+Les variables globales utilisent 493 octets (24%) de mémoire dynamique, ce qui laisse 1555 octets pour les variables locales. Le maximum est de 2048 octets.
+
+    V1.4   6/3/2021
+Le croquis utilise 9960 octets (32%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+Les variables globales utilisent 520 octets (25%) de mémoire dynamique, ce qui laisse 1528 octets pour les variables locales. Le maximum est de 2048 octets.
+
+
+    
+    Inclusion TimeLib.h
+    Gestion des event en liste chainée
 
  *************************************************/
 
 #pragma once
 #include "Arduino.h"
 
-#define   USE_SERIALEVENT       // remove this if you need standard Serial.read 
+// betaEvent handle a minimal time system to get for seconds() minutes() or hours()
+//#include <TimeLib.h>          // uncomment this if you prefer to use arduino TimeLib.h  (it will use little more ram and flash)
+
+#define   USE_SERIALEVENT       // comment this if you need standard Serial.read 
+
+
+#define   USE_TIMELIB            
+
 
 #define   MAX_WAITING_EVENT       20    // size of event buffer
 
 #define   MAX_WAITING_DELAYEVENT  10   // size of delayed event buffer
+
+
 
 
 #ifndef  LED_BUILTIN
@@ -118,9 +138,11 @@ class EventManager
     void   setFrequenceLED(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
     void   setMillisecLED(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
     //    int    syncroSeconde(const int millisec = 0);
-    byte   second() const;
-    byte   minute() const;
-    byte   hour()   const;
+#ifndef _Time_h
+    friend byte   second() ;
+    friend byte   minute() ;
+    friend byte   hour()   ;
+#endif
     stdEvent currentEvent;
 
 #ifdef  USE_SERIALEVENT
@@ -128,8 +150,9 @@ class EventManager
     String inputString = "";
 #endif
     int freeRam();
-    unsigned long   timestamp = 0;   //timestamp en seconde  (around 49 jours)
-
+#ifndef _Time_h
+    uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
+#endif
   protected:
 
     unsigned long      _loopCounter = 0;
