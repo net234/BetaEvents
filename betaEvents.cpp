@@ -32,6 +32,9 @@
 #define BETAEVENTS_CCP
 
 #include "betaEvents.h"
+#define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
+
+
 #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)  //LEONARDO
 #define LED_PULSE_ON LOW
 #else
@@ -173,13 +176,12 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
 
   // les evenements sans delay sont geré ici
   // les delais sont gere via ev100HZ
-  if (_waitingEventIndex != 0) {
-    currentEvent = _waitingEvent[0];
-
-    for (byte N = 0; N < _waitingEventIndex; N++) {
-      _waitingEvent[N] = _waitingEvent[N + 1];
-    }
-    _waitingEvent[--_waitingEventIndex].code = evNill;
+  if (firstEventPtr) {
+    currentEvent = *firstEventPtr;
+//    Serial.println("Dispose");
+    delete firstEventPtr;
+    firstEventPtr = currentEvent.nextEventPtr;
+    currentEvent.nextEventPtr = nullptr;
     return (currentEvent.code);
   }
 
@@ -314,19 +316,21 @@ bool   EventManager::removeDelayEvent(const byte codeevent) {
 }
 
 
-bool  EventManager::pushEvent(stdEvent* aevent) {
-  if (_waitingEventIndex >= MAX_WAITING_EVENT) {
-    return (false);
-  }
-  _waitingEvent[_waitingEventIndex++] = *aevent;
+bool  EventManager::pushEvent(const stdEvent_t* aevent) {
+
+  stdEvent_t** nextEventPPtr = &(this->firstEventPtr);
+  while (*nextEventPPtr) nextEventPPtr = &((*nextEventPPtr)->nextEventPtr);
+  *nextEventPPtr = aevent->clone();
+  (*nextEventPPtr)->nextEventPtr = nullptr;
   return (true);
 
 }
 
 bool   EventManager::pushEvent(const byte code, const int param) {
-  stdEvent aEvent;
+  stdEvent_t aEvent;
   aEvent.code = code;
   aEvent.param = param;
+  aEvent.nextEventPtr = nullptr;
   return ( pushEvent(&aEvent) );
 }
 

@@ -41,6 +41,7 @@
 #endif
 
 #include "betaEvents.h"
+#define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
 EventTracker MyEvent;   // local instance de eventManager
 
@@ -96,6 +97,7 @@ void setup() {
   MyEvent.begin();
 
   Serial.println("Bonjour ....");
+  //D_println(sizeof(EventManagerPtr));
 }
 bool BP0Down = false;
 byte BP0Multi = 0;

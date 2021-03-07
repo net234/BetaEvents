@@ -35,8 +35,8 @@
 Les variables globales utilisent 493 octets (24%) de mémoire dynamique, ce qui laisse 1555 octets pour les variables locales. Le maximum est de 2048 octets.
 
     V1.4   6/3/2021
-Le croquis utilise 9960 octets (32%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
-Les variables globales utilisent 520 octets (25%) de mémoire dynamique, ce qui laisse 1528 octets pour les variables locales. Le maximum est de 2048 octets.
+Le croquis utilise 9632 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+Les variables globales utilisent 484 octets (23%) de mémoire dynamique, ce qui laisse 1564 octets pour les variables locales. Le maximum est de 2048 octets.
 
 
     
@@ -51,13 +51,7 @@ Les variables globales utilisent 520 octets (25%) de mémoire dynamique, ce qui 
 // betaEvent handle a minimal time system to get for seconds() minutes() or hours()
 //#include <TimeLib.h>          // uncomment this if you prefer to use arduino TimeLib.h  (it will use little more ram and flash)
 
-#define   USE_SERIALEVENT       // comment this if you need standard Serial.read 
-
-
-#define   USE_TIMELIB            
-
-
-#define   MAX_WAITING_EVENT       20    // size of event buffer
+#define   USE_SERIALEVENT       // comment this if you need standard Serial.read
 
 #define   MAX_WAITING_DELAYEVENT  10   // size of delayed event buffer
 
@@ -95,12 +89,14 @@ evUser = 100,
 
 
 // 2 byte structure for event
-struct stdEvent  {
+struct stdEvent_t  {
+  virtual stdEvent_t* clone() const { return new stdEvent_t(*this); }
   uint8_t code = evNill;       // code of the event
   int16_t param = 0;           // parameter for the event
+  stdEvent_t* nextEventPtr;
 };
 
-struct delayedEvent : stdEvent {
+struct delayedEvent : stdEvent_t {
   int32_t delay;         // delay in millisecondes;
 };
 
@@ -115,7 +111,7 @@ class EventManager
       }
       EventManagerPtr = this;
       currentEvent.code = evNill;
-      _waitingEventIndex = 0;
+//      _waitingEventIndex = 0;
 
       _LEDPinNumber = ledpinnumber;
       _LEDMillisecondes = 1000;
@@ -131,9 +127,9 @@ class EventManager
     void   handleEvent();
     bool   removeDelayEvent(const byte codeevent);
     bool   pushEvent(const byte code, const int param = 0);
-    bool   pushEvent(stdEvent* aevent);
+    bool   pushEvent(const stdEvent_t* eventPtr);
     bool   pushDelayEvent(const uint32_t delayMillisec, const byte code, const int param = 0);
-    bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent* aevent );
+    bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent_t &eventPtr );
     void   setLedOn(const bool status = true);
     void   setFrequenceLED(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
     void   setMillisecLED(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
@@ -143,7 +139,7 @@ class EventManager
     friend byte   minute() ;
     friend byte   hour()   ;
 #endif
-    stdEvent currentEvent;
+    stdEvent_t currentEvent;
 
 #ifdef  USE_SERIALEVENT
     char  inChar = '\0';
@@ -165,9 +161,9 @@ class EventManager
     uint16_t _idleMillisec = 0;  // CPU millisecondes en pause
     byte       _percentCPU = 0;
     // liste des evenements en attente
-    byte       _waitingEventIndex = 0;
-    stdEvent  _waitingEvent[MAX_WAITING_EVENT];
-
+//    byte       _waitingEventIndex = 0;
+//    stdEvent  _waitingEvent[MAX_WAITING_EVENT];
+    stdEvent_t* firstEventPtr = nullptr;
     // liste des evenements sous delay en attente
     byte       _waitingDelayEventIndex = 0;
     delayedEvent _waitingDelayEvent[MAX_WAITING_DELAYEVENT];
