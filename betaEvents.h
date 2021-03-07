@@ -37,6 +37,8 @@ Les variables globales utilisent 493 octets (24%) de mémoire dynamique, ce qui 
     V1.4   6/3/2021
 Le croquis utilise 9632 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
 Les variables globales utilisent 484 octets (23%) de mémoire dynamique, ce qui laisse 1564 octets pour les variables locales. Le maximum est de 2048 octets.
+Le croquis utilise 9582 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+Les variables globales utilisent 381 octets (18%) de mémoire dynamique, ce qui laisse 1667 octets pour les variables locales. Le maximum est de 2048 octets.
 
 
     
@@ -53,7 +55,7 @@ Les variables globales utilisent 484 octets (23%) de mémoire dynamique, ce qui 
 
 #define   USE_SERIALEVENT       // comment this if you need standard Serial.read
 
-#define   MAX_WAITING_DELAYEVENT  10   // size of delayed event buffer
+//#define   MAX_WAITING_DELAYEVENT  10   // size of delayed event buffer
 
 
 
@@ -96,7 +98,8 @@ struct stdEvent_t  {
   stdEvent_t* nextEventPtr;
 };
 
-struct delayedEvent : stdEvent_t {
+struct delayedEvent_t : stdEvent_t {
+  virtual delayedEvent_t* clone() const { return new delayedEvent_t(*this); }
   int32_t delay;         // delay in millisecondes;
 };
 
@@ -165,9 +168,9 @@ class EventManager
 //    stdEvent  _waitingEvent[MAX_WAITING_EVENT];
     stdEvent_t* firstEventPtr = nullptr;
     // liste des evenements sous delay en attente
-    byte       _waitingDelayEventIndex = 0;
-    delayedEvent _waitingDelayEvent[MAX_WAITING_DELAYEVENT];
-
+//    byte       _waitingDelayEventIndex = 0;
+//    delayedEvent_t _waitingDelayEvent[MAX_WAITING_DELAYEVENT];
+    delayedEvent_t* firstDelayEventPtr = nullptr;
 
 #ifdef  USE_SERIALEVENT
     byte _inputStringSizeMax = 1;

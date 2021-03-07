@@ -75,7 +75,7 @@ void  EventManager::begin() {
 }
 
 void  EventManager::setLedOn(const bool status) {
-  setMillisecLED(1000,status ? 100 : 0);
+  setMillisecLED(1000, status ? 100 : 0);
   digitalWrite(_LEDPinNumber, status ? LED_PULSE_ON : !LED_PULSE_ON );
 }
 
@@ -84,11 +84,11 @@ void  EventManager::setMillisecLED(const uint16_t millisecondes, const uint8_t p
   _LEDMillisecondes = max(millisecondes, (uint16_t)10);
   _LEDPercent = percent;
   removeDelayEvent(evLEDOff);
-pushEvent( (percent > 0) ? evLEDOn : evLEDOff );
+  pushEvent( (percent > 0) ? evLEDOn : evLEDOff );
 }
 
 void  EventManager::setFrequenceLED(const uint8_t frequence, const uint8_t percent) {
-  setMillisecLED(1000U/frequence,percent);
+  setMillisecLED(1000U / frequence, percent);
 }
 
 #ifndef _Time_h
@@ -178,7 +178,7 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
   // les delais sont gere via ev100HZ
   if (firstEventPtr) {
     currentEvent = *firstEventPtr;
-//    Serial.println("Dispose");
+    //    Serial.println("Dispose");
     delete firstEventPtr;
     firstEventPtr = currentEvent.nextEventPtr;
     currentEvent.nextEventPtr = nullptr;
@@ -214,29 +214,42 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
 void  EventManager::handleEvent() {
   switch (currentEvent.code)
   {
-
-
     // gestion des evenement avec delay
     // todo  gerer des event repetitifs
     case ev100Hz: {
         //      Serial.print("waitingdelay : ");
         //          Serial.println(_waitingDelayEventIndex);
         // on scan les _waitintDelayEvent pour les passer en _waitintEvent
-        byte N = 0;
-        while (N < _waitingDelayEventIndex) {
-          //        Serial.print("delay : ");
-          //        Serial.println(_waitingDelayEvent[N].delay);
-          if (_waitingDelayEvent[N].delay > currentEvent.param) {
-            _waitingDelayEvent[N].delay -= currentEvent.param;
-            N++;
+        delayedEvent_t** nextEventPPtr = &(this->firstDelayEventPtr);
+        while (*nextEventPPtr) {
+          if ((*nextEventPPtr)->delay > currentEvent.param ) {
+            (*nextEventPPtr)->delay -= currentEvent.param;
           } else {
-            //                      Serial.print("Exec delay Event ");
-            //                     Serial.println(_waitingDelayEvent[N].codeEvent);
-            pushEvent(&_waitingDelayEvent[N]);
-            removeDelayEvent(_waitingDelayEvent[N].code);
+            delayedEvent_t* aeventPtr = *nextEventPPtr;
+            pushEvent(aeventPtr);
+            *nextEventPPtr = (delayedEvent_t*)(*nextEventPPtr)->nextEventPtr;
+            delete aeventPtr;
           }
+          nextEventPPtr = (delayedEvent_t**)&((*nextEventPPtr)->nextEventPtr);
         }
       }
+
+
+      //        byte N = 0;
+      //        while (N < _waitingDelayEventIndex) {
+      //          //        Serial.print("delay : ");
+      //          //        Serial.println(_waitingDelayEvent[N].delay);
+      //          if (_waitingDelayEvent[N].delay > currentEvent.param) {
+      //            _waitingDelayEvent[N].delay -= currentEvent.param;
+      //            N++;
+      //          } else {
+      //            //                      Serial.print("Exec delay Event ");
+      //            //                     Serial.println(_waitingDelayEvent[N].codeEvent);
+      //            pushEvent(&_waitingDelayEvent[N]);
+      //            removeDelayEvent(_waitingDelayEvent[N].code);
+      //          }
+      //        }
+      //      }
 
       break;
 
@@ -247,21 +260,21 @@ void  EventManager::handleEvent() {
       break;
 
     case evLEDOn:
-      digitalWrite(_LEDPinNumber, LED_PULSE_ON);digitalWrite(_LEDPinNumber, LED_PULSE_ON);   // led on
+      digitalWrite(_LEDPinNumber, LED_PULSE_ON); digitalWrite(_LEDPinNumber, LED_PULSE_ON);  // led on
       if (_LEDPercent > 0 && _LEDPercent < 100) pushDelayEvent(_LEDMillisecondes, evLEDOn);
       if (_LEDPercent < 100) pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
       break;
 
 
     case ev1Hz: {
-#ifndef _Time_h   
+#ifndef _Time_h
         timestamp++;
 #endif
 
         _percentCPU = 100 - (100UL * _idleMillisec / 1000 );
 
 
-// TODO: add ev24H with TimeLib
+        // TODO: add ev24H with TimeLib
 #ifndef _Time_h
         if (timestamp % 86400L == 0) {  // 60 * 60 * 24
           pushEvent(ev24H);  // User may take care of days
@@ -297,23 +310,6 @@ void  EventManager::handleEvent() {
   }
 }
 
-bool   EventManager::removeDelayEvent(const byte codeevent) {
-  byte N = 0;
-  while (N < _waitingDelayEventIndex) {
-    if (_waitingDelayEvent[N].code == codeevent ) {
-      //     Serial.print("Remove Delay Event ");
-      //     Serial.println(codeevent);
-
-      for (byte N2 = N; N2 < _waitingDelayEventIndex; N2++) {
-        _waitingDelayEvent[N2] = _waitingDelayEvent[N2 + 1];
-      }
-      _waitingDelayEvent[--_waitingDelayEventIndex].code = evNill;
-      _waitingDelayEvent[_waitingDelayEventIndex].param = 0;
-    } else {
-      N++;
-    }
-  }
-}
 
 
 bool  EventManager::pushEvent(const stdEvent_t* aevent) {
@@ -336,7 +332,7 @@ bool   EventManager::pushEvent(const byte code, const int param) {
 
 
 bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const byte code, const int param) {
-  delayedEvent aEvent;
+  delayedEvent_t aEvent;
   aEvent.code = code;
   aEvent.param = param;
 
@@ -348,24 +344,49 @@ bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const byte cod
 
 
 
-  if (_waitingDelayEventIndex >= MAX_WAITING_DELAYEVENT) {
-    return (false);
-  }
+  //  if (_waitingDelayEventIndex >= MAX_WAITING_DELAYEVENT) {
+  //    return (false);
+  //  }
 
   aEvent.delay = delayMillisec / 10;
   if (aEvent.delay == 0 )  aEvent.delay = 1;
 
 
-  _waitingDelayEvent[_waitingDelayEventIndex++] = aEvent;
-  //  Serial.print("Pushdelay ");
-  //  Serial.print(aEvent.codeEvent);
-  //  Serial.print(" dans ");
-  //  Serial.print(aEvent.delay);
-  //  Serial.println(" msec.");
-
+  delayedEvent_t** nextEventPPtr = &(this->firstDelayEventPtr);
+  while (*nextEventPPtr) nextEventPPtr = (delayedEvent_t**)&((*nextEventPPtr)->nextEventPtr);
+  *nextEventPPtr = aEvent.clone();
+  (*nextEventPPtr)->nextEventPtr = nullptr;
   return (true);
 }
 
+bool   EventManager::removeDelayEvent(const byte codeevent) {
+  delayedEvent_t** nextEventPPtr = &(this->firstDelayEventPtr);
+  while (*nextEventPPtr) {
+    if ((*nextEventPPtr)->code == codeevent) {
+      delayedEvent_t* aevent = *nextEventPPtr;
+      *nextEventPPtr = (delayedEvent_t*)(*nextEventPPtr)->nextEventPtr;
+      delete aevent;
+      return true;
+    }
+    nextEventPPtr = (delayedEvent_t**)&((*nextEventPPtr)->nextEventPtr);
+  }
+  return (false);
+  //  byte N = 0;
+  //  while (N < _waitingDelayEventIndex) {
+  //    if (_waitingDelayEvent[N].code == codeevent ) {
+  //      //     Serial.print("Remove Delay Event ");
+  //      //     Serial.println(codeevent);
+  //
+  //      for (byte N2 = N; N2 < _waitingDelayEventIndex; N2++) {
+  //        _waitingDelayEvent[N2] = _waitingDelayEvent[N2 + 1];
+  //      }
+  //      _waitingDelayEvent[--_waitingDelayEventIndex].code = evNill;
+  //      _waitingDelayEvent[_waitingDelayEventIndex].param = 0;
+  //    } else {
+  //      N++;
+  //    }
+  //  }
+}
 
 //====== Sram dispo =========
 #ifndef __AVR__
