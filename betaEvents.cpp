@@ -179,7 +179,8 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
   if (eventList) {
     eventItem_t* itemPtr = eventList->nextItemPtr;
     currentEvent = *eventList;
-    //    Serial.println("Dispose");
+    //D_println(currentEvent.code);
+    //    Serial.println("Delete");
     delete eventList;
     eventList = itemPtr;
     return (currentEvent.code);
@@ -220,17 +221,23 @@ void  EventManager::handleEvent() {
         //      Serial.print("waitingdelay : ");
         //          Serial.println(_waitingDelayEventIndex);
         // on scan les _waitintDelayEvent pour les passer en _waitintEvent
+        //D_println((int)delayEventList);
         delayEventItem_t** ItemPtr = &(this->delayEventList);
         while (*ItemPtr) {
           if ((*ItemPtr)->delay > currentEvent.param ) {
             (*ItemPtr)->delay -= currentEvent.param;
+            ItemPtr = &((*ItemPtr)->nextItemPtr);
           } else {
-            stdEvent_t* aEventPtr(*ItemPtr);
-            pushEvent(*aEventPtr);
+            //Serial.print("done waitingdelay : ");
+            //D_println((*ItemPtr)->code);
+            delayEventItem_t* aDelayItemPtr = *ItemPtr;
+            //D_println((int)(*ItemPtr)->nextItemPtr);
+            pushEvent(*aDelayItemPtr);
             *ItemPtr = (*ItemPtr)->nextItemPtr;
-            delete aEventPtr;
+            delete aDelayItemPtr;
+            //D_println((int)delayEventList);
           }
-          ItemPtr = &((*ItemPtr)->nextItemPtr);
+          
         }
       }
 
@@ -313,7 +320,8 @@ void  EventManager::handleEvent() {
 
 
 bool  EventManager::pushEvent(const stdEvent_t& aevent) {
-
+  //Serial.print("push event stdEvent");
+  //D_println(aevent.code);
   eventItem_t** itemPtr = &(this->eventList);
   while (*itemPtr) itemPtr = &((*itemPtr)->nextItemPtr);
   *itemPtr = new eventItem_t(aevent);
@@ -325,6 +333,8 @@ bool  EventManager::pushEvent(const stdEvent_t& aevent) {
 
 bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
   eventItem_t aEvent(codeP,paramP);
+  //Serial.print("push event code param");
+  //D_println(aEvent.code);
   //aEvent.code = code;
   //aEvent.param = param;
   //aEvent.nextEventPtr = nullptr;
@@ -333,31 +343,24 @@ bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
 
 
 bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param) {
-  delayEventItem_t aEvent(code,param);
-//  aEvent.code = code;
-//  aEvent.param = param;
-
   removeDelayEvent(code);
-
   if (delayMillisec == 0) {
-    return ( pushEvent(aEvent) );
+    //Serial.println("push event delay 0");
+    return ( pushEvent(code,param) );
   }
-
-
-
-  //  if (_waitingDelayEventIndex >= MAX_WAITING_DELAYEVENT) {
-  //    return (false);
-  //  }
-
-  aEvent.delay = delayMillisec / 10;
-  if (aEvent.delay == 0 )  aEvent.delay = 1;
-
+  //Serial.print("push event ");
+  //D_println(code);
+  uint32_t delay = delayMillisec/10;
+  if (delay == 0 )  delay = 1;
+  //D_println(delay);
 
   delayEventItem_t** ItemPtr = &(this->delayEventList);
   while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextItemPtr);
-  *ItemPtr = new delayEventItem_t(aEvent);
+  *ItemPtr = new delayEventItem_t(delay,code,param);
+  //Serial.print("pushed event ");
+  //D_println((*ItemPtr)->code);
   //**nextEventPPtr = aEvent;
-  (*ItemPtr)->nextItemPtr = nullptr;
+  //(*ItemPtr)->nextItemPtr = nullptr;
   return (true);
 }
 

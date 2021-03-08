@@ -138,13 +138,13 @@ void loop() {
       break;
 
 
-    //     case evLEDOn:
-    //      Serial.print(F("L"));
-    //      break;
-    //
-    //     case evLEDOff:
-    //      Serial.print(F("l"));
-    //      break;
+//    case evLEDOn:
+//      Serial.print(F("L"));
+//      break;
+//
+//    case evLEDOff:
+//      Serial.print(F("l"));
+//      break;
 
     case evBP0Down:
       Serial.println(F("BP0 Down"));

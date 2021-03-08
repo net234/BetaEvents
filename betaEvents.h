@@ -148,8 +148,8 @@ class EventManager
     byte   getEvent(const bool sleep = true);
     void   handleEvent();
     bool   removeDelayEvent(const byte codeevent);
-    bool   pushEvent(const uint8_t code, const int16_t param = 0);
     bool   pushEvent(const stdEvent_t& eventPtr);
+    bool   pushEvent(const uint8_t code, const int16_t param = 0);
     bool   pushDelayEvent(const uint32_t delayMillisec, const byte code, const int param = 0);
 //    bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent_t &eventPtr );
     void   setLedOn(const bool status = true);
