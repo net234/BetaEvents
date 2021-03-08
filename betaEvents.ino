@@ -66,6 +66,9 @@ enum tUserEventCode {
   evBP0MultiDown,         // BP0 est appuyé plusieur fois de suite
   evBP0LongDown,      // BP0 est maintenus appuyé plus de 3 secondes
   evBP0LongUp,        // BP0 est relaché plus de 3 secondes
+  ev1S,
+  ev2S,
+  ev3S,
   // evenement action
   doReset,
 };
@@ -172,6 +175,16 @@ void loop() {
       break;
 
 
+    case ev1S:
+      Serial.println(F("EV1S"));
+      break;
+    case ev2S:
+      Serial.println(F("EV2S"));
+      break;
+    case ev3S:
+      Serial.println(F("EV3S"));
+      break;
+
     case doReset:
       delay(100);
 #ifdef  __AVR__
@@ -207,6 +220,24 @@ void loop() {
         sleepOk = !sleepOk;
         Serial.print(F("Sleep=")); Serial.println(sleepOk);
       }
+
+      if (MyEvent.inputString.equals(F("P"))) {
+        Serial.println(F("Push 3 delay events"));
+        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+        MyEvent.pushDelayEvent(1000, ev1S);
+        MyEvent.pushDelayEvent(2000, ev2S);
+        MyEvent.pushDelayEvent(3000, ev3S);
+        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+      }
+      if (MyEvent.inputString.equals(F("Q"))) {
+        Serial.println(F("Push 3 events"));
+        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+        MyEvent.pushDelayEvent(0, ev1S);
+        MyEvent.pushDelayEvent(0, ev2S);
+        MyEvent.pushDelayEvent(0, ev3S);
+        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+      }
+
 
       if (MyEvent.inputString.equals(F("FREE"))) {
         Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());

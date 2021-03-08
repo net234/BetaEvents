@@ -176,12 +176,12 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
 
   // les evenements sans delay sont geré ici
   // les delais sont gere via ev100HZ
-  if (firstEventPtr) {
-    currentEvent = *firstEventPtr;
+  if (eventList) {
+    eventItem_t* itemPtr = eventList->nextItemPtr;
+    currentEvent = *eventList;
     //    Serial.println("Dispose");
-    delete firstEventPtr;
-    firstEventPtr = currentEvent.nextEventPtr;
-    currentEvent.nextEventPtr = nullptr;
+    delete eventList;
+    eventList = itemPtr;
     return (currentEvent.code);
   }
 
@@ -220,17 +220,17 @@ void  EventManager::handleEvent() {
         //      Serial.print("waitingdelay : ");
         //          Serial.println(_waitingDelayEventIndex);
         // on scan les _waitintDelayEvent pour les passer en _waitintEvent
-        delayedEvent_t** nextEventPPtr = &(this->firstDelayEventPtr);
-        while (*nextEventPPtr) {
-          if ((*nextEventPPtr)->delay > currentEvent.param ) {
-            (*nextEventPPtr)->delay -= currentEvent.param;
+        delayEventItem_t** ItemPtr = &(this->delayEventList);
+        while (*ItemPtr) {
+          if ((*ItemPtr)->delay > currentEvent.param ) {
+            (*ItemPtr)->delay -= currentEvent.param;
           } else {
-            delayedEvent_t* aeventPtr = *nextEventPPtr;
-            pushEvent(aeventPtr);
-            *nextEventPPtr = (delayedEvent_t*)(*nextEventPPtr)->nextEventPtr;
-            delete aeventPtr;
+            stdEvent_t* aEventPtr(*ItemPtr);
+            pushEvent(*aEventPtr);
+            *ItemPtr = (*ItemPtr)->nextItemPtr;
+            delete aEventPtr;
           }
-          nextEventPPtr = (delayedEvent_t**)&((*nextEventPPtr)->nextEventPtr);
+          ItemPtr = &((*ItemPtr)->nextItemPtr);
         }
       }
 
@@ -312,34 +312,35 @@ void  EventManager::handleEvent() {
 
 
 
-bool  EventManager::pushEvent(const stdEvent_t* aevent) {
+bool  EventManager::pushEvent(const stdEvent_t& aevent) {
 
-  stdEvent_t** nextEventPPtr = &(this->firstEventPtr);
-  while (*nextEventPPtr) nextEventPPtr = &((*nextEventPPtr)->nextEventPtr);
-  *nextEventPPtr = aevent->clone();
-  (*nextEventPPtr)->nextEventPtr = nullptr;
+  eventItem_t** itemPtr = &(this->eventList);
+  while (*itemPtr) itemPtr = &((*itemPtr)->nextItemPtr);
+  *itemPtr = new eventItem_t(aevent);
+  //**nextEventPPtr = *aevent; 
+  //(*nextEventPPtr)->nextEventPtr = nullptr;
   return (true);
 
 }
 
-bool   EventManager::pushEvent(const byte code, const int param) {
-  stdEvent_t aEvent;
-  aEvent.code = code;
-  aEvent.param = param;
-  aEvent.nextEventPtr = nullptr;
-  return ( pushEvent(&aEvent) );
+bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
+  eventItem_t aEvent(codeP,paramP);
+  //aEvent.code = code;
+  //aEvent.param = param;
+  //aEvent.nextEventPtr = nullptr;
+  return ( pushEvent(aEvent) );
 }
 
 
-bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const byte code, const int param) {
-  delayedEvent_t aEvent;
-  aEvent.code = code;
-  aEvent.param = param;
+bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param) {
+  delayEventItem_t aEvent(code,param);
+//  aEvent.code = code;
+//  aEvent.param = param;
 
   removeDelayEvent(code);
 
   if (delayMillisec == 0) {
-    return ( pushEvent(&aEvent) );
+    return ( pushEvent(aEvent) );
   }
 
 
@@ -352,40 +353,27 @@ bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const byte cod
   if (aEvent.delay == 0 )  aEvent.delay = 1;
 
 
-  delayedEvent_t** nextEventPPtr = &(this->firstDelayEventPtr);
-  while (*nextEventPPtr) nextEventPPtr = (delayedEvent_t**)&((*nextEventPPtr)->nextEventPtr);
-  *nextEventPPtr = aEvent.clone();
-  (*nextEventPPtr)->nextEventPtr = nullptr;
+  delayEventItem_t** ItemPtr = &(this->delayEventList);
+  while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextItemPtr);
+  *ItemPtr = new delayEventItem_t(aEvent);
+  //**nextEventPPtr = aEvent;
+  (*ItemPtr)->nextItemPtr = nullptr;
   return (true);
 }
 
 bool   EventManager::removeDelayEvent(const byte codeevent) {
-  delayedEvent_t** nextEventPPtr = &(this->firstDelayEventPtr);
-  while (*nextEventPPtr) {
-    if ((*nextEventPPtr)->code == codeevent) {
-      delayedEvent_t* aevent = *nextEventPPtr;
-      *nextEventPPtr = (delayedEvent_t*)(*nextEventPPtr)->nextEventPtr;
+  delayEventItem_t** nextItemPtr = &(this->delayEventList);
+  while (*nextItemPtr) {
+    if ((*nextItemPtr)->code == codeevent) {
+      delayEventItem_t* aevent = *nextItemPtr;
+      *nextItemPtr = (*nextItemPtr)->nextItemPtr;
       delete aevent;
       return true;
     }
-    nextEventPPtr = (delayedEvent_t**)&((*nextEventPPtr)->nextEventPtr);
+    nextItemPtr = &((*nextItemPtr)->nextItemPtr);
   }
   return (false);
-  //  byte N = 0;
-  //  while (N < _waitingDelayEventIndex) {
-  //    if (_waitingDelayEvent[N].code == codeevent ) {
-  //      //     Serial.print("Remove Delay Event ");
-  //      //     Serial.println(codeevent);
-  //
-  //      for (byte N2 = N; N2 < _waitingDelayEventIndex; N2++) {
-  //        _waitingDelayEvent[N2] = _waitingDelayEvent[N2 + 1];
-  //      }
-  //      _waitingDelayEvent[--_waitingDelayEventIndex].code = evNill;
-  //      _waitingDelayEvent[_waitingDelayEventIndex].param = 0;
-  //    } else {
-  //      N++;
-  //    }
-  //  }
+
 }
 
 //====== Sram dispo =========
