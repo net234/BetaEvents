@@ -45,6 +45,8 @@ Les variables globales utilisent 367 octets (17%) de mémoire dynamique, ce qui 
 Le croquis utilise 9544 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
 Les variables globales utilisent 365 octets (17%) de mémoire dynamique, ce qui laisse 1683 octets pour les variables locales. Le maximum est de 2048 octets.
 
+Le croquis utilise 9804 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+Les variables globales utilisent 365 octets (17%) de mémoire dynamique, ce qui laisse 1683 octets pour les variables locales.
     
     Inclusion TimeLib.h
     Gestion des event en liste chainée

@@ -179,8 +179,6 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
   if (eventList) {
     eventItem_t* itemPtr = eventList->nextItemPtr;
     currentEvent = *eventList;
-    //D_println(currentEvent.code);
-    //    Serial.println("Delete");
     delete eventList;
     eventList = itemPtr;
     return (currentEvent.code);
@@ -231,32 +229,12 @@ void  EventManager::handleEvent() {
             //Serial.print("done waitingdelay : ");
             //D_println((*ItemPtr)->code);
             delayEventItem_t* aDelayItemPtr = *ItemPtr;
-            //D_println((int)(*ItemPtr)->nextItemPtr);
             pushEvent(*aDelayItemPtr);
             *ItemPtr = (*ItemPtr)->nextItemPtr;
             delete aDelayItemPtr;
-            //D_println((int)delayEventList);
           }
-          
         }
       }
-
-
-      //        byte N = 0;
-      //        while (N < _waitingDelayEventIndex) {
-      //          //        Serial.print("delay : ");
-      //          //        Serial.println(_waitingDelayEvent[N].delay);
-      //          if (_waitingDelayEvent[N].delay > currentEvent.param) {
-      //            _waitingDelayEvent[N].delay -= currentEvent.param;
-      //            N++;
-      //          } else {
-      //            //                      Serial.print("Exec delay Event ");
-      //            //                     Serial.println(_waitingDelayEvent[N].codeEvent);
-      //            pushEvent(&_waitingDelayEvent[N]);
-      //            removeDelayEvent(_waitingDelayEvent[N].code);
-      //          }
-      //        }
-      //      }
 
       break;
 
@@ -320,24 +298,14 @@ void  EventManager::handleEvent() {
 
 
 bool  EventManager::pushEvent(const stdEvent_t& aevent) {
-  //Serial.print("push event stdEvent");
-  //D_println(aevent.code);
   eventItem_t** itemPtr = &(this->eventList);
   while (*itemPtr) itemPtr = &((*itemPtr)->nextItemPtr);
   *itemPtr = new eventItem_t(aevent);
-  //**nextEventPPtr = *aevent; 
-  //(*nextEventPPtr)->nextEventPtr = nullptr;
   return (true);
-
 }
 
 bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
   eventItem_t aEvent(codeP,paramP);
-  //Serial.print("push event code param");
-  //D_println(aEvent.code);
-  //aEvent.code = code;
-  //aEvent.param = param;
-  //aEvent.nextEventPtr = nullptr;
   return ( pushEvent(aEvent) );
 }
 
@@ -345,22 +313,14 @@ bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
 bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param) {
   removeDelayEvent(code);
   if (delayMillisec == 0) {
-    //Serial.println("push event delay 0");
     return ( pushEvent(code,param) );
   }
-  //Serial.print("push event ");
-  //D_println(code);
   uint32_t delay = delayMillisec/10;
   if (delay == 0 )  delay = 1;
-  //D_println(delay);
 
   delayEventItem_t** ItemPtr = &(this->delayEventList);
   while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextItemPtr);
   *ItemPtr = new delayEventItem_t(delay,code,param);
-  //Serial.print("pushed event ");
-  //D_println((*ItemPtr)->code);
-  //**nextEventPPtr = aEvent;
-  //(*ItemPtr)->nextItemPtr = nullptr;
   return (true);
 }
 
@@ -376,7 +336,6 @@ bool   EventManager::removeDelayEvent(const byte codeevent) {
     nextItemPtr = &((*nextItemPtr)->nextItemPtr);
   }
   return (false);
-
 }
 
 //====== Sram dispo =========
