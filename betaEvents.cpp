@@ -103,10 +103,11 @@ byte  hour()  {
 }
 #endif
 
-static unsigned long milliSeconds = 0;
-static unsigned int delta1Hz = 0;
-static unsigned int delta10Hz = 0;
-static unsigned int delta100Hz = 0;
+static uint32_t milliSeconds = 0;
+static uint16_t delta1Hz = 0;
+static uint16_t delta10Hz = 0;
+static uint16_t delta100Hz = 0;
+static uint16_t delta1000Hz = 0;
 
 //int EventManager::syncroSeconde(const int millisec) {
 //  int result =  millisec - delta1Hz;
@@ -121,53 +122,88 @@ static unsigned int delta100Hz = 0;
 
 byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
   bool eventWasNill = ( currentEvent.code == evNill);
-
   _loopCounter++;
-
-  unsigned long delta = millis() - milliSeconds;
-
+  // cumul du temps passé
+  uint32_t delta = millis() - milliSeconds;
   if (delta) {
     milliSeconds += delta;
-    delta1Hz += delta;
-    delta10Hz += delta;
+    delta1000Hz += delta;
     delta100Hz += delta;
+    delta10Hz += delta;
+    delta1Hz += delta;
+  }
+  // recuperation des events passés
+  if (nextEvent()) return (currentEvent.code);
 
-    // les ev100Hz ne sont pas tous restitués
-    // il sont utilisé pour les DelayedEvent
-    if (delta100Hz >= 10)
-    {
-      currentEvent.param = (delta100Hz / 10);  // nombre d'ev100Hz d'un coup
-      delta100Hz -= (currentEvent.param) * 10;
-      return (currentEvent.code = ev100Hz);
+  // si SleepOk et que l'evenement precedent etait un nillEvent on frezze le CPU
+  if (sleepOk  && eventWasNill) {
+
+#ifdef  __AVR__
+    sleep_mode();
+#else
+    // pour l'ESP8266 pas sleep simple
+    // !! TODO :  faire un meilleur sleep ESP32 & ESP8266
+    //while (milliSeconds == millis()) yield();
+    delay(1);  // to allow wifi sleep in modem mode
+#endif
+    delta = millis() - milliSeconds;
+    if (delta) {
+      _idleMillisec += delta;
+      milliSeconds += delta;
+      delta1000Hz += delta;
+      delta100Hz += delta;
+      delta10Hz += delta;
+      delta1Hz += delta;
     }
+    // recuperation des events passés
+    if (nextEvent()) return (currentEvent.code);
+  }
+  _evNillCounter++;
+  return (currentEvent.code = evNill);
+}
 
 
-    // les ev10Hz ne sont pas tous restitués
-    if (delta10Hz >= 100)
-    {
-      currentEvent.param = (delta10Hz / 100);  // nombre d'ev10Hz d'un coup
-      delta10Hz -= (currentEvent.param) * 100;
-      return (currentEvent.code = ev10Hz);
-    }
-    // par contre les ev1Hz sont tous restirués meme avec du retard
-    if (delta1Hz >= 1000)
-    {
-      //    __cnt1Hz--;
-      delta1Hz -= 1000;
-      return (currentEvent.code = ev1Hz);
-    }
+///////////////////////////////////////////////////////////
+// get next done event
+byte EventManager::nextEvent() {
+
+  // les ev1000Hz ne sont pas tous restitués
+  // il sont utilisé pour les FastDelayedEvent
+  if (delta1000Hz)  {
+    currentEvent.param = delta100Hz;  // nombre d'ev1000Hz d'un coup
+    delta1000Hz = 0;
+    return (currentEvent.code = ev1000Hz);
   }
 
+  if (delta100Hz >= 10)  {
+    currentEvent.param = (delta100Hz / 10);  // nombre d'ev100Hz d'un coup
+    delta100Hz -= (currentEvent.param) * 10;
+    return (currentEvent.code = ev100Hz);
+  }
+
+  // les ev10Hz ne sont pas tous restitués
+  if (delta10Hz >= 100)  {
+    currentEvent.param = (delta10Hz / 100);  // nombre d'ev10Hz d'un coup
+    delta10Hz -= (currentEvent.param) * 100;
+    return (currentEvent.code = ev10Hz);
+  }
+
+  // par contre les ev1Hz sont tous restirués meme avec du retard
+  if (delta1Hz >= 1000)  {
+    //    __cnt1Hz--;
+    delta1Hz -= 1000;
+    return (currentEvent.code = ev1Hz);
+  }
+
+
 #ifdef  USE_SERIALEVENT
-  if (_stringComplete)
-  {
+  if (_stringComplete)   {
     _stringComplete = false;
     _stringErase = true;      // la chaine ser  a effacee au prochain caractere recu
     return (currentEvent.code = evInString);
   }
 
-  if (Serial.available())
-  {
+  if (Serial.available())   {
     inChar = (char)Serial.read();
     return (currentEvent.code = evInChar);
   }
@@ -184,27 +220,8 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
     return (currentEvent.code);
   }
 
-
-  // si SleepOk et que l'evenement precedent etait un nillEvent on frezze le CPU
-  if (millis() == milliSeconds && sleepOk  && eventWasNill) {
-
-#ifdef  __AVR__
-    sleep_mode();
-#else
-    // pour l'ESP8266 pas sleep simple
-    // !! TODO :  faire un meilleur sleep ESP32 & ESP8266
-    //while (milliSeconds == millis()) yield();
-    delay(1);  // to allow wifi sleep in modem mode
-
-#endif
-    _idleMillisec += ( millis() - milliSeconds);
-  }
-
-  _evNillCounter++;
-
   return (currentEvent.code = evNill);
 }
-
 
 
 
@@ -305,7 +322,7 @@ bool  EventManager::pushEvent(const stdEvent_t& aevent) {
 }
 
 bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
-  eventItem_t aEvent(codeP,paramP);
+  eventItem_t aEvent(codeP, paramP);
   return ( pushEvent(aEvent) );
 }
 
@@ -313,14 +330,14 @@ bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
 bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param) {
   removeDelayEvent(code);
   if (delayMillisec == 0) {
-    return ( pushEvent(code,param) );
+    return ( pushEvent(code, param) );
   }
-  uint32_t delay = delayMillisec/10;
+  uint32_t delay = delayMillisec / 10;
   if (delay == 0 )  delay = 1;
 
   delayEventItem_t** ItemPtr = &(this->delayEventList);
   while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextItemPtr);
-  *ItemPtr = new delayEventItem_t(delay,code,param);
+  *ItemPtr = new delayEventItem_t(delay, code, param);
   return (true);
 }
 

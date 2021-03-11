@@ -47,7 +47,11 @@ Les variables globales utilisent 365 octets (17%) de mémoire dynamique, ce qui 
 
 Le croquis utilise 9804 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
 Les variables globales utilisent 365 octets (17%) de mémoire dynamique, ce qui laisse 1683 octets pour les variables locales.
-    
+
+Le croquis utilise 9982 octets (32%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+Les variables globales utilisent 367 octets (17%) de mémoire dynamique, ce qui laisse 1681 octets pour les variables locales. Le maximum est de 2048 octets.
+
+
     Inclusion TimeLib.h
     Gestion des event en liste chainée
 
@@ -60,11 +64,6 @@ Les variables globales utilisent 365 octets (17%) de mémoire dynamique, ce qui 
 //#include <TimeLib.h>          // uncomment this if you prefer to use arduino TimeLib.h  (it will use little more ram and flash)
 
 #define   USE_SERIALEVENT       // comment this if you need standard Serial.read
-
-//#define   MAX_WAITING_DELAYEVENT  10   // size of delayed event buffer
-
-
-
 
 #ifndef  LED_BUILTIN
 #if defined(ESP32)
@@ -83,6 +82,7 @@ extern EventManager* EventManagerPtr;
 
 enum tEventCode {
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
+  ev1000Hz,         // tick 1000HZ    non cumulative (see betaEvent.h)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
@@ -173,6 +173,8 @@ class EventManager
 #ifndef _Time_h
     uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
 #endif
+  private:
+   byte   nextEvent();
   protected:
 
     unsigned long      _loopCounter = 0;
