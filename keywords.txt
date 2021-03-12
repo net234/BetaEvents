@@ -39,6 +39,7 @@ inputString	KEYWORD2
 #######################################
 
 evNill	LITERAL1
+ev1000Hz	LITERAL1
 ev100Hz	LITERAL1
 ev10Hz	LITERAL1
 ev1Hz	LITERAL1

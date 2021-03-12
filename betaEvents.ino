@@ -105,6 +105,11 @@ void setup() {
 bool BP0Down = false;
 byte BP0Multi = 0;
 
+//int ev1000HzCnt = 0;
+//int ev100HzCnt = 0;
+//int ev10HzCnt = 0;
+
+
 void loop() {
   // test
   MyEvent.getEvent(sleepOk);
@@ -112,7 +117,26 @@ void loop() {
   switch (MyEvent.currentEvent.code)
   {
 
+//    case ev1000Hz:
+//      ev1000HzCnt++;
+//      break;
+//
+//    case ev100Hz:
+//      ev100HzCnt++;
+//      break;
+//
+//
+//    case ev1Hz:
+//      D_println(ev1000HzCnt);
+//      D_println(ev100HzCnt);
+//      D_println(ev10HzCnt);
+//      ev1000HzCnt = 0;
+//      ev100HzCnt = 0;
+//      ev10HzCnt = 0;
+//      break;
+
     case ev10Hz: {
+//        ev10HzCnt++;
         if ( BP0Down != (digitalRead(BP0) == LOW)) { // changement d'etat BP0
           BP0Down = !BP0Down;
           if (BP0Down) {
@@ -138,13 +162,13 @@ void loop() {
       break;
 
 
-//    case evLEDOn:
-//      Serial.print(F("L"));
-//      break;
-//
-//    case evLEDOff:
-//      Serial.print(F("l"));
-//      break;
+    //    case evLEDOn:
+    //      Serial.print(F("L"));
+    //      break;
+    //
+    //    case evLEDOff:
+    //      Serial.print(F("l"));
+    //      break;
 
     case evBP0Down:
       Serial.println(F("BP0 Down"));

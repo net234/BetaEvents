@@ -170,7 +170,7 @@ byte EventManager::nextEvent() {
   // les ev1000Hz ne sont pas tous restitués
   // il sont utilisé pour les FastDelayedEvent
   if (delta1000Hz)  {
-    currentEvent.param = delta100Hz;  // nombre d'ev1000Hz d'un coup
+    currentEvent.param = delta1000Hz;  // nombre d'ev1000Hz d'un coup
     delta1000Hz = 0;
     return (currentEvent.code = ev1000Hz);
   }
@@ -224,33 +224,36 @@ byte EventManager::nextEvent() {
 }
 
 
-
-
+void  EventManager::parseDelayList(delayEventItem_t** ItemPtr) {
+  while (*ItemPtr) {
+    if ((*ItemPtr)->delay > currentEvent.param ) {
+      (*ItemPtr)->delay -= currentEvent.param;
+      ItemPtr = &((*ItemPtr)->nextItemPtr);
+    } else {
+      //Serial.print("done waitingdelay : ");
+      //D_println((*ItemPtr)->code);
+      delayEventItem_t* aDelayItemPtr = *ItemPtr;
+      pushEvent(*aDelayItemPtr);
+      delete aDelayItemPtr;
+      *ItemPtr = (*ItemPtr)->nextItemPtr;
+    }
+  }
+}
 
 void  EventManager::handleEvent() {
   switch (currentEvent.code)
   {
-    // gestion des evenement avec delay
+    // gestion des evenement avec delay au 1000' de seconde
     // todo  gerer des event repetitifs
+    case ev1000Hz: parseDelayList(&(this->eventMillisList));
+      break;
+
     case ev100Hz: {
         //      Serial.print("waitingdelay : ");
         //          Serial.println(_waitingDelayEventIndex);
         // on scan les _waitintDelayEvent pour les passer en _waitintEvent
-        //D_println((int)delayEventList);
-        delayEventItem_t** ItemPtr = &(this->delayEventList);
-        while (*ItemPtr) {
-          if ((*ItemPtr)->delay > currentEvent.param ) {
-            (*ItemPtr)->delay -= currentEvent.param;
-            ItemPtr = &((*ItemPtr)->nextItemPtr);
-          } else {
-            //Serial.print("done waitingdelay : ");
-            //D_println((*ItemPtr)->code);
-            delayEventItem_t* aDelayItemPtr = *ItemPtr;
-            pushEvent(*aDelayItemPtr);
-            *ItemPtr = (*ItemPtr)->nextItemPtr;
-            delete aDelayItemPtr;
-          }
-        }
+        //D_println((int)eventCentsList);
+        parseDelayList( &(this->eventCentsList));
       }
 
       break;
@@ -262,9 +265,11 @@ void  EventManager::handleEvent() {
       break;
 
     case evLEDOn:
-      digitalWrite(_LEDPinNumber, LED_PULSE_ON); digitalWrite(_LEDPinNumber, LED_PULSE_ON);  // led on
-      if (_LEDPercent > 0 && _LEDPercent < 100) pushDelayEvent(_LEDMillisecondes, evLEDOn);
-      if (_LEDPercent < 100) pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
+      digitalWrite(_LEDPinNumber, _LEDPercent > 0 ? LED_PULSE_ON : !LED_PULSE_ON );
+      if (_LEDPercent > 0 && _LEDPercent < 100) {
+        pushDelayEvent(_LEDMillisecondes, evLEDOn);
+        pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
+      }
       break;
 
 
@@ -326,23 +331,27 @@ bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
   return ( pushEvent(aEvent) );
 }
 
+void EventManager::addDelayEvent(delayEventItem_t** ItemPtr,delayEventItem_t* aItem) {
+      while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextItemPtr);
+    *ItemPtr = aItem;
+}
 
 bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param) {
   removeDelayEvent(code);
   if (delayMillisec == 0) {
     return ( pushEvent(code, param) );
   }
-  uint32_t delay = delayMillisec / 10;
-  if (delay == 0 )  delay = 1;
+  if (delayMillisec < 1000) {
+    addDelayEvent( &(this->eventMillisList),new delayEventItem_t(delayMillisec, code, param) );
+    return (true);
+  }
 
-  delayEventItem_t** ItemPtr = &(this->delayEventList);
-  while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextItemPtr);
-  *ItemPtr = new delayEventItem_t(delay, code, param);
+  addDelayEvent( &(this->eventCentsList),new delayEventItem_t(delayMillisec/10, code, param) );
   return (true);
 }
 
-bool   EventManager::removeDelayEvent(const byte codeevent) {
-  delayEventItem_t** nextItemPtr = &(this->delayEventList);
+
+bool   EventManager::removeDelayEventFromList(const byte codeevent, delayEventItem_t** nextItemPtr) {
   while (*nextItemPtr) {
     if ((*nextItemPtr)->code == codeevent) {
       delayEventItem_t* aevent = *nextItemPtr;
@@ -352,7 +361,12 @@ bool   EventManager::removeDelayEvent(const byte codeevent) {
     }
     nextItemPtr = &((*nextItemPtr)->nextItemPtr);
   }
-  return (false);
+  return(false);  
+}
+
+bool   EventManager::removeDelayEvent(const byte codeevent) {
+  return ( removeDelayEventFromList(codeevent, &(this->eventMillisList)) ||
+           removeDelayEventFromList(codeevent, &(this->eventCentsList)) ); 
 }
 
 //====== Sram dispo =========

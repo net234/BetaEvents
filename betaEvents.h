@@ -31,25 +31,28 @@
     - ajout setLedOn(true/false)
     V1.3.1 23/01/2021
 	- correction setLedOn pour un resultat immediat
- Le croquis utilise 9476 octets (30%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
-Les variables globales utilisent 493 octets (24%) de mémoire dynamique, ce qui laisse 1555 octets pour les variables locales. Le maximum est de 2048 octets.
+  Le croquis utilise 9476 octets (30%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+  Les variables globales utilisent 493 octets (24%) de mémoire dynamique, ce qui laisse 1555 octets pour les variables locales. Le maximum est de 2048 octets.
 
     V1.4   6/3/2021
-Le croquis utilise 9632 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
-Les variables globales utilisent 484 octets (23%) de mémoire dynamique, ce qui laisse 1564 octets pour les variables locales. Le maximum est de 2048 octets.
-Le croquis utilise 9582 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
-Les variables globales utilisent 381 octets (18%) de mémoire dynamique, ce qui laisse 1667 octets pour les variables locales. Le maximum est de 2048 octets.
-Le croquis utilise 9434 octets (30%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
-Les variables globales utilisent 367 octets (17%) de mémoire dynamique, ce qui laisse 1681 octets pour les variables locales. Le maximum est de 2048 octets.
+  Le croquis utilise 9632 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+  Les variables globales utilisent 484 octets (23%) de mémoire dynamique, ce qui laisse 1564 octets pour les variables locales. Le maximum est de 2048 octets.
+  Le croquis utilise 9582 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+  Les variables globales utilisent 381 octets (18%) de mémoire dynamique, ce qui laisse 1667 octets pour les variables locales. Le maximum est de 2048 octets.
+  Le croquis utilise 9434 octets (30%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+  Les variables globales utilisent 367 octets (17%) de mémoire dynamique, ce qui laisse 1681 octets pour les variables locales. Le maximum est de 2048 octets.
 
-Le croquis utilise 9544 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
-Les variables globales utilisent 365 octets (17%) de mémoire dynamique, ce qui laisse 1683 octets pour les variables locales. Le maximum est de 2048 octets.
+  Le croquis utilise 9544 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+  Les variables globales utilisent 365 octets (17%) de mémoire dynamique, ce qui laisse 1683 octets pour les variables locales. Le maximum est de 2048 octets.
 
-Le croquis utilise 9804 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
-Les variables globales utilisent 365 octets (17%) de mémoire dynamique, ce qui laisse 1683 octets pour les variables locales.
+  Le croquis utilise 9804 octets (31%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+  Les variables globales utilisent 365 octets (17%) de mémoire dynamique, ce qui laisse 1683 octets pour les variables locales.
 
-Le croquis utilise 9982 octets (32%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
-Les variables globales utilisent 367 octets (17%) de mémoire dynamique, ce qui laisse 1681 octets pour les variables locales. Le maximum est de 2048 octets.
+  Le croquis utilise 9982 octets (32%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+  Les variables globales utilisent 367 octets (17%) de mémoire dynamique, ce qui laisse 1681 octets pour les variables locales. Le maximum est de 2048 octets.
+
+e croquis utilise 10376 octets (33%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+Les variables globales utilisent 377 octets (18%) de mémoire dynamique, ce qui laisse 1671 octets pour les variables locales. Le maximum est de 2048 octets.
 
 
     Inclusion TimeLib.h
@@ -87,38 +90,36 @@ enum tEventCode {
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
   ev24H,           // 24H when timestamp pass over 24H
-  evLEDOn,         // 
+  evLEDOn,         //
   evLEDOff,
   evInChar,
   evInString,
-evWEB = 20,
-evUser = 100,
+  evWEB = 20,
+  evUser = 100,
 };
 
 
 // Base structure for event
 struct stdEvent_t  {
-//  stdEvent_t* clone() const { Serial.print("S"); return new stdEvent_t(*this); }
+  //  stdEvent_t* clone() const { Serial.print("S"); return new stdEvent_t(*this); }
   //stdEvent_t() : code(evNill) , param(0) {}
-  stdEvent_t(const uint8_t code= evNill,const int16_t param=0) : code(code), param(param) {}
-  stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), param(stdevent.param) {} 
+  stdEvent_t(const uint8_t code = evNill, const int16_t param = 0) : code(code), param(param) {}
+  stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), param(stdevent.param) {}
   uint8_t code;       // code of the event
   int16_t param;      // parameter for the event
 };
 
 struct eventItem_t : stdEvent_t {
-  eventItem_t(const uint8_t code= evNill,const int16_t param=0) : stdEvent_t(code,param),nextItemPtr(nullptr) {}
-  eventItem_t(const stdEvent_t& stdEvent) : stdEvent_t(stdEvent),nextItemPtr(nullptr) {}
-//  eventItem_t(const uint8_t codeP,const int16_t paramP) : stdEvent_t(codeP,paramP),nextItemPtr(nullptr) {}
+  eventItem_t(const uint8_t code = evNill, const int16_t param = 0) : stdEvent_t(code, param), nextItemPtr(nullptr) {}
+  eventItem_t(const stdEvent_t& stdEvent) : stdEvent_t(stdEvent), nextItemPtr(nullptr) {}
+  //  eventItem_t(const uint8_t codeP,const int16_t paramP) : stdEvent_t(codeP,paramP),nextItemPtr(nullptr) {}
   eventItem_t* nextItemPtr;
 };
 
 
 
 struct delayEventItem_t : stdEvent_t {
-//  delayedEvent_t* clone() const { Serial.print("D"); return new delayedEvent_t(*this);  }
-//  delayEventItem_t() : stdEvent_t(),nextItemPtr(nullptr) {}
-  delayEventItem_t(const uint32_t delay, const uint8_t code,const int16_t param = 0) : stdEvent_t(code,param),delay(delay),nextItemPtr(nullptr) {}
+  delayEventItem_t(const uint32_t delay, const uint8_t code, const int16_t param = 0) : stdEvent_t(code, param), delay(delay), nextItemPtr(nullptr) {}
   delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(delay), nextItemPtr(nullptr) {}
   delayEventItem_t*  nextItemPtr;
   int32_t delay;         // delay in millisecondes;
@@ -135,7 +136,7 @@ class EventManager
       }
       EventManagerPtr = this;
       currentEvent.code = evNill;
-//      _waitingEventIndex = 0;
+      //      _waitingEventIndex = 0;
 
       _LEDPinNumber = ledpinnumber;
       _LEDMillisecondes = 1000;
@@ -153,7 +154,7 @@ class EventManager
     bool   pushEvent(const stdEvent_t& eventPtr);
     bool   pushEvent(const uint8_t code, const int16_t param = 0);
     bool   pushDelayEvent(const uint32_t delayMillisec, const byte code, const int param = 0);
-//    bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent_t &eventPtr );
+    //    bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent_t &eventPtr );
     void   setLedOn(const bool status = true);
     void   setFrequenceLED(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
     void   setMillisecLED(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
@@ -174,7 +175,10 @@ class EventManager
     uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
 #endif
   private:
-   byte   nextEvent();
+    byte   nextEvent();
+    void   parseDelayList(delayEventItem_t** ItemPtr);
+    void   addDelayEvent(delayEventItem_t** ItemPtr,delayEventItem_t* aItem);
+    bool   removeDelayEventFromList(const byte codeevent, delayEventItem_t** nextItemPtr);
   protected:
 
     unsigned long      _loopCounter = 0;
@@ -186,14 +190,9 @@ class EventManager
     uint16_t _LEDMillisecondes;  // durée du cycle de clignotement en Millisecondes (max 64 secondes)
     uint16_t _idleMillisec = 0;  // CPU millisecondes en pause
     byte       _percentCPU = 0;
-    // liste des evenements en attente
-//    byte       _waitingEventIndex = 0;
-//    stdEvent  _waitingEvent[MAX_WAITING_EVENT];
     eventItem_t* eventList = nullptr;
-    // liste des evenements sous delay en attente
-//    byte       _waitingDelayEventIndex = 0;
-//    delayedEvent_t _waitingDelayEvent[MAX_WAITING_DELAYEVENT];
-    delayEventItem_t* delayEventList = nullptr;
+    delayEventItem_t* eventMillisList = nullptr;
+    delayEventItem_t* eventCentsList = nullptr;
 
 #ifdef  USE_SERIALEVENT
     byte _inputStringSizeMax = 1;
