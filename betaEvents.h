@@ -85,7 +85,7 @@ extern EventManager* EventManagerPtr;
 
 enum tEventCode {
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
-  ev1000Hz,         // tick 1000HZ    non cumulative (see betaEvent.h)
+//  ev1000Hz,         // tick 1000HZ    non cumulative (see betaEvent.h)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
@@ -106,6 +106,7 @@ struct stdEvent_t  {
   stdEvent_t(const uint8_t code = evNill, const int16_t param = 0) : code(code), param(param) {}
   stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), param(stdevent.param) {}
   uint8_t code;       // code of the event
+  uint8_t ext;        // extCode of the event
   int16_t param;      // parameter for the event
 };
 
@@ -119,10 +120,11 @@ struct eventItem_t : stdEvent_t {
 
 
 struct delayEventItem_t : stdEvent_t {
+  uint32_t delay;         // delay millis cents or thenth;
   delayEventItem_t(const uint32_t delay, const uint8_t code, const int16_t param = 0) : stdEvent_t(code, param), delay(delay), nextItemPtr(nullptr) {}
   delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(delay), nextItemPtr(nullptr) {}
   delayEventItem_t*  nextItemPtr;
-  int32_t delay;         // delay in millisecondes;
+  
 };
 
 class EventManager
@@ -153,7 +155,7 @@ class EventManager
     bool   removeDelayEvent(const byte codeevent);
     bool   pushEvent(const stdEvent_t& eventPtr);
     bool   pushEvent(const uint8_t code, const int16_t param = 0);
-    bool   pushDelayEvent(const uint32_t delayMillisec, const byte code, const int param = 0);
+    bool   pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0);
     //    bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent_t &eventPtr );
     void   setLedOn(const bool status = true);
     void   setFrequenceLED(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
@@ -176,7 +178,7 @@ class EventManager
 #endif
   private:
     byte   nextEvent();
-    void   parseDelayList(delayEventItem_t** ItemPtr);
+    void   parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay);
     void   addDelayEvent(delayEventItem_t** ItemPtr,delayEventItem_t* aItem);
     bool   removeDelayEventFromList(const byte codeevent, delayEventItem_t** nextItemPtr);
   protected:
@@ -193,6 +195,7 @@ class EventManager
     eventItem_t* eventList = nullptr;
     delayEventItem_t* eventMillisList = nullptr;
     delayEventItem_t* eventCentsList = nullptr;
+    delayEventItem_t* eventTenthList = nullptr;
 
 #ifdef  USE_SERIALEVENT
     byte _inputStringSizeMax = 1;

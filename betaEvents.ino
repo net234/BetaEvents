@@ -74,9 +74,9 @@ enum tUserEventCode {
 };
 
 #if  defined(__AVR__)
-#define BP0 8
+#define BP0 8  // D8
 #elif defined(ESP8266) || defined(ESP32)
-#define BP0 0
+#define BP0 5 // D1
 #endif
 
 bool sleepOk = true;

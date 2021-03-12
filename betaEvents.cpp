@@ -107,7 +107,7 @@ static uint32_t milliSeconds = 0;
 static uint16_t delta1Hz = 0;
 static uint16_t delta10Hz = 0;
 static uint16_t delta100Hz = 0;
-static uint16_t delta1000Hz = 0;
+//static uint16_t delta1000Hz = 0;
 
 //int EventManager::syncroSeconde(const int millisec) {
 //  int result =  millisec - delta1Hz;
@@ -127,7 +127,7 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
   uint32_t delta = millis() - milliSeconds;
   if (delta) {
     milliSeconds += delta;
-    delta1000Hz += delta;
+    parseDelayList(&(this->eventMillisList), delta);
     delta100Hz += delta;
     delta10Hz += delta;
     delta1Hz += delta;
@@ -150,7 +150,7 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
     if (delta) {
       _idleMillisec += delta;
       milliSeconds += delta;
-      delta1000Hz += delta;
+      parseDelayList(&(this->eventMillisList), delta);
       delta100Hz += delta;
       delta10Hz += delta;
       delta1Hz += delta;
@@ -167,13 +167,8 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
 // get next done event
 byte EventManager::nextEvent() {
 
-  // les ev1000Hz ne sont pas tous restitués
-  // il sont utilisé pour les FastDelayedEvent
-  if (delta1000Hz)  {
-    currentEvent.param = delta1000Hz;  // nombre d'ev1000Hz d'un coup
-    delta1000Hz = 0;
-    return (currentEvent.code = ev1000Hz);
-  }
+  // les ev100Hz ne sont pas tous restitués
+  // il sont utilisé pour les DelayCentEvent
 
   if (delta100Hz >= 10)  {
     currentEvent.param = (delta100Hz / 10);  // nombre d'ev100Hz d'un coup
@@ -224,10 +219,10 @@ byte EventManager::nextEvent() {
 }
 
 
-void  EventManager::parseDelayList(delayEventItem_t** ItemPtr) {
+void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay) {
   while (*ItemPtr) {
-    if ((*ItemPtr)->delay > currentEvent.param ) {
-      (*ItemPtr)->delay -= currentEvent.param;
+    if ((*ItemPtr)->delay > delay ) {
+      (*ItemPtr)->delay -= delay;
       ItemPtr = &((*ItemPtr)->nextItemPtr);
     } else {
       //Serial.print("done waitingdelay : ");
@@ -243,34 +238,22 @@ void  EventManager::parseDelayList(delayEventItem_t** ItemPtr) {
 void  EventManager::handleEvent() {
   switch (currentEvent.code)
   {
-    // gestion des evenement avec delay au 1000' de seconde
+    // gestion des evenement avec delay au 100' de seconde
     // todo  gerer des event repetitifs
-    case ev1000Hz: parseDelayList(&(this->eventMillisList));
-      break;
 
     case ev100Hz: {
-        //      Serial.print("waitingdelay : ");
-        //          Serial.println(_waitingDelayEventIndex);
-        // on scan les _waitintDelayEvent pour les passer en _waitintEvent
-        //D_println((int)eventCentsList);
-        parseDelayList( &(this->eventCentsList));
+        parseDelayList( &(this->eventCentsList), currentEvent.param);
+      }
+
+      break;
+
+    case ev10Hz: {
+        parseDelayList( &(this->eventTenthList), currentEvent.param);
       }
 
       break;
 
 
-
-    case evLEDOff:
-      digitalWrite(_LEDPinNumber, !LED_PULSE_ON);   // led off
-      break;
-
-    case evLEDOn:
-      digitalWrite(_LEDPinNumber, _LEDPercent > 0 ? LED_PULSE_ON : !LED_PULSE_ON );
-      if (_LEDPercent > 0 && _LEDPercent < 100) {
-        pushDelayEvent(_LEDMillisecondes, evLEDOn);
-        pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
-      }
-      break;
 
 
     case ev1Hz: {
@@ -300,6 +283,18 @@ void  EventManager::handleEvent() {
 
       }
       break;
+    case evLEDOff:
+      digitalWrite(_LEDPinNumber, !LED_PULSE_ON);   // led off
+      break;
+
+    case evLEDOn:
+      digitalWrite(_LEDPinNumber, _LEDPercent > 0 ? LED_PULSE_ON : !LED_PULSE_ON );
+      if (_LEDPercent > 0 && _LEDPercent < 100) {
+        pushDelayEvent(_LEDMillisecondes, evLEDOn);
+        pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
+      }
+      break;
+
 #ifdef  USE_SERIALEVENT
     case  evInChar:
       if (_stringErase) {
@@ -331,9 +326,9 @@ bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
   return ( pushEvent(aEvent) );
 }
 
-void EventManager::addDelayEvent(delayEventItem_t** ItemPtr,delayEventItem_t* aItem) {
-      while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextItemPtr);
-    *ItemPtr = aItem;
+void EventManager::addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* aItem) {
+  while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextItemPtr);
+  *ItemPtr = aItem;
 }
 
 bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param) {
@@ -341,12 +336,16 @@ bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t 
   if (delayMillisec == 0) {
     return ( pushEvent(code, param) );
   }
-  if (delayMillisec < 1000) {
-    addDelayEvent( &(this->eventMillisList),new delayEventItem_t(delayMillisec, code, param) );
+  if (delayMillisec < 2000) { // moins de 2 secondes
+    addDelayEvent( &(this->eventMillisList), new delayEventItem_t(delayMillisec, code, param) );
+    return (true);
+  }
+  if (delayMillisec < 60000) { // moins d'une minute
+    addDelayEvent( &(this->eventCentsList), new delayEventItem_t(delayMillisec / 10, code, param) );
     return (true);
   }
 
-  addDelayEvent( &(this->eventCentsList),new delayEventItem_t(delayMillisec/10, code, param) );
+  addDelayEvent( &(this->eventTenthList), new delayEventItem_t(delayMillisec / 100, code, param) );
   return (true);
 }
 
@@ -361,12 +360,13 @@ bool   EventManager::removeDelayEventFromList(const byte codeevent, delayEventIt
     }
     nextItemPtr = &((*nextItemPtr)->nextItemPtr);
   }
-  return(false);  
+  return (false);
 }
 
 bool   EventManager::removeDelayEvent(const byte codeevent) {
   return ( removeDelayEventFromList(codeevent, &(this->eventMillisList)) ||
-           removeDelayEventFromList(codeevent, &(this->eventCentsList)) ); 
+           removeDelayEventFromList(codeevent, &(this->eventCentsList)) ||
+           removeDelayEventFromList(codeevent, &(this->eventTenthList)) );
 }
 
 //====== Sram dispo =========
