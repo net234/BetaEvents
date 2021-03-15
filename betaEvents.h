@@ -51,8 +51,8 @@
   Le croquis utilise 9982 octets (32%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
   Les variables globales utilisent 367 octets (17%) de mémoire dynamique, ce qui laisse 1681 octets pour les variables locales. Le maximum est de 2048 octets.
 
-e croquis utilise 10376 octets (33%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
-Les variables globales utilisent 377 octets (18%) de mémoire dynamique, ce qui laisse 1671 octets pour les variables locales. Le maximum est de 2048 octets.
+  e croquis utilise 10376 octets (33%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+  Les variables globales utilisent 377 octets (18%) de mémoire dynamique, ce qui laisse 1671 octets pour les variables locales. Le maximum est de 2048 octets.
 
 
     Inclusion TimeLib.h
@@ -64,7 +64,9 @@ Les variables globales utilisent 377 octets (18%) de mémoire dynamique, ce qui 
 #include "Arduino.h"
 
 // betaEvent handle a minimal time system to get for seconds() minutes() or hours()
-//#include <TimeLib.h>          // uncomment this if you prefer to use arduino TimeLib.h  (it will use little more ram and flash)
+#ifndef  __AVR__
+#include <TimeLib.h>          // uncomment this if you prefer to use arduino TimeLib.h  (it will use little more ram and flash)
+#endif
 
 #define   USE_SERIALEVENT       // comment this if you need standard Serial.read
 
@@ -85,7 +87,7 @@ extern EventManager* EventManagerPtr;
 
 enum tEventCode {
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
-//  ev1000Hz,         // tick 1000HZ    non cumulative (see betaEvent.h)
+  //  ev1000Hz,         // tick 1000HZ    non cumulative (see betaEvent.h)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
@@ -120,11 +122,11 @@ struct eventItem_t : stdEvent_t {
 
 
 struct delayEventItem_t : stdEvent_t {
-  uint32_t delay;         // delay millis cents or thenth;
+  uint16_t delay;         // delay millis cents or thenth;
   delayEventItem_t(const uint32_t delay, const uint8_t code, const int16_t param = 0) : stdEvent_t(code, param), delay(delay), nextItemPtr(nullptr) {}
   delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(delay), nextItemPtr(nullptr) {}
   delayEventItem_t*  nextItemPtr;
-  
+
 };
 
 class EventManager
@@ -162,9 +164,11 @@ class EventManager
     void   setMillisecLED(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
     //    int    syncroSeconde(const int millisec = 0);
 #ifndef _Time_h
+//#ifdef  __AVR__
     friend byte   second() ;
     friend byte   minute() ;
     friend byte   hour()   ;
+//#endif
 #endif
     stdEvent_t currentEvent;
 
@@ -179,7 +183,7 @@ class EventManager
   private:
     byte   nextEvent();
     void   parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay);
-    void   addDelayEvent(delayEventItem_t** ItemPtr,delayEventItem_t* aItem);
+    void   addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* aItem);
     bool   removeDelayEventFromList(const byte codeevent, delayEventItem_t** nextItemPtr);
   protected:
 

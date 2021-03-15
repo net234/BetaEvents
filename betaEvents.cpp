@@ -92,6 +92,7 @@ void  EventManager::setFrequenceLED(const uint8_t frequence, const uint8_t perce
 }
 
 #ifndef _Time_h
+//#ifdef  __AVR__
 byte  second()  {
   return ( EventManagerPtr->timestamp % 60);
 }
@@ -101,6 +102,7 @@ byte  minute()  {
 byte  hour()  {
   return ( (EventManagerPtr->timestamp / 3600) % 24);
 }
+//#endif
 #endif
 
 static uint32_t milliSeconds = 0;
