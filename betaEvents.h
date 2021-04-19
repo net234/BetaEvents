@@ -30,19 +30,23 @@
     - correction pour mieux gerer les pulses dans le cas 0 ou 100 percent
     - ajout setLedOn(true/false)
     V1.3.1 23/01/2021
-	- correction setLedOn pour un resultat immediat
+  	- correction setLedOn pour un resultat immediat
+    V1.4   6/3/2021
+    - Inclusion TimeLib.h
+    - Gestion des event en liste chainée
+
 
  *************************************************/
 
 #pragma once
 #include "Arduino.h"
 
-#define   USE_SERIALEVENT       // remove this if you need standard Serial.read 
+// betaEvent handle a minimal time system to get for seconds() minutes() or hours()
+#ifndef  __AVR__
+#include <TimeLib.h>          // uncomment this if you prefer to use arduino TimeLib.h  (it will use little more ram and flash)
+#endif
 
-#define   MAX_WAITING_EVENT       20    // size of event buffer
-
-#define   MAX_WAITING_DELAYEVENT  10   // size of delayed event buffer
-
+#define   USE_SERIALEVENT       // comment this if you need standard Serial.read
 
 #ifndef  LED_BUILTIN
 #if defined(ESP32)
@@ -61,27 +65,46 @@ extern EventManager* EventManagerPtr;
 
 enum tEventCode {
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
+  //  ev1000Hz,         // tick 1000HZ    non cumulative (see betaEvent.h)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
   ev24H,           // 24H when timestamp pass over 24H
-  evLEDOn,         // 
+  evLEDOn,         //
   evLEDOff,
   evInChar,
   evInString,
-evWEB = 20,
-evUser = 100,
+  evWEB = 20,
+  evUser = 100,
 };
 
 
-// 2 byte structure for event
-struct stdEvent  {
-  uint8_t code = evNill;       // code of the event
-  int16_t param = 0;           // parameter for the event
+// Base structure for event
+struct stdEvent_t  {
+  //  stdEvent_t* clone() const { Serial.print("S"); return new stdEvent_t(*this); }
+  //stdEvent_t() : code(evNill) , param(0) {}
+  stdEvent_t(const uint8_t code = evNill, const int16_t param = 0) : code(code), param(param) {}
+  stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), param(stdevent.param) {}
+  uint8_t code;       // code of the event
+  uint8_t ext;        // extCode of the event
+  int16_t param;      // parameter for the event
 };
 
-struct delayedEvent : stdEvent {
-  int32_t delay;         // delay in millisecondes;
+struct eventItem_t : stdEvent_t {
+  eventItem_t(const uint8_t code = evNill, const int16_t param = 0) : stdEvent_t(code, param), nextItemPtr(nullptr) {}
+  eventItem_t(const stdEvent_t& stdEvent) : stdEvent_t(stdEvent), nextItemPtr(nullptr) {}
+  //  eventItem_t(const uint8_t codeP,const int16_t paramP) : stdEvent_t(codeP,paramP),nextItemPtr(nullptr) {}
+  eventItem_t* nextItemPtr;
+};
+
+
+
+struct delayEventItem_t : stdEvent_t {
+  uint16_t delay;         // delay millis cents or thenth;
+  delayEventItem_t(const uint32_t delay, const uint8_t code, const int16_t param = 0) : stdEvent_t(code, param), delay(delay), nextItemPtr(nullptr) {}
+  delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(delay), nextItemPtr(nullptr) {}
+  delayEventItem_t*  nextItemPtr;
+
 };
 
 class EventManager
@@ -95,7 +118,7 @@ class EventManager
       }
       EventManagerPtr = this;
       currentEvent.code = evNill;
-      _waitingEventIndex = 0;
+      //      _waitingEventIndex = 0;
 
       _LEDPinNumber = ledpinnumber;
       _LEDMillisecondes = 1000;
@@ -110,26 +133,36 @@ class EventManager
     byte   getEvent(const bool sleep = true);
     void   handleEvent();
     bool   removeDelayEvent(const byte codeevent);
-    bool   pushEvent(const byte code, const int param = 0);
-    bool   pushEvent(stdEvent* aevent);
-    bool   pushDelayEvent(const uint32_t delayMillisec, const byte code, const int param = 0);
-    bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent* aevent );
+    bool   pushEvent(const stdEvent_t& eventPtr);
+    bool   pushEvent(const uint8_t code, const int16_t param = 0);
+    bool   pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0);
+    //    bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent_t &eventPtr );
     void   setLedOn(const bool status = true);
     void   setFrequenceLED(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
     void   setMillisecLED(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
     //    int    syncroSeconde(const int millisec = 0);
-    byte   second() const;
-    byte   minute() const;
-    byte   hour()   const;
-    stdEvent currentEvent;
+#ifndef _Time_h
+    //#ifdef  __AVR__
+    friend byte   second() ;
+    friend byte   minute() ;
+    friend byte   hour()   ;
+    //#endif
+#endif
+    stdEvent_t currentEvent;
 
 #ifdef  USE_SERIALEVENT
     char  inChar = '\0';
     String inputString = "";
 #endif
     int freeRam();
-    unsigned long   timestamp = 0;   //timestamp en seconde  (around 49 jours)
-
+#ifndef _Time_h
+    uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
+#endif
+  private:
+    byte   nextEvent();
+    void   parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay);
+    void   addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* aItem);
+    bool   removeDelayEventFromList(const byte codeevent, delayEventItem_t** nextItemPtr);
   protected:
 
     unsigned long      _loopCounter = 0;
@@ -141,14 +174,10 @@ class EventManager
     uint16_t _LEDMillisecondes;  // durée du cycle de clignotement en Millisecondes (max 64 secondes)
     uint16_t _idleMillisec = 0;  // CPU millisecondes en pause
     byte       _percentCPU = 0;
-    // liste des evenements en attente
-    byte       _waitingEventIndex = 0;
-    stdEvent  _waitingEvent[MAX_WAITING_EVENT];
-
-    // liste des evenements sous delay en attente
-    byte       _waitingDelayEventIndex = 0;
-    delayedEvent _waitingDelayEvent[MAX_WAITING_DELAYEVENT];
-
+    eventItem_t* eventList = nullptr;
+    delayEventItem_t* eventMillisList = nullptr;
+    delayEventItem_t* eventCentsList = nullptr;
+    delayEventItem_t* eventTenthList = nullptr;
 
 #ifdef  USE_SERIALEVENT
     byte _inputStringSizeMax = 1;

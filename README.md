@@ -1,4 +1,4 @@
-# betaEvents V1.3 (dev net234) 
+# betaEvents V1.4
     Auteur : net23 pierre Henry
     Participation : 
     librairie pour une utilisation simple de la programmation evenementielle
@@ -16,6 +16,9 @@
 	    V1.3 13/01/2021
 	    - correction pour mieux gerer les pulses dans le cas 0 ou 100 percent
 		- correction d'une typo setFrequenceLED
+		V1.4   6/3/2021
+	    - Inclusion TimeLib.h
+	    - Gestion des event en liste chainée
 
 
 	/*************************************************
