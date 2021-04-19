@@ -27,6 +27,9 @@
     - Amelioration du iddle mode pour l'ESP8266 (WiFi sleep mode)
     V1.3 13/01/2021
     - correction pour mieux gerer les pulses dans le cas 0 ou 100 percent
+   V1.4   6/3/2021
+    - Inclusion TimeLib.h
+    - Gestion des event en liste chainée
 
  *************************************************/
 #define BETAEVENTS_CCP

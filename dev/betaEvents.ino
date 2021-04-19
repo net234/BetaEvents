@@ -27,8 +27,10 @@
     V1.2 02/01/2021
     - Ajout d'une globale EventManagerPtr pour l'acces par d'autre lib et respecter l'implantation C++
     - Amelioration du iddle mode pour l'ESP8266 (WiFi sleep mode)
-
- *************************************************/
+    V1.4   6/3/2021
+    - Inclusion TimeLib.h
+    - Gestion des event en liste chainée
+    *************************************************/
 
 #define APP_NAME "betaEvents V1.4"
 
