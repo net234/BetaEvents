@@ -30,9 +30,16 @@
     V1.4   6/3/2021
     - Inclusion TimeLib.h
     - Gestion des event en liste chainée
+    V2.0  20/04/2020
+    - Mise en liste chainée de modules 'events' test avec un evButton
+Le croquis utilise 269404 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qui laisse 54520 octets pour les variables locales. Le maximum est de 81920 octets.
+
+
+    
     *************************************************/
 
-#define APP_NAME "betaEvents V1.4"
+#define APP_NAME "betaEvents V2.0"
 
 #if  defined(__AVR__)
 #include <avr/wdt.h>
@@ -43,6 +50,7 @@
 #endif
 
 #include "betaEvents.h"
+# include "evHandlerButton.h"
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
 EventTracker MyEvent;   // local instance de eventManager
@@ -79,6 +87,8 @@ enum tUserEventCode {
 #define BP0 8  // D8
 #elif defined(ESP8266) || defined(ESP32)
 #define BP0 5 // D1
+#define BP1 D2 // D1
+
 #endif
 
 bool sleepOk = true;
@@ -100,6 +110,7 @@ void setup() {
 
   // Start instance
   MyEvent.begin();
+  MyEvent.addEventHandler(new evHandlerButton(BP1)); // ajout d'un bouton sur BP1
 
   Serial.println("Bonjour ....");
   //D_println(sizeof(EventManagerPtr));

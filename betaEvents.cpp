@@ -54,6 +54,11 @@
 #include <avr/sleep.h>
 #endif
 
+
+
+
+
+
 void  EventManager::begin() {
 
 #ifdef  USE_SERIALEVENT
@@ -224,6 +229,9 @@ byte EventManager::nextEvent() {
 }
 
 
+
+
+
 void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay) {
   while (*ItemPtr) {
     if ((*ItemPtr)->delay > delay ) {
@@ -318,7 +326,6 @@ void  EventManager::handleEvent() {
 }
 
 
-
 bool  EventManager::pushEvent(const stdEvent_t& aevent) {
   eventItem_t** itemPtr = &(this->eventList);
   while (*itemPtr) itemPtr = &((*itemPtr)->nextItemPtr);
@@ -330,6 +337,14 @@ bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
   eventItem_t aEvent(codeP, paramP);
   return ( pushEvent(aEvent) );
 }
+
+
+void   EventManager::addEventHandler(eventHandler_t* aHandler) {
+  eventHandler_t** ItemPtr = &this->eventHandlerList;
+  while (*ItemPtr) ItemPtr = &((*ItemPtr)->next);
+  *ItemPtr = aHandler;
+}
+
 
 void EventManager::addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* aItem) {
   while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextItemPtr);

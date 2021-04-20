@@ -34,6 +34,8 @@
     V1.4   6/3/2021
     - Inclusion TimeLib.h
     - Gestion des event en liste chainée
+    V2.0  20/04/2020
+    - Mise en liste chainée de modules 'events' test avec un evButton
 
 
  *************************************************/
@@ -107,6 +109,16 @@ struct delayEventItem_t : stdEvent_t {
 
 };
 
+// base pour un eventHandler (gestionaire avec un getEvent et un handleEvent);
+class eventHandler_t
+{
+  public:
+  eventHandler_t *next;  // handle suivant
+  eventHandler_t() {next = nullptr; } ;
+  virtual void handleEvent() const = 0;
+};
+
+
 class EventManager
 {
   public:
@@ -132,6 +144,7 @@ class EventManager
     void   begin();
     byte   getEvent(const bool sleep = true);
     void   handleEvent();
+    void   addEventHandler(eventHandler_t* eventHandlerPtr);
     bool   removeDelayEvent(const byte codeevent);
     bool   pushEvent(const stdEvent_t& eventPtr);
     bool   pushEvent(const uint8_t code, const int16_t param = 0);
@@ -159,7 +172,7 @@ class EventManager
     uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
 #endif
   private:
-    byte   nextEvent();
+    byte   nextEvent();  // Recherche du prochain event disponible
     void   parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay);
     void   addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* aItem);
     bool   removeDelayEventFromList(const byte codeevent, delayEventItem_t** nextItemPtr);
@@ -178,6 +191,7 @@ class EventManager
     delayEventItem_t* eventMillisList = nullptr;
     delayEventItem_t* eventCentsList = nullptr;
     delayEventItem_t* eventTenthList = nullptr;
+    eventHandler_t*   eventHandlerList = nullptr;
 
 #ifdef  USE_SERIALEVENT
     byte _inputStringSizeMax = 1;
