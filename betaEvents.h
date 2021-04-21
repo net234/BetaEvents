@@ -115,7 +115,7 @@ class eventHandler_t
   public:
   eventHandler_t *next;  // handle suivant
   eventHandler_t() {next = nullptr; } ;
-  virtual void handleEvent() const = 0;
+  virtual void handleEvent()   = 0;
 };
 
 

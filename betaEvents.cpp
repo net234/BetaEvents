@@ -249,6 +249,12 @@ void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t de
 }
 
 void  EventManager::handleEvent() {
+  // parse event list
+  eventHandler_t** ItemPtr = &this->eventHandlerList;
+  while (*ItemPtr) {
+    (*ItemPtr)->handleEvent();
+    ItemPtr = &((*ItemPtr)->next);
+  }
   switch (currentEvent.code)
   {
     // gestion des evenement avec delay au 100' de seconde

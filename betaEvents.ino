@@ -32,11 +32,12 @@
     - Gestion des event en liste chainée
     V2.0  20/04/2020
     - Mise en liste chainée de modules 'events' test avec un evButton
-Le croquis utilise 269404 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qui laisse 54520 octets pour les variables locales. Le maximum est de 81920 octets.
+  Le croquis utilise 269404 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+  Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qui laisse 54520 octets pour les variables locales. Le maximum est de 81920 octets.
+  Le croquis utilise 269548 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+  Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qui laisse 54520 octets pour les variables locales. Le maximum est de 819
 
 
-    
     *************************************************/
 
 #define APP_NAME "betaEvents V2.0"
@@ -50,7 +51,7 @@ Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qu
 #endif
 
 #include "betaEvents.h"
-# include "evHandlerButton.h"
+#include "evHandlerButton.h"
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
 EventTracker MyEvent;   // local instance de eventManager
@@ -76,6 +77,7 @@ enum tUserEventCode {
   evBP0MultiDown,         // BP0 est appuyé plusieur fois de suite
   evBP0LongDown,      // BP0 est maintenus appuyé plus de 3 secondes
   evBP0LongUp,        // BP0 est relaché plus de 3 secondes
+  evBP1,
   ev1S,
   ev2S,
   ev3S,
@@ -110,7 +112,7 @@ void setup() {
 
   // Start instance
   MyEvent.begin();
-  MyEvent.addEventHandler(new evHandlerButton(BP1)); // ajout d'un bouton sur BP1
+  MyEvent.addEventHandler(new evHandlerButton(evBP1, BP1)); // ajout d'un bouton sur BP1
 
   Serial.println("Bonjour ....");
   //D_println(sizeof(EventManagerPtr));
@@ -130,26 +132,26 @@ void loop() {
   switch (MyEvent.currentEvent.code)
   {
 
-//    case ev1000Hz:
-//      ev1000HzCnt++;
-//      break;
-//
-//    case ev100Hz:
-//      ev100HzCnt++;
-//      break;
-//
-//
-//    case ev1Hz:
-//      D_println(ev1000HzCnt);
-//      D_println(ev100HzCnt);
-//      D_println(ev10HzCnt);
-//      ev1000HzCnt = 0;
-//      ev100HzCnt = 0;
-//      ev10HzCnt = 0;
-//      break;
+    //    case ev1000Hz:
+    //      ev1000HzCnt++;
+    //      break;
+    //
+    //    case ev100Hz:
+    //      ev100HzCnt++;
+    //      break;
+    //
+    //
+    //    case ev1Hz:
+    //      D_println(ev1000HzCnt);
+    //      D_println(ev100HzCnt);
+    //      D_println(ev10HzCnt);
+    //      ev1000HzCnt = 0;
+    //      ev100HzCnt = 0;
+    //      ev10HzCnt = 0;
+    //      break;
 
     case ev10Hz: {
-//        ev10HzCnt++;
+        //        ev10HzCnt++;
         if ( BP0Down != (digitalRead(BP0) == LOW)) { // changement d'etat BP0
           BP0Down = !BP0Down;
           if (BP0Down) {
@@ -210,6 +212,17 @@ void loop() {
       Serial.println(multi);
 
       break;
+
+    case evBP1:
+      switch (MyEvent.currentEvent.param) {
+        case evBPDown: Serial.println(F("BP1 Down")); break;
+        case evBPUp:   Serial.println(F("BP1 Up")); break;
+        case evBPLongDown: Serial.println(F("BP1 Long Down")); break;
+        case evBPLongUp:  Serial.println(F("BP1 Long Up")); break;
+        
+      }
+      break;
+
 
 
     case ev1S:

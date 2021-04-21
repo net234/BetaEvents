@@ -27,7 +27,7 @@
     - Mise en liste chainée de modules 'events' test avec un evButton
 
 
-    
+
     *************************************************/
 
 
@@ -35,22 +35,45 @@
 #include <Arduino.h>
 #include  "betaEvents.h"
 
+enum tBPEventParam  {
+  // evenement recu
+  evBPDown,         // BP0 est appuyé
+  evBPUp,            // BP0 est relaché
+  evBPLongDown,      // BP0 est maintenus appuyé plus de 3 secondes
+  evBPLongUp,        // BP0 est relaché plus de 3 secondes
+};
+
+
 class evHandlerButton : public eventHandler_t {
   public:
-    evHandlerButton(const uint8_t aPinNumber);
-    virtual void handleEvent() const override;
+    evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber);
+    virtual void handleEvent()  override;
 
   private:
-    uint8_t pinNumber; 
+    uint8_t pinNumber;
+    uint8_t evCode;
+    bool    BPDown = true;
 
 };
 
 
-evHandlerButton::evHandlerButton(const uint8_t aPinNumber) {
+evHandlerButton::evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber) {
   this->pinNumber = aPinNumber;
   pinMode(aPinNumber, INPUT_PULLUP);
+  this->evCode = aEventCode;
 }
 
-void evHandlerButton::handleEvent() const {
-  
+void evHandlerButton::handleEvent()  {
+  if (EventManagerPtr->currentEvent.code == ev10Hz) {
+    if ( this->BPDown != (digitalRead(this->pinNumber) == LOW)) { // changement d'etat BP0
+      this->BPDown = !this->BPDown;
+      if (this->BPDown) {
+        EventManagerPtr->pushEvent(this->evCode, evBPDown);
+        EventManagerPtr->pushDelayEvent(3000, this->evCode, evBPLongDown); // arme un event BP0 long down
+      } else {
+        EventManagerPtr->pushEvent(this->evCode, evBPUp);
+        EventManagerPtr->pushDelayEvent(1000, this->evCode, evBPLongUp); // arme un event BP0 long up
+      }
+    }
+  }
 }
