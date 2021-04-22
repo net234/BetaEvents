@@ -36,8 +36,14 @@
   Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qui laisse 54520 octets pour les variables locales. Le maximum est de 81920 octets.
   Le croquis utilise 269548 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
   Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qui laisse 54520 octets pour les variables locales. Le maximum est de 819
-
-
+  Le croquis utilise 269708 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+  Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qui laisse 54520 octets pour les variables locales.
+  Le croquis utilise 269388 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+  Les variables globales utilisent 27392 octets (33%) de mémoire dynamique, ce qui laisse 54528 octets pour les variables locales.
+  Le croquis utilise 269924 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+  Les variables globales utilisent 27472 octets (33%) de mémoire dynamique, ce qui laisse 54448 octets pour les variables locales.
+  e croquis utilise 270052 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+Les variables globales utilisent 27472 octets (33%) de mémoire dynamique, ce qui laisse 54448 octets pour les variables locales.
     *************************************************/
 
 #define APP_NAME "betaEvents V2.0"
@@ -52,6 +58,8 @@
 
 #include "betaEvents.h"
 #include "evHandlerButton.h"
+#include "evHandlerLed.h"
+
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
 EventTracker MyEvent;   // local instance de eventManager
@@ -72,12 +80,14 @@ EventTracker MyEvent;   // local instance de eventManager
 // Liste des evenements specifique a ce projet
 enum tUserEventCode {
   // evenement recu
-  evBP0Down = 100,    // BP0 est appuyé
-  evBP0Up,            // BP0 est relaché
-  evBP0MultiDown,         // BP0 est appuyé plusieur fois de suite
-  evBP0LongDown,      // BP0 est maintenus appuyé plus de 3 secondes
-  evBP0LongUp,        // BP0 est relaché plus de 3 secondes
+  //  evBP0Down = 100,    // BP0 est appuyé
+  //  evBP0Up,            // BP0 est relaché
+  //  evBP0MultiDown,         // BP0 est appuyé plusieur fois de suite
+  //  evBP0LongDown,      // BP0 est maintenus appuyé plus de 3 secondes
+  //  evBP0LongUp,        // BP0 est relaché plus de 3 secondes
+  evBP0 = 100,
   evBP1,
+  evLed1,
   ev1S,
   ev2S,
   ev3S,
@@ -88,10 +98,16 @@ enum tUserEventCode {
 #if  defined(__AVR__)
 #define BP0 8  // D8
 #elif defined(ESP8266) || defined(ESP32)
-#define BP0 5 // D1
-#define BP1 D2 // D1
-
+#define BP0 D1 // D1
+#define BP1 D2 // D2
 #endif
+
+// instances poussoir
+evHandlerButton MyBP0(evBP0, BP0);
+evHandlerButton MyBP1(evBP1, BP1);
+
+// instance LED
+evHandlerLed    MyLed1(evLed1, 16);
 
 bool sleepOk = true;
 int  multi = 0; // nombre de clic rapide
@@ -112,12 +128,13 @@ void setup() {
 
   // Start instance
   MyEvent.begin();
-  MyEvent.addEventHandler(new evHandlerButton(evBP1, BP1)); // ajout d'un bouton sur BP1
-
+  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
+  MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
+  MyEvent.addEventHandler(&MyLed1);       // ajout LED1
   Serial.println("Bonjour ....");
   //D_println(sizeof(EventManagerPtr));
 }
-bool BP0Down = false;
+
 byte BP0Multi = 0;
 
 //int ev1000HzCnt = 0;
@@ -132,46 +149,28 @@ void loop() {
   switch (MyEvent.currentEvent.code)
   {
 
-    //    case ev1000Hz:
-    //      ev1000HzCnt++;
-    //      break;
+    //    case ev10Hz: {
+    //        //        ev10HzCnt++;
+    //        if ( BP0Down != (digitalRead(BP0) == LOW)) { // changement d'etat BP0
+    //          BP0Down = !BP0Down;
+    //          if (BP0Down) {
+    //            MyEvent.setMillisecLED(500, 50);
+    //            MyEvent.pushEvent(evBP0Down);
+    //            MyEvent.pushDelayEvent(3000, evBP0LongDown); // arme un event BP0 long down
+    //            MyEvent.removeDelayEvent(evBP0LongUp);
+    //            if ( ++BP0Multi > 1) {
+    //              MyEvent.pushEvent(evBP0MultiDown, BP0Multi);
+    //            }
+    //          } else {
+    //            MyEvent.setMillisecLED(1000, 10);
+    //            MyEvent.pushEvent(evBP0Up);
+    //            MyEvent.pushDelayEvent(1000, evBP0LongUp); // arme un event BP0 long up
+    //            MyEvent.removeDelayEvent(evBP0LongDown);
+    //          }
+    //        }
     //
-    //    case ev100Hz:
-    //      ev100HzCnt++;
-    //      break;
-    //
-    //
-    //    case ev1Hz:
-    //      D_println(ev1000HzCnt);
-    //      D_println(ev100HzCnt);
-    //      D_println(ev10HzCnt);
-    //      ev1000HzCnt = 0;
-    //      ev100HzCnt = 0;
-    //      ev10HzCnt = 0;
-    //      break;
-
-    case ev10Hz: {
-        //        ev10HzCnt++;
-        if ( BP0Down != (digitalRead(BP0) == LOW)) { // changement d'etat BP0
-          BP0Down = !BP0Down;
-          if (BP0Down) {
-            MyEvent.setMillisecLED(500, 50);
-            MyEvent.pushEvent(evBP0Down);
-            MyEvent.pushDelayEvent(3000, evBP0LongDown); // arme un event BP0 long down
-            MyEvent.removeDelayEvent(evBP0LongUp);
-            if ( ++BP0Multi > 1) {
-              MyEvent.pushEvent(evBP0MultiDown, BP0Multi);
-            }
-          } else {
-            MyEvent.setMillisecLED(1000, 10);
-            MyEvent.pushEvent(evBP0Up);
-            MyEvent.pushDelayEvent(1000, evBP0LongUp); // arme un event BP0 long up
-            MyEvent.removeDelayEvent(evBP0LongDown);
-          }
-        }
-
-        break;
-      }
+    //        break;
+    //      }
     case ev24H:
       Serial.println("---- 24H ---");
       break;
@@ -185,41 +184,80 @@ void loop() {
     //      Serial.print(F("l"));
     //      break;
 
-    case evBP0Down:
-      Serial.println(F("BP0 Down"));
-      break;
+    //    case evBP0Down:
+    //      Serial.println(F("BP0 Down"));
+    //      break;
+    //
+    //    case evBP0Up:
+    //      Serial.println(F("BP0 Up"));
+    //      break;
+    //
+    //    case evBP0LongDown:
+    //      Serial.println(F("BP0 Long Down"));
+    //      if (multi == 5) {
+    //        Serial.println(F("RESET"));
+    //        MyEvent.pushEvent(doReset);
+    //      }
+    //      break;
+    //
+    //    case evBP0LongUp:
+    //      BP0Multi = 0;
+    //      Serial.println(F("BP0 Long Up"));
+    //      break;
+    //
+    //    case evBP0MultiDown:
+    //      multi = MyEvent.currentEvent.param;
+    //      Serial.print(F("BP0 Multi Clic:"));
+    //      Serial.println(multi);
+    //
+    //      break;
 
-    case evBP0Up:
-      Serial.println(F("BP0 Up"));
-      break;
+    case evBP0:
+      switch (MyEvent.currentEvent.param) {
+        case evBPDown:
+          MyEvent.setMillisecLED(500, 50);
+          BP0Multi++;
+          Serial.println(F("BP0 Down"));
+          if (BP0Multi > 1) {
+            D_println(BP0Multi);
+          }
+          break;
+        case evBPUp:
+          MyEvent.setMillisecLED(1000, 10);
+          Serial.println(F("BP0 Up"));
+          break;
+        case evBPLongDown:
+          if (BP0Multi == 5) {
+            Serial.println(F("RESET"));
+            MyEvent.pushEvent(doReset);
+          }
 
-    case evBP0LongDown:
-      Serial.println(F("BP0 Long Down"));
-      if (multi == 5) {
-        Serial.println(F("RESET"));
-        MyEvent.pushEvent(doReset);
+          Serial.println(F("BP0 Long Down"));
+          break;
+        case evBPLongUp:
+          BP0Multi = 0;
+          Serial.println(F("BP0 Long Up"));
+          break;
+
       }
       break;
-
-    case evBP0LongUp:
-      BP0Multi = 0;
-      Serial.println(F("BP0 Long Up"));
-      break;
-
-    case evBP0MultiDown:
-      multi = MyEvent.currentEvent.param;
-      Serial.print(F("BP0 Multi Clic:"));
-      Serial.println(multi);
-
-      break;
-
     case evBP1:
       switch (MyEvent.currentEvent.param) {
-        case evBPDown: Serial.println(F("BP1 Down")); break;
-        case evBPUp:   Serial.println(F("BP1 Up")); break;
-        case evBPLongDown: Serial.println(F("BP1 Long Down")); break;
+        case evBPDown:
+          MyLed1.setFrequence(3,50);
+          Serial.print(F("BP1 Down "));
+          Serial.println(MyBP0.isDown() ? "and BP0 Down" : "and BP0 Up");
+          break;
+        case evBPUp:
+          MyLed1.setOn(false);
+          Serial.println(F("BP1 Up"));
+          break;
+        case evBPLongDown:
+          MyLed1.setFrequence(1,50);
+          Serial.println(F("BP1 Long Down")); 
+          break;
         case evBPLongUp:  Serial.println(F("BP1 Long Up")); break;
-        
+
       }
       break;
 

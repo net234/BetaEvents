@@ -48,11 +48,12 @@ class evHandlerButton : public eventHandler_t {
   public:
     evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber);
     virtual void handleEvent()  override;
+    bool isDown()  {return BPDown; };
 
   private:
     uint8_t pinNumber;
     uint8_t evCode;
-    bool    BPDown = true;
+    bool    BPDown = false;
 
 };
 
@@ -69,7 +70,7 @@ void evHandlerButton::handleEvent()  {
       this->BPDown = !this->BPDown;
       if (this->BPDown) {
         EventManagerPtr->pushEvent(this->evCode, evBPDown);
-        EventManagerPtr->pushDelayEvent(3000, this->evCode, evBPLongDown); // arme un event BP0 long down
+        EventManagerPtr->pushDelayEvent(2000, this->evCode, evBPLongDown); // arme un event BP0 long down
       } else {
         EventManagerPtr->pushEvent(this->evCode, evBPUp);
         EventManagerPtr->pushDelayEvent(1000, this->evCode, evBPLongUp); // arme un event BP0 long up

@@ -148,7 +148,7 @@ class EventManager
     bool   removeDelayEvent(const byte codeevent);
     bool   pushEvent(const stdEvent_t& eventPtr);
     bool   pushEvent(const uint8_t code, const int16_t param = 0);
-    bool   pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0);
+    bool   pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0, const bool force = false);
     //    bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent_t &eventPtr );
     void   setLedOn(const bool status = true);
     void   setFrequenceLED(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led

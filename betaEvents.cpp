@@ -204,7 +204,7 @@ byte EventManager::nextEvent() {
 #ifdef  USE_SERIALEVENT
   if (_stringComplete)   {
     _stringComplete = false;
-    _stringErase = true;      // la chaine ser  a effacee au prochain caractere recu
+    _stringErase = true;      // la chaine sera effacee au prochain caractere recu
     return (currentEvent.code = evInString);
   }
 
@@ -357,8 +357,8 @@ void EventManager::addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* a
   *ItemPtr = aItem;
 }
 
-bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param) {
-  removeDelayEvent(code);
+bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param, const bool force) {
+  if (!force) removeDelayEvent(code);
   if (delayMillisec == 0) {
     return ( pushEvent(code, param) );
   }
