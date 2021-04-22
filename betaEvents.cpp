@@ -30,6 +30,9 @@
    V1.4   6/3/2021
     - Inclusion TimeLib.h
     - Gestion des event en liste chainée
+   V2.0  20/04/2021
+    - Mise en liste chainée de modules 'events' test avec un evButton
+    
 
  *************************************************/
 #define BETAEVENTS_CCP
@@ -65,8 +68,8 @@ void  EventManager::begin() {
   inputString.reserve(_inputStringSizeMax);
 
 #endif
-  pinMode(_LEDPinNumber, OUTPUT);
-  pushEvent(evLEDOn);  // debut du clignotement
+//  pinMode(_LEDPinNumber, OUTPUT);
+//  pushEvent(evLEDOn);  // debut du clignotement
 #ifdef  __AVR__
   /*
     Atmega328 seul et en sleep mode:  // 22 mA
@@ -82,22 +85,22 @@ void  EventManager::begin() {
 #endif
 }
 
-void  EventManager::setLedOn(const bool status) {
-  setMillisecLED(1000, status ? 100 : 0);
-  digitalWrite(_LEDPinNumber, status ? LED_PULSE_ON : !LED_PULSE_ON );
-}
-
-
-void  EventManager::setMillisecLED(const uint16_t millisecondes, const uint8_t percent) {
-  _LEDMillisecondes = max(millisecondes, (uint16_t)10);
-  _LEDPercent = percent;
-  removeDelayEvent(evLEDOff);
-  pushEvent( (percent > 0) ? evLEDOn : evLEDOff );
-}
-
-void  EventManager::setFrequenceLED(const uint8_t frequence, const uint8_t percent) {
-  setMillisecLED(1000U / frequence, percent);
-}
+//void  EventManager::setLedOn(const bool status) {
+//  setMillisecLED(1000, status ? 100 : 0);
+//  digitalWrite(_LEDPinNumber, status ? LED_PULSE_ON : !LED_PULSE_ON );
+//}
+//
+//
+//void  EventManager::setMillisecLED(const uint16_t millisecondes, const uint8_t percent) {
+//  _LEDMillisecondes = max(millisecondes, (uint16_t)10);
+//  _LEDPercent = percent;
+//  removeDelayEvent(evLEDOff);
+//  pushEvent( (percent > 0) ? evLEDOn : evLEDOff );
+//}
+//
+//void  EventManager::setFrequenceLED(const uint8_t frequence, const uint8_t percent) {
+//  setMillisecLED(1000U / frequence, percent);
+//}
 
 #ifndef _Time_h
 //#ifdef  __AVR__
@@ -302,17 +305,17 @@ void  EventManager::handleEvent() {
 
       }
       break;
-    case evLEDOff:
-      digitalWrite(_LEDPinNumber, !LED_PULSE_ON);   // led off
-      break;
-
-    case evLEDOn:
-      digitalWrite(_LEDPinNumber, _LEDPercent > 0 ? LED_PULSE_ON : !LED_PULSE_ON );
-      if (_LEDPercent > 0 && _LEDPercent < 100) {
-        pushDelayEvent(_LEDMillisecondes, evLEDOn);
-        pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
-      }
-      break;
+//    case evLEDOff:
+//      digitalWrite(_LEDPinNumber, !LED_PULSE_ON);   // led off
+//      break;
+//
+//    case evLEDOn:
+//      digitalWrite(_LEDPinNumber, _LEDPercent > 0 ? LED_PULSE_ON : !LED_PULSE_ON );
+//      if (_LEDPercent > 0 && _LEDPercent < 100) {
+//        pushDelayEvent(_LEDMillisecondes, evLEDOn);
+//        pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
+//      }
+//      break;
 
 #ifdef  USE_SERIALEVENT
     case  evInChar:

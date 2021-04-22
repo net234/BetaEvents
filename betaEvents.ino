@@ -30,7 +30,7 @@
     V1.4   6/3/2021
     - Inclusion TimeLib.h
     - Gestion des event en liste chainée
-    V2.0  20/04/2020
+    V2.0  20/04/2021
     - Mise en liste chainée de modules 'events' test avec un evButton
   Le croquis utilise 269404 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
   Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qui laisse 54520 octets pour les variables locales. Le maximum est de 81920 octets.
@@ -43,7 +43,13 @@
   Le croquis utilise 269924 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
   Les variables globales utilisent 27472 octets (33%) de mémoire dynamique, ce qui laisse 54448 octets pour les variables locales.
   e croquis utilise 270052 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-Les variables globales utilisent 27472 octets (33%) de mémoire dynamique, ce qui laisse 54448 octets pour les variables locales.
+  Les variables globales utilisent 27472 octets (33%) de mémoire dynamique, ce qui laisse 54448 octets pour les variables locales.
+  e croquis utilise 269968 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+  Les variables globales utilisent 27492 octets (33%) de mémoire dynamique, ce qui laisse 54428 octets pour les variables locales.
+  e croquis utilise 269936 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+Les variables globales utilisent 27484 octets (33%) de mémoire dynamique, ce qui laisse 54436 octets pour les variables locales.
+e croquis utilise 269908 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+Les variables globales utilisent 27480 octets (33%) de mémoire dynamique, ce qui laisse 54440 octets pour les variables locales.
     *************************************************/
 
 #define APP_NAME "betaEvents V2.0"
@@ -80,13 +86,9 @@ EventTracker MyEvent;   // local instance de eventManager
 // Liste des evenements specifique a ce projet
 enum tUserEventCode {
   // evenement recu
-  //  evBP0Down = 100,    // BP0 est appuyé
-  //  evBP0Up,            // BP0 est relaché
-  //  evBP0MultiDown,         // BP0 est appuyé plusieur fois de suite
-  //  evBP0LongDown,      // BP0 est maintenus appuyé plus de 3 secondes
-  //  evBP0LongUp,        // BP0 est relaché plus de 3 secondes
   evBP0 = 100,
   evBP1,
+  evLed0,
   evLed1,
   ev1S,
   ev2S,
@@ -107,6 +109,7 @@ evHandlerButton MyBP0(evBP0, BP0);
 evHandlerButton MyBP1(evBP1, BP1);
 
 // instance LED
+evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
 evHandlerLed    MyLed1(evLed1, 16);
 
 bool sleepOk = true;
@@ -122,7 +125,6 @@ void setup() {
   WiFi.mode(WIFI_OFF);
   btStop();
 #endif
-  pinMode(BP0, INPUT_PULLUP);
   Serial.begin(115200);
   Serial.println(F("\r\n\n" APP_NAME));
 
@@ -130,6 +132,8 @@ void setup() {
   MyEvent.begin();
   MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
   MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
+  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
+  MyLed0.setFrequence(1, 10);
   MyEvent.addEventHandler(&MyLed1);       // ajout LED1
   Serial.println("Bonjour ....");
   //D_println(sizeof(EventManagerPtr));
@@ -149,28 +153,6 @@ void loop() {
   switch (MyEvent.currentEvent.code)
   {
 
-    //    case ev10Hz: {
-    //        //        ev10HzCnt++;
-    //        if ( BP0Down != (digitalRead(BP0) == LOW)) { // changement d'etat BP0
-    //          BP0Down = !BP0Down;
-    //          if (BP0Down) {
-    //            MyEvent.setMillisecLED(500, 50);
-    //            MyEvent.pushEvent(evBP0Down);
-    //            MyEvent.pushDelayEvent(3000, evBP0LongDown); // arme un event BP0 long down
-    //            MyEvent.removeDelayEvent(evBP0LongUp);
-    //            if ( ++BP0Multi > 1) {
-    //              MyEvent.pushEvent(evBP0MultiDown, BP0Multi);
-    //            }
-    //          } else {
-    //            MyEvent.setMillisecLED(1000, 10);
-    //            MyEvent.pushEvent(evBP0Up);
-    //            MyEvent.pushDelayEvent(1000, evBP0LongUp); // arme un event BP0 long up
-    //            MyEvent.removeDelayEvent(evBP0LongDown);
-    //          }
-    //        }
-    //
-    //        break;
-    //      }
     case ev24H:
       Serial.println("---- 24H ---");
       break;
@@ -215,7 +197,7 @@ void loop() {
     case evBP0:
       switch (MyEvent.currentEvent.param) {
         case evBPDown:
-          MyEvent.setMillisecLED(500, 50);
+          MyLed0.setMillisec(500, 50);
           BP0Multi++;
           Serial.println(F("BP0 Down"));
           if (BP0Multi > 1) {
@@ -223,7 +205,7 @@ void loop() {
           }
           break;
         case evBPUp:
-          MyEvent.setMillisecLED(1000, 10);
+          MyLed0.setMillisec(1000, 10);
           Serial.println(F("BP0 Up"));
           break;
         case evBPLongDown:
@@ -244,7 +226,7 @@ void loop() {
     case evBP1:
       switch (MyEvent.currentEvent.param) {
         case evBPDown:
-          MyLed1.setFrequence(3,50);
+          MyLed1.setFrequence(3, 50);
           Serial.print(F("BP1 Down "));
           Serial.println(MyBP0.isDown() ? "and BP0 Down" : "and BP0 Up");
           break;
@@ -253,8 +235,8 @@ void loop() {
           Serial.println(F("BP1 Up"));
           break;
         case evBPLongDown:
-          MyLed1.setFrequence(1,50);
-          Serial.println(F("BP1 Long Down")); 
+          MyLed1.setFrequence(1, 50);
+          Serial.println(F("BP1 Long Down"));
           break;
         case evBPLongUp:  Serial.println(F("BP1 Long Up")); break;
 

@@ -23,7 +23,7 @@
 
    works with beteEvents 2.0
 
-    V2.0  20/04/2020
+    V2.0  20/04/2021
     - Mise en liste chainée de modules 'events' test avec un evButton
 
 

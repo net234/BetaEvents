@@ -34,7 +34,7 @@
     V1.4   6/3/2021
     - Inclusion TimeLib.h
     - Gestion des event en liste chainée
-    V2.0  20/04/2020
+    V2.0  20/04/2021
     - Mise en liste chainée de modules 'events' test avec un evButton
 
 
@@ -50,13 +50,13 @@
 
 #define   USE_SERIALEVENT       // comment this if you need standard Serial.read
 
-#ifndef  LED_BUILTIN
-#if defined(ESP32)
-#define LED_BUILTIN 33   //ESP32-cam
-#elif
-#define LED_BUILTIN 13
-#endif
-#endif
+//#ifndef  LED_BUILTIN
+//#if defined(ESP32)
+//#define LED_BUILTIN 33   //ESP32-cam
+//#elif
+//#define LED_BUILTIN 13
+//#endif
+//#endif
 
 class EventManager;
 #ifdef BETAEVENTS_CCP
@@ -72,8 +72,8 @@ enum tEventCode {
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
   ev24H,           // 24H when timestamp pass over 24H
-  evLEDOn,         //
-  evLEDOff,
+//  evLEDOn,         //
+//  evLEDOff,
   evInChar,
   evInString,
   evWEB = 20,
@@ -132,10 +132,10 @@ class EventManager
       currentEvent.code = evNill;
       //      _waitingEventIndex = 0;
 
-      _LEDPinNumber = ledpinnumber;
-      _LEDMillisecondes = 1000;
-      _LEDPercent = 10;
-
+//        _LEDPinNumber = ledpinnumber;
+//        _LEDMillisecondes = 1000;
+//        _LEDPercent = 10;
+  
 
 #ifdef USE_SERIALEVENT
       _inputStringSizeMax = inputStringSizeMax;
@@ -150,9 +150,9 @@ class EventManager
     bool   pushEvent(const uint8_t code, const int16_t param = 0);
     bool   pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0, const bool force = false);
     //    bool   pushDelayEvent(const uint32_t delayMillisec, stdEvent_t &eventPtr );
-    void   setLedOn(const bool status = true);
-    void   setFrequenceLED(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
-    void   setMillisecLED(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
+//    void   setLedOn(const bool status = true);
+//    void   setFrequenceLED(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
+//    void   setMillisecLED(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
     //    int    syncroSeconde(const int millisec = 0);
 #ifndef _Time_h
     //#ifdef  __AVR__
@@ -182,9 +182,9 @@ class EventManager
     unsigned long      _evNillCounter = 0;
     unsigned long      _loopParsec = 0;
     unsigned long      _evNillParsec = 0;
-    byte      _LEDPinNumber;         // Pin de la led de vie
-    byte      _LEDPercent;           // durée de l'allumage en %
-    uint16_t _LEDMillisecondes;  // durée du cycle de clignotement en Millisecondes (max 64 secondes)
+//    byte      _LEDPinNumber;         // Pin de la led de vie
+//    byte      _LEDPercent;           // durée de l'allumage en %
+//    uint16_t _LEDMillisecondes;  // durée du cycle de clignotement en Millisecondes (max 64 secondes)
     uint16_t _idleMillisec = 0;  // CPU millisecondes en pause
     byte       _percentCPU = 0;
     eventItem_t* eventList = nullptr;

@@ -23,7 +23,7 @@
 
    works with beteEvents 2.0
 
-    V2.0  20/04/2020
+    V2.0  20/04/2021
     - Mise en liste chainée de modules 'events' test avec un evButton
 
 
@@ -78,7 +78,7 @@ void evHandlerLed::handleEvent()  {
 
       case evpLedOff:
         digitalWrite(this->pinNumber, !this->levelON);   // led off
-        Serial.println("LEDOFF");
+        //Serial.println("LEDOFF");
         break;
 
       case evpLedOn:
@@ -87,7 +87,7 @@ void evHandlerLed::handleEvent()  {
           EventManagerPtr->pushDelayEvent(this->millisecondes, this->evCode, evpLedOn);
           EventManagerPtr->pushDelayEvent(this->millisecondes * this->percent / 100, this->evCode, evpLedOff, true);
         }
-        Serial.println("LEDON");
+        //Serial.println("LEDON");
         break;
     }
   }
