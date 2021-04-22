@@ -1,6 +1,6 @@
 /*************************************************
  *************************************************
-    hadler evHandlerButton.h   validation of lib betaEvents to deal nicely with events programing with Arduino
+    handler evHandlerButton.h   validation of lib betaEvents to deal nicely with events programing with Arduino
     Copyright 2020 Pierre HENRY net23@frdev.com All - right reserved.
 
   This file is part of betaEvents.

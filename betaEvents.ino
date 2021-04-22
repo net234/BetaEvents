@@ -47,9 +47,15 @@
   e croquis utilise 269968 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
   Les variables globales utilisent 27492 octets (33%) de mémoire dynamique, ce qui laisse 54428 octets pour les variables locales.
   e croquis utilise 269936 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-Les variables globales utilisent 27484 octets (33%) de mémoire dynamique, ce qui laisse 54436 octets pour les variables locales.
-e croquis utilise 269908 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-Les variables globales utilisent 27480 octets (33%) de mémoire dynamique, ce qui laisse 54440 octets pour les variables locales.
+  Les variables globales utilisent 27484 octets (33%) de mémoire dynamique, ce qui laisse 54436 octets pour les variables locales.
+  e croquis utilise 269908 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+  Les variables globales utilisent 27480 octets (33%) de mémoire dynamique, ce qui laisse 54440 octets pour les variables locales.
+  e croquis utilise 8574 octets (27%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+  Les variables globales utilisent 357 octets (17%) de mémoire dynamique, ce qui laisse 1691 octets pour les variables locales.
+  e croquis utilise 10858 octets (35%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
+  Les variables globales utilisent 439 octets (21%) de mémoire dynamique, ce qui laisse 1609 octets pour les variables locales. Le maximum est de 2048 octets.
+
+
     *************************************************/
 
 #define APP_NAME "betaEvents V2.0"
@@ -65,10 +71,12 @@ Les variables globales utilisent 27480 octets (33%) de mémoire dynamique, ce qu
 #include "betaEvents.h"
 #include "evHandlerButton.h"
 #include "evHandlerLed.h"
+#include "evHandlerDebug.h"
+#include "evHandlerSerial.h"
 
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
-EventTracker MyEvent;   // local instance de eventManager
+EventManager MyEvent;   // local instance de eventManager
 
 /* Evenements du Manager (voir betaEvents.h)
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
@@ -116,6 +124,9 @@ evHandlerButton MyBP1(evBP1, BP1);
 evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
 evHandlerLed    MyLed1(evLed1, LED1);
 
+// instance Serial
+evHandlerSerial MyKeyboard;
+
 bool sleepOk = true;
 int  multi = 0; // nombre de clic rapide
 
@@ -134,6 +145,8 @@ void setup() {
 
   // Start instance
   MyEvent.begin();
+  MyEvent.addEventHandler(&MyKeyboard);
+  MyEvent.addEventHandler(new evHandlerDebug );
   MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
   MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
   MyEvent.addEventHandler(&MyLed0);       // ajout LED0
@@ -274,7 +287,7 @@ void loop() {
 
 
     case evInChar:
-      switch (toupper(MyEvent.inChar))
+      switch (toupper(MyEvent.currentEvent.param))
       {
         case '0': delay(10); break;
         case '1': delay(100); break;
@@ -290,12 +303,12 @@ void loop() {
 
     case evInString:
 
-      if (MyEvent.inputString.equals(F("S"))) {
+      if (MyKeyboard.inputString.equals(F("S"))) {
         sleepOk = !sleepOk;
         Serial.print(F("Sleep=")); Serial.println(sleepOk);
       }
 
-      if (MyEvent.inputString.equals(F("P"))) {
+      if (MyKeyboard.inputString.equals(F("P"))) {
         Serial.println(F("Push 3 delay events"));
         Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
         MyEvent.pushDelayEvent(1000, ev1S);
@@ -303,7 +316,7 @@ void loop() {
         MyEvent.pushDelayEvent(3000, ev3S);
         Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
       }
-      if (MyEvent.inputString.equals(F("Q"))) {
+      if (MyKeyboard.inputString.equals(F("Q"))) {
         Serial.println(F("Push 3 events"));
         Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
         MyEvent.pushDelayEvent(0, ev1S);
@@ -313,11 +326,11 @@ void loop() {
       }
 
 
-      if (MyEvent.inputString.equals(F("FREE"))) {
+      if (MyKeyboard.inputString.equals(F("FREE"))) {
         Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
       }
 
-      if (MyEvent.inputString.equals(F("RESET"))) {
+      if (MyKeyboard.inputString.equals(F("RESET"))) {
         Serial.println(F("RESET"));
         MyEvent.pushEvent(doReset);
       }

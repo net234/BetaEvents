@@ -41,17 +41,17 @@
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
 
-#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)  //LEONARDO
-#define LED_PULSE_ON LOW
-#else
-#ifdef  __AVR__
-#define LED_PULSE_ON HIGH
-
-#else
-// Pour ESP c'est l'inverse
-#define LED_PULSE_ON LOW
-#endif
-#endif
+//#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)  //LEONARDO
+//#define LED_PULSE_ON LOW
+//#else
+//#ifdef  __AVR__
+//#define LED_PULSE_ON HIGH
+//
+//#else
+//// Pour ESP c'est l'inverse
+//#define LED_PULSE_ON LOW
+//#endif
+//#endif
 
 #ifdef  __AVR__
 #include <avr/sleep.h>
@@ -201,6 +201,12 @@ byte EventManager::nextEvent() {
     //    __cnt1Hz--;
     delta1Hz -= 1000;
     return (currentEvent.code = ev1Hz);
+  }
+
+  eventHandler_t** ItemPtr = &this->eventHandlerList;
+  while (*ItemPtr) {
+    if ( (*ItemPtr)->nextEvent() ) return (currentEvent.code);
+    ItemPtr = &((*ItemPtr)->next);
   }
 
 
@@ -412,77 +418,3 @@ int EventManager::freeRam () {
 #endif
 
 //================ trackEvent =====================
-
-
-void EventTracker::handleEvent() {
-  EventManager::handleEvent();
-  switch (currentEvent.code) {
-    case ev1Hz:
-
-      if (_trackTime) {
-
-        char aBuffer[60];
-
-        snprintf(aBuffer, 60 , " %02d:%02d:%02d,CPU=%d%%,Loop=%lu,Nill=%lu,Ram=%u", hour(), minute(), second(), _percentCPU, _loopParsec, _evNillParsec, freeRam());
-
-
-        Serial.print(aBuffer);
-
-        if (_ev100HzMissed + _ev10HzMissed) {
-          sprintf(aBuffer, " Miss:%d/%d", _ev100HzMissed, _ev10HzMissed);
-          Serial.print(aBuffer);
-          _ev100HzMissed = 0;
-          _ev10HzMissed = 0;
-        }
-        Serial.println();
-      }
-
-      break;
-
-    case ev10Hz:
-
-      _ev10HzMissed += currentEvent.param - 1;
-      if (_trackTime > 1 ) {
-
-        if (currentEvent.param > 1) {
-          //        for (int N = 2; N<currentEvent.param; N++) Serial.print(' ');
-          Serial.print('X');
-          Serial.print(currentEvent.param - 1);
-        } else {
-          Serial.print('|');
-        }
-      }
-      break;
-
-    case ev100Hz:
-      _ev100HzMissed += currentEvent.param - 1;
-
-      if (_trackTime > 2)
-      {
-
-        if (currentEvent.param > 1) {
-          //      for (int N = 3; N<currentEvent.param; N++) Serial.print(' ');
-          Serial.print('x');
-          Serial.print(currentEvent.param - 1);
-        } else {
-          Serial.print('_');
-        }
-      }
-      break;
-    case evInString:
-      if (inputString.equals("T")) {
-
-
-        if ( ++_trackTime > 3 ) {
-
-          _trackTime = 0;
-        }
-        Serial.print("\nTrackTime=");
-        Serial.println(_trackTime);
-      }
-
-      break;
-  }
-
-
-};
