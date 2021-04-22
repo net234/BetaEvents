@@ -98,10 +98,14 @@ enum tUserEventCode {
 };
 
 #if  defined(__AVR__)
-#define BP0 8  // D8
+#define BP0 2  // D2
+#define BP1 3  // D3
+#define LED1 4
 #elif defined(ESP8266) || defined(ESP32)
 #define BP0 D1 // D1
 #define BP1 D2 // D2
+#define LED1 16
+
 #endif
 
 // instances poussoir
@@ -110,7 +114,7 @@ evHandlerButton MyBP1(evBP1, BP1);
 
 // instance LED
 evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
-evHandlerLed    MyLed1(evLed1, 16);
+evHandlerLed    MyLed1(evLed1, LED1);
 
 bool sleepOk = true;
 int  multi = 0; // nombre de clic rapide

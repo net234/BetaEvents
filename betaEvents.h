@@ -88,7 +88,7 @@ struct stdEvent_t  {
   stdEvent_t(const uint8_t code = evNill, const int16_t param = 0) : code(code), param(param) {}
   stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), param(stdevent.param) {}
   uint8_t code;       // code of the event
-  uint8_t ext;        // extCode of the event
+//  uint8_t ext;        // extCode of the event
   int16_t param;      // parameter for the event
 };
 
