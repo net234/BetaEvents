@@ -41,18 +41,6 @@
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
 
-//#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)  //LEONARDO
-//#define LED_PULSE_ON LOW
-//#else
-//#ifdef  __AVR__
-//#define LED_PULSE_ON HIGH
-//
-//#else
-//// Pour ESP c'est l'inverse
-//#define LED_PULSE_ON LOW
-//#endif
-//#endif
-
 #ifdef  __AVR__
 #include <avr/sleep.h>
 #endif
@@ -60,16 +48,7 @@
 
 
 
-
-
 void  EventManager::begin() {
-
-#ifdef  USE_SERIALEVENT
-  inputString.reserve(_inputStringSizeMax);
-
-#endif
-//  pinMode(_LEDPinNumber, OUTPUT);
-//  pushEvent(evLEDOn);  // debut du clignotement
 #ifdef  __AVR__
   /*
     Atmega328 seul et en sleep mode:  // 22 mA
@@ -85,22 +64,6 @@ void  EventManager::begin() {
 #endif
 }
 
-//void  EventManager::setLedOn(const bool status) {
-//  setMillisecLED(1000, status ? 100 : 0);
-//  digitalWrite(_LEDPinNumber, status ? LED_PULSE_ON : !LED_PULSE_ON );
-//}
-//
-//
-//void  EventManager::setMillisecLED(const uint16_t millisecondes, const uint8_t percent) {
-//  _LEDMillisecondes = max(millisecondes, (uint16_t)10);
-//  _LEDPercent = percent;
-//  removeDelayEvent(evLEDOff);
-//  pushEvent( (percent > 0) ? evLEDOn : evLEDOff );
-//}
-//
-//void  EventManager::setFrequenceLED(const uint8_t frequence, const uint8_t percent) {
-//  setMillisecLED(1000U / frequence, percent);
-//}
 
 #ifndef _Time_h
 //#ifdef  __AVR__
@@ -209,21 +172,6 @@ byte EventManager::nextEvent() {
     ItemPtr = &((*ItemPtr)->next);
   }
 
-
-#ifdef  USE_SERIALEVENT
-  if (_stringComplete)   {
-    _stringComplete = false;
-    _stringErase = true;      // la chaine sera effacee au prochain caractere recu
-    return (currentEvent.code = evInString);
-  }
-
-  if (Serial.available())   {
-    inChar = (char)Serial.read();
-    return (currentEvent.code = evInChar);
-  }
-#endif
-
-
   // les evenements sans delay sont geré ici
   // les delais sont gere via ev100HZ
   if (eventList) {
@@ -236,10 +184,6 @@ byte EventManager::nextEvent() {
 
   return (currentEvent.code = evNill);
 }
-
-
-
-
 
 void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay) {
   while (*ItemPtr) {

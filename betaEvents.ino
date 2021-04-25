@@ -32,29 +32,9 @@
     - Gestion des event en liste chainée
     V2.0  20/04/2021
     - Mise en liste chainée de modules 'events' test avec un evButton
-  Le croquis utilise 269404 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-  Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qui laisse 54520 octets pour les variables locales. Le maximum est de 81920 octets.
-  Le croquis utilise 269548 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-  Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qui laisse 54520 octets pour les variables locales. Le maximum est de 819
-  Le croquis utilise 269708 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-  Les variables globales utilisent 27400 octets (33%) de mémoire dynamique, ce qui laisse 54520 octets pour les variables locales.
-  Le croquis utilise 269388 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-  Les variables globales utilisent 27392 octets (33%) de mémoire dynamique, ce qui laisse 54528 octets pour les variables locales.
-  Le croquis utilise 269924 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-  Les variables globales utilisent 27472 octets (33%) de mémoire dynamique, ce qui laisse 54448 octets pour les variables locales.
-  e croquis utilise 270052 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-  Les variables globales utilisent 27472 octets (33%) de mémoire dynamique, ce qui laisse 54448 octets pour les variables locales.
-  e croquis utilise 269968 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-  Les variables globales utilisent 27492 octets (33%) de mémoire dynamique, ce qui laisse 54428 octets pour les variables locales.
-  e croquis utilise 269936 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-  Les variables globales utilisent 27484 octets (33%) de mémoire dynamique, ce qui laisse 54436 octets pour les variables locales.
-  e croquis utilise 269908 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-  Les variables globales utilisent 27480 octets (33%) de mémoire dynamique, ce qui laisse 54440 octets pour les variables locales.
-  e croquis utilise 8574 octets (27%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
-  Les variables globales utilisent 357 octets (17%) de mémoire dynamique, ce qui laisse 1691 octets pour les variables locales.
-  e croquis utilise 10858 octets (35%) de l'espace de stockage de programmes. Le maximum est de 30720 octets.
-  Les variables globales utilisent 439 octets (21%) de mémoire dynamique, ce qui laisse 1609 octets pour les variables locales. Le maximum est de 2048 octets.
 
+Le croquis utilise 268940 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+Les variables globales utilisent 27480 octets (33%) de mémoire dynamique, ce qui laisse 54440 octets pour les variables
 
     *************************************************/
 
@@ -140,12 +120,12 @@ void setup() {
   WiFi.mode(WIFI_OFF);
   btStop();
 #endif
-  Serial.begin(115200);
+//  Serial.begin(115200);
   Serial.println(F("\r\n\n" APP_NAME));
-
   // Start instance
   MyEvent.begin();
   MyEvent.addEventHandler(&MyKeyboard);
+  
   MyEvent.addEventHandler(new evHandlerDebug );
   MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
   MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
@@ -301,41 +281,41 @@ void loop() {
       break;
 
 
-    case evInString:
-
-      if (MyKeyboard.inputString.equals(F("S"))) {
-        sleepOk = !sleepOk;
-        Serial.print(F("Sleep=")); Serial.println(sleepOk);
-      }
-
-      if (MyKeyboard.inputString.equals(F("P"))) {
-        Serial.println(F("Push 3 delay events"));
-        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
-        MyEvent.pushDelayEvent(1000, ev1S);
-        MyEvent.pushDelayEvent(2000, ev2S);
-        MyEvent.pushDelayEvent(3000, ev3S);
-        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
-      }
-      if (MyKeyboard.inputString.equals(F("Q"))) {
-        Serial.println(F("Push 3 events"));
-        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
-        MyEvent.pushDelayEvent(0, ev1S);
-        MyEvent.pushDelayEvent(0, ev2S);
-        MyEvent.pushDelayEvent(0, ev3S);
-        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
-      }
-
-
-      if (MyKeyboard.inputString.equals(F("FREE"))) {
-        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
-      }
-
-      if (MyKeyboard.inputString.equals(F("RESET"))) {
-        Serial.println(F("RESET"));
-        MyEvent.pushEvent(doReset);
-      }
-
-      break;
+//    case evInString:
+//
+//      if (MyKeyboard.inputString.equals(F("S"))) {
+//        sleepOk = !sleepOk;
+//        Serial.print(F("Sleep=")); Serial.println(sleepOk);
+//      }
+//
+//      if (MyKeyboard.inputString.equals(F("P"))) {
+//        Serial.println(F("Push 3 delay events"));
+//        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+//        MyEvent.pushDelayEvent(1000, ev1S);
+//        MyEvent.pushDelayEvent(2000, ev2S);
+//        MyEvent.pushDelayEvent(3000, ev3S);
+//        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+//      }
+//      if (MyKeyboard.inputString.equals(F("Q"))) {
+//        Serial.println(F("Push 3 events"));
+//        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+//        MyEvent.pushDelayEvent(0, ev1S);
+//        MyEvent.pushDelayEvent(0, ev2S);
+//        MyEvent.pushDelayEvent(0, ev3S);
+//        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+//      }
+//
+//
+//      if (MyKeyboard.inputString.equals(F("FREE"))) {
+//        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+//      }
+//
+//      if (MyKeyboard.inputString.equals(F("RESET"))) {
+//        Serial.println(F("RESET"));
+//        MyEvent.pushEvent(doReset);
+//      }
+//
+//      break;
 
   }
 }

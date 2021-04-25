@@ -42,9 +42,8 @@ class evHandlerSerial : public eventHandler_t {
     //virtual void handleEvent()  override;
     virtual byte nextEvent()  override;
     String inputString = "";
+    char  inChar = '\0';
   private:
-    //char  inChar = '\0';
-    
     const byte inputStringSizeMax = 50;
     bool stringComplete = false;
     bool stringErase = false;
@@ -63,18 +62,18 @@ byte evHandlerSerial::nextEvent()  {
     return (EventManagerPtr->currentEvent.code = evInString);
   }
   if (Serial.available())   {
-    char inChar = Serial.read();
+    this->inChar = Serial.read();
     if (this->stringErase) {
       this->inputString = "";
       this->stringErase = false;
     }
-    if (isPrintable(inChar) && (this->inputString.length() < this->inputStringSizeMax)) {
-      this->inputString += inChar;
+    if (isPrintable(this->inChar) && (this->inputString.length() < this->inputStringSizeMax)) {
+      this->inputString += this->inChar;
     };
-    if (inChar == '\n' || inChar == '\r') {
+    if (this->inChar == '\n' || this->inChar == '\r') {
       this->stringComplete = (this->inputString.length() > 0);
     }
-    EventManagerPtr->currentEvent.param = inChar;
+    EventManagerPtr->currentEvent.param = this->inChar;
     return (EventManagerPtr->currentEvent.code = evInChar);
   }
   return (evNill);
