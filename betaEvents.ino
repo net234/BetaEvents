@@ -35,6 +35,11 @@
 
 Le croquis utilise 268940 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
 Les variables globales utilisent 27480 octets (33%) de mémoire dynamique, ce qui laisse 54440 octets pour les variables
+e croquis utilise 268924 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
+Les variables globales utilisent 27480 octets (33%) de mémoire dynamique, ce qui laisse 54440 octets pour les variables locales.
+
+
+
 
     *************************************************/
 
@@ -49,10 +54,7 @@ Les variables globales utilisent 27480 octets (33%) de mémoire dynamique, ce qu
 #endif
 
 #include "betaEvents.h"
-#include "evHandlerButton.h"
-#include "evHandlerLed.h"
-#include "evHandlerDebug.h"
-#include "evHandlerSerial.h"
+
 
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
@@ -133,7 +135,7 @@ void setup() {
   MyLed0.setFrequence(1, 10);
   MyEvent.addEventHandler(&MyLed1);       // ajout LED1
   Serial.println("Bonjour ....");
-  //D_println(sizeof(EventManagerPtr));
+
 }
 
 byte BP0Multi = 0;
@@ -155,42 +157,7 @@ void loop() {
       break;
 
 
-    //    case evLEDOn:
-    //      Serial.print(F("L"));
-    //      break;
-    //
-    //    case evLEDOff:
-    //      Serial.print(F("l"));
-    //      break;
-
-    //    case evBP0Down:
-    //      Serial.println(F("BP0 Down"));
-    //      break;
-    //
-    //    case evBP0Up:
-    //      Serial.println(F("BP0 Up"));
-    //      break;
-    //
-    //    case evBP0LongDown:
-    //      Serial.println(F("BP0 Long Down"));
-    //      if (multi == 5) {
-    //        Serial.println(F("RESET"));
-    //        MyEvent.pushEvent(doReset);
-    //      }
-    //      break;
-    //
-    //    case evBP0LongUp:
-    //      BP0Multi = 0;
-    //      Serial.println(F("BP0 Long Up"));
-    //      break;
-    //
-    //    case evBP0MultiDown:
-    //      multi = MyEvent.currentEvent.param;
-    //      Serial.print(F("BP0 Multi Clic:"));
-    //      Serial.println(multi);
-    //
-    //      break;
-
+ 
     case evBP0:
       switch (MyEvent.currentEvent.param) {
         case evBPDown:

@@ -43,13 +43,11 @@
 #pragma once
 #include "Arduino.h"
 
+
 // betaEvent handle a minimal time system to get for seconds() minutes() or hours()
 #ifndef  __AVR__
 #include <TimeLib.h>          // uncomment this if you prefer to use arduino TimeLib.h  (it will use little more ram and flash)
 #endif
-
-//#define   USE_SERIALEVENT       // comment this if you need standard Serial.read
-
 
 
 class EventManager;
@@ -109,6 +107,9 @@ class eventHandler_t
     virtual void handleEvent()  {};
     virtual byte nextEvent()   {return evNill; };
 };
+
+
+#include "evHandlers.h"
 
 
 class EventManager
