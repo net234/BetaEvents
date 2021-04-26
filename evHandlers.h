@@ -18,6 +18,12 @@
     You should have received a copy of the GNU Lesser General Public License
     along with betaEvents.  If not, see <https://www.gnu.org/licenses/lglp.txt>.
 
+    V2.0  20/04/2021
+    - Mise en liste chainée de modules 'events' 
+      evHandlerSerial   Gestion des caracteres et des chaines provenant de Serial
+      evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
+      evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
+      evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
 
    History
 

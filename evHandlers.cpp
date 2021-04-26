@@ -24,9 +24,11 @@
    works with beteEvents 2.0
 
     V2.0  20/04/2021
-    - Mise en liste chainée de modules 'events' test avec un evButton
-
-
+    - Mise en liste chainée de modules 'events' 
+      evHandlerSerial   Gestion des caracteres et des chaines provenant de Serial
+      evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
+      evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
+      evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
 
     *************************************************/ 
 #include  "evHandlers.h"
@@ -88,7 +90,6 @@ void evHandlerLed::handleEvent()  {
 
       case evpLedOff:
         digitalWrite(this->pinNumber, !this->levelON);   // led off
-        //Serial.println("LEDOFF");
         break;
 
       case evpLedOn:
@@ -97,7 +98,6 @@ void evHandlerLed::handleEvent()  {
           EventManagerPtr->pushDelayEvent(this->millisecondes, this->evCode, evpLedOn);
           EventManagerPtr->pushDelayEvent(this->millisecondes * this->percent / 100, this->evCode, evpLedOff, true);
         }
-        //Serial.println("LEDON");
         break;
     }
   }

@@ -31,13 +31,11 @@
     - Inclusion TimeLib.h
     - Gestion des event en liste chainée
     V2.0  20/04/2021
-    - Mise en liste chainée de modules 'events' test avec un evButton
-
-Le croquis utilise 268940 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-Les variables globales utilisent 27480 octets (33%) de mémoire dynamique, ce qui laisse 54440 octets pour les variables
-e croquis utilise 268924 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-Les variables globales utilisent 27480 octets (33%) de mémoire dynamique, ce qui laisse 54440 octets pour les variables locales.
-
+    - Mise en liste chainée de modules 'events' 
+      evHandlerSerial   Gestion des caracteres et des chaines provenant de Serial
+      evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
+      evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
+      evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
 
 
 
@@ -66,9 +64,6 @@ EventManager MyEvent;   // local instance de eventManager
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
   ev24H,           // 24H when timestamp pass over 24H
-  //  evDepassement1HZ,
-  evLEDOn,
-  evLEDOff,
   evInChar,
   evInString,
 */
@@ -248,41 +243,41 @@ void loop() {
       break;
 
 
-//    case evInString:
-//
-//      if (MyKeyboard.inputString.equals(F("S"))) {
-//        sleepOk = !sleepOk;
-//        Serial.print(F("Sleep=")); Serial.println(sleepOk);
-//      }
-//
-//      if (MyKeyboard.inputString.equals(F("P"))) {
-//        Serial.println(F("Push 3 delay events"));
-//        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
-//        MyEvent.pushDelayEvent(1000, ev1S);
-//        MyEvent.pushDelayEvent(2000, ev2S);
-//        MyEvent.pushDelayEvent(3000, ev3S);
-//        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
-//      }
-//      if (MyKeyboard.inputString.equals(F("Q"))) {
-//        Serial.println(F("Push 3 events"));
-//        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
-//        MyEvent.pushDelayEvent(0, ev1S);
-//        MyEvent.pushDelayEvent(0, ev2S);
-//        MyEvent.pushDelayEvent(0, ev3S);
-//        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
-//      }
-//
-//
-//      if (MyKeyboard.inputString.equals(F("FREE"))) {
-//        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
-//      }
-//
-//      if (MyKeyboard.inputString.equals(F("RESET"))) {
-//        Serial.println(F("RESET"));
-//        MyEvent.pushEvent(doReset);
-//      }
-//
-//      break;
+    case evInString:
+
+      if (MyKeyboard.inputString.equals(F("S"))) {
+        sleepOk = !sleepOk;
+        Serial.print(F("Sleep=")); Serial.println(sleepOk);
+      }
+
+      if (MyKeyboard.inputString.equals(F("P"))) {
+        Serial.println(F("Push 3 delay events"));
+        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+        MyEvent.pushDelayEvent(1000, ev1S);
+        MyEvent.pushDelayEvent(2000, ev2S);
+        MyEvent.pushDelayEvent(3000, ev3S);
+        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+      }
+      if (MyKeyboard.inputString.equals(F("Q"))) {
+        Serial.println(F("Push 3 events"));
+        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+        MyEvent.pushDelayEvent(0, ev1S);
+        MyEvent.pushDelayEvent(0, ev2S);
+        MyEvent.pushDelayEvent(0, ev3S);
+        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+      }
+
+
+      if (MyKeyboard.inputString.equals(F("FREE"))) {
+        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
+      }
+
+      if (MyKeyboard.inputString.equals(F("RESET"))) {
+        Serial.println(F("RESET"));
+        MyEvent.pushEvent(doReset);
+      }
+
+      break;
 
   }
 }
