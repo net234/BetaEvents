@@ -8,7 +8,10 @@
 
 BetaEvents	KEYWORD1
 EventManager	KEYWORD1
-EventTracker	KEYWORD1
+evHandlerSerial	KEYWORD1
+evHandlerLed	KEYWORD1
+evHandlerButton	KEYWORD1
+evHandlerDebug	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -17,20 +20,25 @@ EventTracker	KEYWORD1
 begin	KEYWORD2
 getEvent	KEYWORD2
 handleEvent	KEYWORD2
+addEventHandler	KEYWORD2
 removeDelayEvent	KEYWORD2
 pushEvent	KEYWORD2
 pushDelayEvent	KEYWORD2
-setFrequenceLED	KEYWORD2
-setMillisecLED	KEYWORD2
 second	KEYWORD2
 minute	KEYWORD2
 hour	KEYWORD2
 freeRam	KEYWORD2
 timestamp	KEYWORD2
 
+setOn	KEYWORD2
+setMillisec	KEYWORD2
+setFrequence	KEYWORD2
+isDown	KEYWORD2
+
 #######################################
 # Instances (KEYWORD2)
 #######################################
+EventManagerPtr	KEYWORD2
 currentEvent	KEYWORD2
 inChar	KEYWORD2
 inputString	KEYWORD2
@@ -44,7 +52,12 @@ ev100Hz	LITERAL1
 ev10Hz	LITERAL1
 ev1Hz	LITERAL1
 ev24H	LITERAL1 
-evLEDOn	LITERAL1
-evLEDOff	LITERAL1
+evpLedOff	LITERAL1
+evpLedOn	LITERAL1
 evInChar	LITERAL1
 evInString	LITERAL1
+evBPDown	LITERAL1
+evBPUp	LITERAL1
+evBPLongDown	LITERAL1
+evBPLongUp	LITERAL1
+

@@ -30,6 +30,13 @@
    V1.4   6/3/2021
     - Inclusion TimeLib.h
     - Gestion des event en liste chainée
+    V2.0  20/04/2021
+    - Mise en liste chainée de modules 'events' 
+      evHandlerSerial   Gestion des caracteres et des chaines provenant de Serial
+      evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
+      evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
+      evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
+    
 
  *************************************************/
 #define BETAEVENTS_CCP
@@ -38,30 +45,14 @@
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
 
-#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)  //LEONARDO
-#define LED_PULSE_ON LOW
-#else
-#ifdef  __AVR__
-#define LED_PULSE_ON HIGH
-
-#else
-// Pour ESP c'est l'inverse
-#define LED_PULSE_ON LOW
-#endif
-#endif
-
 #ifdef  __AVR__
 #include <avr/sleep.h>
 #endif
 
+
+
+
 void  EventManager::begin() {
-
-#ifdef  USE_SERIALEVENT
-  inputString.reserve(_inputStringSizeMax);
-
-#endif
-  pinMode(_LEDPinNumber, OUTPUT);
-  pushEvent(evLEDOn);  // debut du clignotement
 #ifdef  __AVR__
   /*
     Atmega328 seul et en sleep mode:  // 22 mA
@@ -77,22 +68,6 @@ void  EventManager::begin() {
 #endif
 }
 
-void  EventManager::setLedOn(const bool status) {
-  setMillisecLED(1000, status ? 100 : 0);
-  digitalWrite(_LEDPinNumber, status ? LED_PULSE_ON : !LED_PULSE_ON );
-}
-
-
-void  EventManager::setMillisecLED(const uint16_t millisecondes, const uint8_t percent) {
-  _LEDMillisecondes = max(millisecondes, (uint16_t)10);
-  _LEDPercent = percent;
-  removeDelayEvent(evLEDOff);
-  pushEvent( (percent > 0) ? evLEDOn : evLEDOff );
-}
-
-void  EventManager::setFrequenceLED(const uint8_t frequence, const uint8_t percent) {
-  setMillisecLED(1000U / frequence, percent);
-}
 
 #ifndef _Time_h
 //#ifdef  __AVR__
@@ -195,20 +170,11 @@ byte EventManager::nextEvent() {
     return (currentEvent.code = ev1Hz);
   }
 
-
-#ifdef  USE_SERIALEVENT
-  if (_stringComplete)   {
-    _stringComplete = false;
-    _stringErase = true;      // la chaine ser  a effacee au prochain caractere recu
-    return (currentEvent.code = evInString);
+  eventHandler_t** ItemPtr = &this->eventHandlerList;
+  while (*ItemPtr) {
+    if ( (*ItemPtr)->nextEvent() ) return (currentEvent.code);
+    ItemPtr = &((*ItemPtr)->next);
   }
-
-  if (Serial.available())   {
-    inChar = (char)Serial.read();
-    return (currentEvent.code = evInChar);
-  }
-#endif
-
 
   // les evenements sans delay sont geré ici
   // les delais sont gere via ev100HZ
@@ -222,7 +188,6 @@ byte EventManager::nextEvent() {
 
   return (currentEvent.code = evNill);
 }
-
 
 void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay) {
   while (*ItemPtr) {
@@ -241,6 +206,12 @@ void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t de
 }
 
 void  EventManager::handleEvent() {
+  // parse event list
+  eventHandler_t** ItemPtr = &this->eventHandlerList;
+  while (*ItemPtr) {
+    (*ItemPtr)->handleEvent();
+    ItemPtr = &((*ItemPtr)->next);
+  }
   switch (currentEvent.code)
   {
     // gestion des evenement avec delay au 100' de seconde
@@ -288,17 +259,17 @@ void  EventManager::handleEvent() {
 
       }
       break;
-    case evLEDOff:
-      digitalWrite(_LEDPinNumber, !LED_PULSE_ON);   // led off
-      break;
-
-    case evLEDOn:
-      digitalWrite(_LEDPinNumber, _LEDPercent > 0 ? LED_PULSE_ON : !LED_PULSE_ON );
-      if (_LEDPercent > 0 && _LEDPercent < 100) {
-        pushDelayEvent(_LEDMillisecondes, evLEDOn);
-        pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
-      }
-      break;
+//    case evLEDOff:
+//      digitalWrite(_LEDPinNumber, !LED_PULSE_ON);   // led off
+//      break;
+//
+//    case evLEDOn:
+//      digitalWrite(_LEDPinNumber, _LEDPercent > 0 ? LED_PULSE_ON : !LED_PULSE_ON );
+//      if (_LEDPercent > 0 && _LEDPercent < 100) {
+//        pushDelayEvent(_LEDMillisecondes, evLEDOn);
+//        pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
+//      }
+//      break;
 
 #ifdef  USE_SERIALEVENT
     case  evInChar:
@@ -318,7 +289,6 @@ void  EventManager::handleEvent() {
 }
 
 
-
 bool  EventManager::pushEvent(const stdEvent_t& aevent) {
   eventItem_t** itemPtr = &(this->eventList);
   while (*itemPtr) itemPtr = &((*itemPtr)->nextItemPtr);
@@ -331,13 +301,21 @@ bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
   return ( pushEvent(aEvent) );
 }
 
+
+void   EventManager::addEventHandler(eventHandler_t* aHandler) {
+  eventHandler_t** ItemPtr = &this->eventHandlerList;
+  while (*ItemPtr) ItemPtr = &((*ItemPtr)->next);
+  *ItemPtr = aHandler;
+}
+
+
 void EventManager::addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* aItem) {
   while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextItemPtr);
   *ItemPtr = aItem;
 }
 
-bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param) {
-  removeDelayEvent(code);
+bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param, const bool force) {
+  if (!force) removeDelayEvent(code);
   if (delayMillisec == 0) {
     return ( pushEvent(code, param) );
   }
@@ -388,77 +366,3 @@ int EventManager::freeRam () {
 #endif
 
 //================ trackEvent =====================
-
-
-void EventTracker::handleEvent() {
-  EventManager::handleEvent();
-  switch (currentEvent.code) {
-    case ev1Hz:
-
-      if (_trackTime) {
-
-        char aBuffer[60];
-
-        snprintf(aBuffer, 60 , " %02d:%02d:%02d,CPU=%d%%,Loop=%lu,Nill=%lu,Ram=%u", hour(), minute(), second(), _percentCPU, _loopParsec, _evNillParsec, freeRam());
-
-
-        Serial.print(aBuffer);
-
-        if (_ev100HzMissed + _ev10HzMissed) {
-          sprintf(aBuffer, " Miss:%d/%d", _ev100HzMissed, _ev10HzMissed);
-          Serial.print(aBuffer);
-          _ev100HzMissed = 0;
-          _ev10HzMissed = 0;
-        }
-        Serial.println();
-      }
-
-      break;
-
-    case ev10Hz:
-
-      _ev10HzMissed += currentEvent.param - 1;
-      if (_trackTime > 1 ) {
-
-        if (currentEvent.param > 1) {
-          //        for (int N = 2; N<currentEvent.param; N++) Serial.print(' ');
-          Serial.print('X');
-          Serial.print(currentEvent.param - 1);
-        } else {
-          Serial.print('|');
-        }
-      }
-      break;
-
-    case ev100Hz:
-      _ev100HzMissed += currentEvent.param - 1;
-
-      if (_trackTime > 2)
-      {
-
-        if (currentEvent.param > 1) {
-          //      for (int N = 3; N<currentEvent.param; N++) Serial.print(' ');
-          Serial.print('x');
-          Serial.print(currentEvent.param - 1);
-        } else {
-          Serial.print('_');
-        }
-      }
-      break;
-    case evInString:
-      if (inputString.equals("T")) {
-
-
-        if ( ++_trackTime > 3 ) {
-
-          _trackTime = 0;
-        }
-        Serial.print("\nTrackTime=");
-        Serial.println(_trackTime);
-      }
-
-      break;
-  }
-
-
-};

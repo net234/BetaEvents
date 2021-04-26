@@ -27,7 +27,9 @@
 
  *************************************************/
 
-#define APP_NAME "betaEvents V1.1"
+#define APP_NAME "event_demo V2.0"
+
+#include "betaEvents.h"
 
 #if  defined(__AVR__)
 #include <avr/wdt.h>
@@ -37,19 +39,17 @@
 #include <WiFi.h>
 #endif
 
-#include "betaEvents.h"
 
-EventTracker MyEvent;   // instance de eventManager
+
+
+EventManager MyEvent;   // local instance de eventManager
 
 /* Evenements du Manager (voir betaEvents.h)
-  evNill = 0,      // No event
+  evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
   ev24H,           // 24H when timestamp pass over 24H
-  //  evDepassement1HZ,
-  evLEDOn,
-  evLEDOff,
   evInChar,
   evInString,
 */
@@ -57,20 +57,36 @@ EventTracker MyEvent;   // instance de eventManager
 // Liste des evenements specifique a ce projet
 enum tUserEventCode {
   // evenement recu
-  evBP0Down = 100,    // BP0 est appuyé
-  evBP0Up,            // BP0 est relaché
-  evBP0MultiDown,         // BP0 est appuyé plusieur fois de suite
-  evBP0LongDown,      // BP0 est maintenus appuyé plus de 3 secondes
-  evBP0LongUp,        // BP0 est relaché plus de 1 secondes
+  evBP0 = 100,
+  evBP1,
+  evLed0,
+  evLed1,
+
   // evenement action
   doReset,
 };
 
 #if  defined(__AVR__)
-#define BP0 8
+#define BP0 2  // D2
+#define BP1 3  // D3
+#define LED1 4
 #elif defined(ESP8266) || defined(ESP32)
-#define BP0 0
+#define BP0 D1 // D1
+#define BP1 D2 // D2
+#define LED1 16
+
 #endif
+
+// instances poussoir
+evHandlerButton MyBP0(evBP0, BP0);
+evHandlerButton MyBP1(evBP1, BP1);
+
+// instance LED
+evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
+evHandlerLed    MyLed1(evLed1, LED1);
+
+// instance Serial
+evHandlerSerial MyKeyboard;
 
 bool sleepOk = true;
 int  multi = 0; // nombre de clic rapide
@@ -85,17 +101,28 @@ void setup() {
   WiFi.mode(WIFI_OFF);
   btStop();
 #endif
-  pinMode(BP0, INPUT_PULLUP);
-  Serial.begin(115200);
+//  Serial.begin(115200);
   Serial.println(F("\r\n\n" APP_NAME));
-
   // Start instance
   MyEvent.begin();
-
+  MyEvent.addEventHandler(&MyKeyboard);
+  
+//  MyEvent.addEventHandler(new evHandlerDebug );  
+  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
+//  MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
+  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
+  MyLed0.setFrequence(1, 10);
+//  MyEvent.addEventHandler(&MyLed1);       // ajout LED1
   Serial.println("Bonjour ....");
+
 }
-bool BP0Down = false;
+
 byte BP0Multi = 0;
+
+//int ev1000HzCnt = 0;
+//int ev100HzCnt = 0;
+//int ev10HzCnt = 0;
+
 
 void loop() {
   // test
@@ -104,68 +131,65 @@ void loop() {
   switch (MyEvent.currentEvent.code)
   {
 
-    case ev10Hz: {
-        if ( BP0Down != (digitalRead(BP0) == LOW)) { // changement d'etat BP0
-          BP0Down = !BP0Down;
-          if (BP0Down) {
-            MyEvent.setMillisecLED(500, 50);
-            MyEvent.pushEvent(evBP0Down);
-            MyEvent.pushDelayEvent(3000, evBP0LongDown); // arme un event BP0 long down
-            MyEvent.removeDelayEvent(evBP0LongUp);
-            if ( ++BP0Multi > 1) {
-              MyEvent.pushEvent(evBP0MultiDown, BP0Multi);
-            }
-          } else {
-            MyEvent.setMillisecLED(1000, 10);
-            MyEvent.pushEvent(evBP0Up);
-            MyEvent.pushDelayEvent(1000, evBP0LongUp); // arme un event BP0 long up
-            MyEvent.removeDelayEvent(evBP0LongDown);
-          }
-        }
-
-        break;
-      }
     case ev24H:
       Serial.println("---- 24H ---");
       break;
 
 
-    //     case evLEDOn:
-    //      Serial.print(F("L"));
-    //      break;
-    //
-    //     case evLEDOff:
-    //      Serial.print(F("l"));
-    //      break;
+ 
+    case evBP0:
+      switch (MyEvent.currentEvent.param) {
+        case evBPDown:
+          MyLed0.setMillisec(500, 50);
+          BP0Multi++;
+          Serial.println(F("BP0 Down"));
+          if (BP0Multi > 1) {
+            Serial.print(F("BP0 Multi ="));
+            Serial.println(BP0Multi);
+          }
+          break;
+        case evBPUp:
+          MyLed0.setMillisec(1000, 10);
+          Serial.println(F("BP0 Up"));
+          break;
+        case evBPLongDown:
+          if (BP0Multi == 5) {
+            Serial.println(F("RESET"));
+            MyEvent.pushEvent(doReset);
+          }
 
-    case evBP0Down:
-      Serial.println(F("BP0 Down"));
+          Serial.println(F("BP0 Long Down"));
+          break;
+        case evBPLongUp:
+          BP0Multi = 0;
+          Serial.println(F("BP0 Long Up"));
+          break;
+
+      }
       break;
+    case evBP1:
+      switch (MyEvent.currentEvent.param) {
+        case evBPDown:
+          MyLed1.setFrequence(3, 50);
+          Serial.print(F("BP1 Down "));
+          Serial.println(MyBP0.isDown() ? "and BP0 Down" : "and BP0 Up");
+          break;
+        case evBPUp:
+          MyLed1.setOn(false);
+          Serial.println(F("BP1 Up"));
+          break;
+        case evBPLongDown:
+          MyLed1.setFrequence(1, 50);
+          Serial.println(F("BP1 Long Down"));
+          break;
+        case evBPLongUp:  Serial.println(F("BP1 Long Up")); break;
 
-    case evBP0Up:
-      Serial.println(F("BP0 Up"));
-      break;
-
-    case evBP0LongDown:
-      Serial.println(F("BP0 Long Down"));
-      if (multi == 5) {
-        Serial.println(F("RESET"));
-        MyEvent.pushEvent(doReset);
       }
       break;
 
-    case evBP0LongUp:
-      BP0Multi = 0;
-      Serial.println(F("BP0 Long Up"));
-      break;
 
-    case evBP0MultiDown:
-      multi = MyEvent.currentEvent.param;
-      Serial.print(F("BP0 Multi Clic:"));
-      Serial.println(multi);
 
-      break;
-
+ 
 
     case doReset:
       delay(100);
@@ -182,7 +206,7 @@ void loop() {
 
 
     case evInChar:
-      switch (toupper(MyEvent.inChar))
+      switch (toupper(MyEvent.currentEvent.param))
       {
         case '0': delay(10); break;
         case '1': delay(100); break;
@@ -198,16 +222,8 @@ void loop() {
 
     case evInString:
 
-      if (MyEvent.inputString.equals(F("S"))) {
-        sleepOk = !sleepOk;
-        Serial.print(F("Sleep=")); Serial.println(sleepOk);
-      }
 
-      if (MyEvent.inputString.equals(F("FREE"))) {
-        Serial.print(F("Ram=")); Serial.println(MyEvent.freeRam());
-      }
-
-      if (MyEvent.inputString.equals(F("RESET"))) {
+      if (MyKeyboard.inputString.equals(F("RESET"))) {
         Serial.println(F("RESET"));
         MyEvent.pushEvent(doReset);
       }
