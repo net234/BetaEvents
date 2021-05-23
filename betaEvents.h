@@ -49,9 +49,9 @@
 
 
 // betaEvent handle a minimal time system to get for seconds() minutes() or hours()
-#ifndef  __AVR__
+//#ifndef  __AVR__
 #include <TimeLib.h>          // uncomment this if you prefer to use arduino TimeLib.h  (it will use little more ram and flash)
-#endif
+//#endif
 
 
 class EventManager;
@@ -146,10 +146,6 @@ class EventManager
 #endif
     stdEvent_t currentEvent;
 
-#ifdef  USE_SERIALEVENT
-    char  inChar = '\0';
-    String inputString = "";
-#endif
     int freeRam();
 #ifndef _Time_h
     uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
@@ -173,11 +169,19 @@ class EventManager
     delayEventItem_t* eventCentsList = nullptr;
     delayEventItem_t* eventTenthList = nullptr;
     eventHandler_t*   eventHandlerList = nullptr;
-
-#ifdef  USE_SERIALEVENT
-    byte _inputStringSizeMax = 1;
-    bool _stringComplete = false;
-    bool _stringErase = false;
-#endif
-
 };
+
+
+#ifndef _Time_h
+//#ifdef  __AVR__
+byte  second()  {
+  return ( EventManagerPtr->timestamp % 60);
+}
+byte  minute()  {
+  return ( (EventManagerPtr->timestamp / 60) % 60);
+}
+byte  hour()  {
+  return ( (EventManagerPtr->timestamp / 3600) % 24);
+}
+//#endif
+#endif
