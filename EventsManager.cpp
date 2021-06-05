@@ -159,7 +159,7 @@ byte EventManager::nextEvent() {
   }
 
   // gestionaire de getEvent
-  getEventHandler_t** ItemPtr = &this->getEventHandlerList;
+  eventHandler_t** ItemPtr = &this->getEventList;
   while (*ItemPtr) {
     if ( (*ItemPtr)->getEvent() ) return (currentEvent.code);
     ItemPtr = &((*ItemPtr)->next);
@@ -196,7 +196,7 @@ void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t de
 
 void  EventManager::handleEvent() {
   // parse event list
-  eventHandler_t** ItemPtr = &this->eventHandlerList;
+  eventHandler_t** ItemPtr = &this->handleEventList;
   while (*ItemPtr) {
     (*ItemPtr)->handleEvent();
     ItemPtr = &((*ItemPtr)->next);
@@ -207,13 +207,13 @@ void  EventManager::handleEvent() {
     // todo  gerer des event repetitifs
 
     case ev100Hz: {
-        parseDelayList( &(this->eventCentsList), currentEvent.uint16);
+        parseDelayList( &(this->eventCentsList), currentEvent.aInt);
       }
 
       break;
 
     case ev10Hz: {
-        parseDelayList( &(this->eventTenthList), currentEvent.uint16);
+        parseDelayList( &(this->eventTenthList), currentEvent.aInt);
       }
 
       break;
@@ -278,11 +278,18 @@ bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
 }
 
 
-void   EventManager::addEventHandler(eventHandler_t* aHandler) {
-  eventHandler_t** ItemPtr = &this->eventHandlerList;
+void   EventManager::addHandleEvent(eventHandler_t* aHandler) {
+  eventHandler_t** ItemPtr = &this->handleEventList;
   while (*ItemPtr) ItemPtr = &((*ItemPtr)->next);
   *ItemPtr = aHandler;
 }
+
+void   EventManager::addGetEvent(eventHandler_t* aHandler) {
+  eventHandler_t** ItemPtr = &this->getEventList;
+  while (*ItemPtr) ItemPtr = &((*ItemPtr)->next);
+  *ItemPtr = aHandler;
+}
+
 
 
 void EventManager::addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* aItem) {

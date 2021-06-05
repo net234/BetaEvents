@@ -46,7 +46,7 @@
  * 
  ***********************************************************/
 
-class evHandlerSerial : public getEventHandler_t {
+class evHandlerSerial : public eventHandler_t {
   public:
     evHandlerSerial(const uint32_t speeed = 115200);
     //virtual void handleEvent()  override;

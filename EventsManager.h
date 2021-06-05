@@ -79,8 +79,11 @@ enum tEventCode {
 // Base structure for event
 struct stdEvent_t  {
 //  stdEvent_t(const uint8_t code = evNill, const int8_t ext = 0) : code(code), ext(ext) {}
-  stdEvent_t(const uint8_t code = evNill, const int aInt = 0) : code(code), aInt(aInt) {}
-  //stdEvent_t(const uint8_t code = evNill, const char aChar = 0) : code(code), aChar(aChar) {}
+//  stdEvent_t(const uint8_t code = evNill) : code(code), aInt(0) {};
+  stdEvent_t(const uint8_t code = evNill, const int aInt = 0) : code(code), aInt(aInt) {};
+//  stdEvent_t(const uint8_t code = evNill, const uint8_t ext ) : code(code), ext(ext) {};
+//  stdEvent_t(const uint8_t code = evNill, const char aChar) : code(code), aChar(aChar) {};
+
   stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), ext(stdevent.ext) {}
   union   {
     uint8_t ext;        // extCode of the event
@@ -92,7 +95,7 @@ struct stdEvent_t  {
 };
 
 // Base structure for an EventItem in an EventList
-struct eventItem_t : stdEvent_t {
+struct eventItem_t : public stdEvent_t {
   eventItem_t(const uint8_t code = evNill, const uint8_t ext = 0) : stdEvent_t(code, ext), nextItemPtr(nullptr) {}
   eventItem_t(const stdEvent_t& stdEvent) : stdEvent_t(stdEvent), nextItemPtr(nullptr) {}
   //  eventItem_t(const uint8_t codeP,const int16_t paramP) : stdEvent_t(codeP,paramP),nextItemPtr(nullptr) {}
@@ -101,7 +104,7 @@ struct eventItem_t : stdEvent_t {
 
 
 
-struct delayEventItem_t : stdEvent_t {
+struct delayEventItem_t : public stdEvent_t {
   uint16_t delay;         // delay millis cents or thenth;
   delayEventItem_t(const uint32_t delay, const uint8_t code, const int8_t ext = 0) : stdEvent_t(code, ext), delay(delay), nextItemPtr(nullptr) {}
   delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(delay), nextItemPtr(nullptr) {}
@@ -118,16 +121,16 @@ class eventHandler_t
       next = nullptr;
     } ;
     virtual void handleEvent()  {};
-//    virtual byte nextEvent()   {return evNill; };
+    virtual byte getEvent()   {return evNill; };
 };
 
-// base pour un eventHandler (gestionaire avec un handleEvent);
-class getEventHandler_t  : eventHandler_t
-{
-  public:
-  getEventHandler_t() : eventHandler_t() {};
-   virtual byte getEvent()   {return evNill; };
-};
+//// base pour un eventHandler (gestionaire avec un handleEvent);
+//class getEventHandler_t  : public eventHandler_t
+//{
+//  public:
+//  getEventHandler_t() : eventHandler_t() {};
+//   virtual byte getEvent()   {return evNill; };
+//};
 
 
 
@@ -149,7 +152,7 @@ class EventManager
     void   begin();
     byte   getEvent(const bool sleep = true);
     void   handleEvent();
-    void   addEventHandler(eventHandler_t* eventHandlerPtr);
+    
     bool   removeDelayEvent(const byte codeevent);
     bool   pushEvent(const stdEvent_t& eventPtr);
     bool   pushEvent(const uint8_t code, const int16_t param = 0);
@@ -169,6 +172,8 @@ class EventManager
     uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
 #endif
   private:
+    void   addHandleEvent(eventHandler_t* eventHandlerPtr);
+    void   addGetEvent(eventHandler_t* eventHandlerPtr);
     byte   nextEvent();  // Recherche du prochain event disponible
     void   parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay);
     void   addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* aItem);
@@ -186,8 +191,8 @@ class EventManager
     delayEventItem_t* eventMillisList = nullptr;
     delayEventItem_t* eventCentsList = nullptr;
     delayEventItem_t* eventTenthList = nullptr;
-    eventHandler_t*   eventHandlerList = nullptr;
-    getEventHandler_t* getEventHandlerList = nullptr;
+    eventHandler_t*   handleEventList = nullptr;
+    eventHandler_t*   getEventList = nullptr;
 };
 
 
