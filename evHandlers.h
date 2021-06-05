@@ -38,7 +38,7 @@
 
 #pragma once
 #include <Arduino.h>
-#include  "betaEvents.h"
+#include  "EventsManager.h"
 
 /**********************************************************
  * 
@@ -46,11 +46,11 @@
  * 
  ***********************************************************/
 
-class evHandlerSerial : public eventHandler_t {
+class evHandlerSerial : public getEventHandler_t {
   public:
     evHandlerSerial(const uint32_t speeed = 115200);
     //virtual void handleEvent()  override;
-    virtual byte nextEvent()  override;
+    virtual byte getEvent()  override;
     String inputString = "";
     char  inChar = '\0';
   private:
@@ -70,8 +70,8 @@ class evHandlerSerial : public eventHandler_t {
 
 enum tLedEventParam  {
   // evenement recu
-  evpLedOff,           // Led Off
-  evpLedOn,            // Led On
+  evxLedOff,           // Led Off
+  evxLedOn,            // Led On
 };
 
 
@@ -107,10 +107,10 @@ class evHandlerLed : public eventHandler_t {
 
 enum tBPEventParam  {
   // evenement recu
-  evBPDown,         // BP0 est appuyé
-  evBPUp,            // BP0 est relaché
-  evBPLongDown,      // BP0 est maintenus appuyé plus de 3 secondes
-  evBPLongUp,        // BP0 est relaché plus de 3 secondes
+  evxBPDown,         // BP0 est appuyé
+  evxBPUp,            // BP0 est relaché
+  evxBPLongDown,      // BP0 est maintenus appuyé plus de 3 secondes
+  evxBPLongUp,        // BP0 est relaché plus de 3 secondes
 };
 
 

@@ -27,12 +27,13 @@
 
 #define APP_NAME "event_minimal V2.0"
 
-#include "betaEvents.h"
+#include "EventsManager.h"
+//#include "evHandlers.h"
 
 
-EventManager MyEvent;   // local instance de eventManager
+EventManager MyEvent;   // local instance de eventManager (kernel of BetaEvents)
 
-/* Evenements du Manager (voir betaEvents.h)
+/* Evenements du Manager (voir BetaEvents.h)
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
@@ -81,19 +82,19 @@ void loop() {
   {
 
     case evBP0:
-      switch (MyEvent.currentEvent.param) {
-        case evBPDown:
+      switch (MyEvent.currentEvent.ext) {
+        case evxBPDown:
           MyLed0.setMillisec(500, 50);
           Serial.println(F("BP0 Down"));
           break;
-        case evBPUp:
+        case evxBPUp:
           MyLed0.setMillisec(1000, 10);
           Serial.println(F("BP0 Up"));
           break;
-        case evBPLongDown:
+        case evxBPLongDown:
           Serial.println(F("BP0 Long Down"));
           break;
-        case evBPLongUp:
+        case evxBPLongUp:
           Serial.println(F("BP0 Long Up"));
           break;
 

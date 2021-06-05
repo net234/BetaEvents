@@ -44,10 +44,11 @@ evHandlerSerial::evHandlerSerial(const uint32_t speed) {
   Serial.begin(speed);  // par defaut 115200
 }
 
-byte evHandlerSerial::nextEvent()  {
+byte evHandlerSerial::getEvent()  {
   if (this->stringComplete)   {
     this->stringComplete = false;
     this->stringErase = true;      // la chaine sera effacee au prochain caractere recu
+    EventManagerPtr->currentEvent.aStringPtr = &this->inputString;
     return (EventManagerPtr->currentEvent.code = evInString);
   }
   if (Serial.available())   {
