@@ -52,7 +52,6 @@
 eventHandler_t::eventHandler_t() {
   next = nullptr;
   EventManagerPtr->addHandleEvent(this);
-  
 } ;
 
 

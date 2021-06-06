@@ -125,26 +125,11 @@ class eventHandler_t
   public:
     eventHandler_t *next;  // handle suivant
     eventHandler_t();
-
-    //    {
-    //      EventManagerPtr->addHandleEvent(this);
-    //      next = nullptr;
-    //    } ;
     virtual void handleEvent()  {};
     virtual byte getEvent()   {
       return evNill;
     };
 };
-
-//// base pour un eventHandler (gestionaire avec un handleEvent);
-//class getEventHandler_t  : public eventHandler_t
-//{
-//  public:
-//  getEventHandler_t() : eventHandler_t() {};
-//   virtual byte getEvent()   {return evNill; };
-//};
-
-
 
 #include "evHandlers.h"
 
@@ -207,25 +192,3 @@ class EventManager
     eventHandler_t*   handleEventList = nullptr;
     eventHandler_t*   getEventList = nullptr;
 };
-
-
-#ifndef _Time_h
-
-#ifdef BETAEVENTS_CCP
-//#ifdef  __AVR__
-//     byte   second() ;
-//     byte   minute() ;
-//     byte   hour()   ;
-//#endif
-
-#else
-//#ifdef  __AVR__
-//     extern byte   second() ;
-//     extern byte   minute() ;
-//    extern byte   hour()   ;
-//#endif
-
-#endif
-
-
-#endif

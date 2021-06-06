@@ -29,7 +29,7 @@
 
 #define APP_NAME "event_demo V2.0"
 
-#include "betaEvents.h"
+#include "BetaEvents.h"
 
 #if  defined(__AVR__)
 #include <avr/wdt.h>
@@ -42,7 +42,7 @@
 
 
 
-EventManager MyEvent;   // local instance de eventManager
+BetaEvent MyEvent;   // local instance de eventManager
 
 /* Evenements du Manager (voir betaEvents.h)
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
@@ -96,7 +96,6 @@ void setup() {
   // IO Setup
 #if defined(ESP8266)
   WiFi.forceSleepBegin();
-  //   WiFi.mode(WIFI_OFF);
 #elif defined(ESP32)
   WiFi.mode(WIFI_OFF);
   btStop();
