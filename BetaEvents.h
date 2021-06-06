@@ -1,5 +1,5 @@
 /*************************************************
-     Sketch betaEvents.ino   validation of lib betaEvents to deal nicely with events programing with Arduino
+     Header betaEvents.h   validation of lib betaEvents to deal nicely with events programing with Arduino
     Copyright 2020 Pierre HENRY net23@frdev.com All - right reserved.
 
   This file is part of betaEvents.
@@ -44,144 +44,18 @@
 
  *************************************************/
 
-#pragma once
-#include "Arduino.h"
+#include "EventsManager.h"
 
+// instance eventsManager
+EventManager MyEvent;
 
-// betaEvent handle a minimal time system to get for seconds() minutes() or hours()
-//#ifndef  __AVR__
-#include <TimeLib.h>          // uncomment this if you prefer to use arduino TimeLib.h  (it will use little more ram and flash)
-//#endif
-
-
-class EventManager;
-#ifdef BETAEVENTS_CCP
-EventManager* EventManagerPtr; // allow other lib to access the specific instance of the user Sketch
-#else
-extern EventManager* EventManagerPtr;
-#endif
-
-enum tEventCode {
-  evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
-   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
-  ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
-  ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
-  ev24H,           // 24H when timestamp pass over 24H
-  evInChar,
-  evInString,
-  evWEB = 20,
-  evUser = 100,
-};
-
-
-// Base structure for event
-struct stdEvent_t  {
-  stdEvent_t(const uint8_t code = evNill, const int16_t param = 0) : code(code), param(param) {}
-  stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), param(stdevent.param) {}
-  uint8_t code;       // code of the event
-  //  uint8_t ext;        // extCode of the event
-  int16_t param;      // parameter for the event
-};
-
-struct eventItem_t : stdEvent_t {
-  eventItem_t(const uint8_t code = evNill, const int16_t param = 0) : stdEvent_t(code, param), nextItemPtr(nullptr) {}
-  eventItem_t(const stdEvent_t& stdEvent) : stdEvent_t(stdEvent), nextItemPtr(nullptr) {}
-  //  eventItem_t(const uint8_t codeP,const int16_t paramP) : stdEvent_t(codeP,paramP),nextItemPtr(nullptr) {}
-  eventItem_t* nextItemPtr;
-};
-
-
-
-struct delayEventItem_t : stdEvent_t {
-  uint16_t delay;         // delay millis cents or thenth;
-  delayEventItem_t(const uint32_t delay, const uint8_t code, const int16_t param = 0) : stdEvent_t(code, param), delay(delay), nextItemPtr(nullptr) {}
-  delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(delay), nextItemPtr(nullptr) {}
-  delayEventItem_t*  nextItemPtr;
-
-};
-
-// base pour un eventHandler (gestionaire avec un getEvent et un handleEvent);
-class eventHandler_t
-{
-  public:
-    eventHandler_t *next;  // handle suivant
-    eventHandler_t() {
-      next = nullptr;
-    } ;
-    virtual void handleEvent()  {};
-    virtual byte nextEvent()   {return evNill; };
-};
-
-
-#include "evHandlers.h"
-
-
-class EventManager
-{
-  public:
-
-    EventManager(const byte ledpinnumber = LED_BUILTIN, const byte inputStringSizeMax = 30) {  // constructeur
-      if (EventManagerPtr != NULL) {
-        Serial.print(F("Error: Only one instance for EventManager (BetaEvents)"));
-        while (true) delay(100);
-      }
-      EventManagerPtr = this;
-      currentEvent.code = evNill;
-    }
-    void   begin();
-    byte   getEvent(const bool sleep = true);
-    void   handleEvent();
-    void   addEventHandler(eventHandler_t* eventHandlerPtr);
-    bool   removeDelayEvent(const byte codeevent);
-    bool   pushEvent(const stdEvent_t& eventPtr);
-    bool   pushEvent(const uint8_t code, const int16_t param = 0);
-    bool   pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0, const bool force = false);
-    //    int    syncroSeconde(const int millisec = 0);
-#ifndef _Time_h
-    //#ifdef  __AVR__
-    friend byte   second() ;
-    friend byte   minute() ;
-    friend byte   hour()   ;
-    //#endif
-#endif
-    stdEvent_t currentEvent;
-
-    int freeRam();
-#ifndef _Time_h
-    uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
-#endif
-  private:
-    byte   nextEvent();  // Recherche du prochain event disponible
-    void   parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay);
-    void   addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* aItem);
-    bool   removeDelayEventFromList(const byte codeevent, delayEventItem_t** nextItemPtr);
-
-   public:
-    unsigned long      _loopCounter = 0;
-    unsigned long      _loopParsec = 0;
-    unsigned long      _evNillParsec = 0;
-    byte       _percentCPU = 0;
-   private:
-    unsigned long      _evNillCounter = 0;
-    uint16_t           _idleMillisec = 0;  // CPU millisecondes en pause
-    eventItem_t* eventList = nullptr;
-    delayEventItem_t* eventMillisList = nullptr;
-    delayEventItem_t* eventCentsList = nullptr;
-    delayEventItem_t* eventTenthList = nullptr;
-    eventHandler_t*   eventHandlerList = nullptr;
-};
-
-
-#ifndef _Time_h
-//#ifdef  __AVR__
-byte  second()  {
-  return ( EventManagerPtr->timestamp % 60);
-}
-byte  minute()  {
-  return ( (EventManagerPtr->timestamp / 60) % 60);
-}
-byte  hour()  {
-  return ( (EventManagerPtr->timestamp / 3600) % 24);
-}
-//#endif
-#endif
+// instances poussoir
+evHandlerButton MyBP0(evBP0, BP0);
+//evHandlerButton MyBP1(evBP1, BP1);
+//
+// instance LED
+evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
+//evHandlerLed    MyLed1(evLed1, LED1);
+//
+// instance Serial
+evHandlerSerial MyKeyboard;

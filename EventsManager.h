@@ -78,6 +78,8 @@ enum tEventCode {
   ev24H,           // 24H when timestamp pass over 24H
   evInChar,
   evInString,
+  evPB0,
+  evLED0
   //  evWEB = 20,
   //  evUser = 100,
 };

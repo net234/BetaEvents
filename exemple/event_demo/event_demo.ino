@@ -29,20 +29,19 @@
 
 #define APP_NAME "event_demo V2.0"
 
-#include "BetaEvents.h"
 
-#if  defined(__AVR__)
-#include <avr/wdt.h>
-#elif defined(ESP8266)
+//#if  defined(__AVR__)
+//#include <avr/wdt.h>
+//#elif defined(ESP8266)
 #include <ESP8266WiFi.h>
-#elif defined(ESP32)
-#include <WiFi.h>
-#endif
+//#elif defined(ESP32)
+//#include <WiFi.h>
+//#endif
 
 
 
 
-BetaEvent MyEvent;   // local instance de eventManager
+
 
 /* Evenements du Manager (voir betaEvents.h)
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
@@ -66,27 +65,23 @@ enum tUserEventCode {
   doReset,
 };
 
-#if  defined(__AVR__)
-#define BP0 2  // D2
-#define BP1 3  // D3
-#define LED1 4
-#elif defined(ESP8266) || defined(ESP32)
+//#if  defined(__AVR__)
+//#define BP0 2  // D2
+//#define BP1 3  // D3
+//#define LED1 4
+//#elif defined(ESP8266) || defined(ESP32)
 #define BP0 D1 // D1
-#define BP1 D2 // D2
-#define LED1 16
+//#define BP1 D2 // D2
+//#define LED1 16
+//
+//#endif
 
-#endif
+// instance betaEvent
 
-// instances poussoir
-evHandlerButton MyBP0(evBP0, BP0);
-evHandlerButton MyBP1(evBP1, BP1);
+// cré une instance "betaEvents" avec un poussoir "MyBP0" une LED "MyLed0" un clavier "MyKeyboard"
+#include "BetaEvents.h"
 
-// instance LED
-evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
-evHandlerLed    MyLed1(evLed1, LED1);
 
-// instance Serial
-evHandlerSerial MyKeyboard;
 
 bool sleepOk = true;
 int  multi = 0; // nombre de clic rapide
@@ -100,18 +95,18 @@ void setup() {
   WiFi.mode(WIFI_OFF);
   btStop();
 #endif
-//  Serial.begin(115200);
+  Serial.begin(115200);
   Serial.println(F("\r\n\n" APP_NAME));
   // Start instance
   MyEvent.begin();
-  MyEvent.addEventHandler(&MyKeyboard);
-  
-//  MyEvent.addEventHandler(new evHandlerDebug );  
-  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
-//  MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
-  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
-  MyLed0.setFrequence(1, 10);
-//  MyEvent.addEventHandler(&MyLed1);       // ajout LED1
+//  MyEvent.addEventHandler(&MyKeyboard);
+//  
+////  MyEvent.addEventHandler(new evHandlerDebug );  
+//  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
+////  MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
+//  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
+//  MyLed0.setFrequence(1, 10);
+////  MyEvent.addEventHandler(&MyLed1);       // ajout LED1
   Serial.println("Bonjour ....");
 
 }
@@ -137,8 +132,8 @@ void loop() {
 
  
     case evBP0:
-      switch (MyEvent.currentEvent.param) {
-        case evBPDown:
+      switch (MyEvent.currentEvent.ext) {
+        case evxBPDown:
           MyLed0.setMillisec(500, 50);
           BP0Multi++;
           Serial.println(F("BP0 Down"));
@@ -147,11 +142,11 @@ void loop() {
             Serial.println(BP0Multi);
           }
           break;
-        case evBPUp:
+        case evxBPUp:
           MyLed0.setMillisec(1000, 10);
           Serial.println(F("BP0 Up"));
           break;
-        case evBPLongDown:
+        case evxBPLongDown:
           if (BP0Multi == 5) {
             Serial.println(F("RESET"));
             MyEvent.pushEvent(doReset);
@@ -159,32 +154,32 @@ void loop() {
 
           Serial.println(F("BP0 Long Down"));
           break;
-        case evBPLongUp:
+        case evxBPLongUp:
           BP0Multi = 0;
           Serial.println(F("BP0 Long Up"));
           break;
 
       }
       break;
-    case evBP1:
-      switch (MyEvent.currentEvent.param) {
-        case evBPDown:
-          MyLed1.setFrequence(3, 50);
-          Serial.print(F("BP1 Down "));
-          Serial.println(MyBP0.isDown() ? "and BP0 Down" : "and BP0 Up");
-          break;
-        case evBPUp:
-          MyLed1.setOn(false);
-          Serial.println(F("BP1 Up"));
-          break;
-        case evBPLongDown:
-          MyLed1.setFrequence(1, 50);
-          Serial.println(F("BP1 Long Down"));
-          break;
-        case evBPLongUp:  Serial.println(F("BP1 Long Up")); break;
-
-      }
-      break;
+//    case evBP1:
+//      switch (MyEvent.currentEvent.ext) {
+//        case evxBPDown:
+//          MyLed1.setFrequence(3, 50);
+//          Serial.print(F("BP1 Down "));
+//          Serial.println(MyBP0.isDown() ? "and BP0 Down" : "and BP0 Up");
+//          break;
+//        case evxBPUp:
+//          MyLed1.setOn(false);
+//          Serial.println(F("BP1 Up"));
+//          break;
+//        case evxBPLongDown:
+//          MyLed1.setFrequence(1, 50);
+//          Serial.println(F("BP1 Long Down"));
+//          break;
+//        case evxBPLongUp:  Serial.println(F("BP1 Long Up")); break;
+//
+//      }
+//      break;
 
 
 
@@ -205,7 +200,7 @@ void loop() {
 
 
     case evInChar:
-      switch (toupper(MyEvent.currentEvent.param))
+      switch (toupper(MyEvent.currentEvent.aChar))
       {
         case '0': delay(10); break;
         case '1': delay(100); break;
