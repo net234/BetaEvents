@@ -121,14 +121,14 @@ void setup() {
   Serial.println(F("\r\n\n" APP_NAME));
   // Start instance
   MyEvent.begin();
-  MyEvent.addEventHandler(&MyKeyboard);
+//  MyEvent.addEventHandler(&MyKeyboard);
   
-  MyEvent.addEventHandler(new evHandlerDebug );
-  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
-  MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
-  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
+//  MyEvent.addEventHandler(new evHandlerDebug );
+//  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
+//  MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
+//  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
   MyLed0.setFrequence(1, 10);
-  MyEvent.addEventHandler(&MyLed1);       // ajout LED1
+//  MyEvent.addEventHandler(&MyLed1);       // ajout LED1
   Serial.println("Bonjour ....");
   D_println(sizeof(stdEvent_t));
 }

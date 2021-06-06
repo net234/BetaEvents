@@ -68,8 +68,8 @@ void setup() {
   // Start instance
   MyEvent.begin();
   //  MyEvent.addEventHandler(new evHandlerDebug );
-  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
-  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
+  //MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
+  //MyEvent.addEventHandler(&MyLed0);       // ajout LED0
   MyLed0.setFrequence(1, 10);
   Serial.println("Bonjour ....");
 }

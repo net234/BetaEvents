@@ -49,6 +49,11 @@
 #include <avr/sleep.h>
 #endif
 
+eventHandler_t::eventHandler_t() {
+  EventManagerPtr->addHandleEvent(this);
+  next = nullptr;
+} ;
+
 
 
 
@@ -334,6 +339,21 @@ bool   EventManager::removeDelayEvent(const byte codeevent) {
            removeDelayEventFromList(codeevent, &(this->eventCentsList)) ||
            removeDelayEventFromList(codeevent, &(this->eventTenthList)) );
 }
+
+#ifndef _Time_h
+//#ifdef  __AVR__
+byte  second()  {
+  return ( EventManagerPtr->timestamp % 60);
+}
+byte  minute()  {
+  return ( (EventManagerPtr->timestamp / 60) % 60);
+}
+byte  hour()  {
+  return ( (EventManagerPtr->timestamp / 3600) % 24);
+}
+//#endif
+#endif
+
 
 //====== Sram dispo =========
 #ifndef __AVR__

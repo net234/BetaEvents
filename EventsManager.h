@@ -35,7 +35,7 @@
     - Inclusion TimeLib.h
     - Gestion des event en liste chainée
      V2.0  20/04/2021
-    - Mise en liste chainée de modules 'events' 
+    - Mise en liste chainée de modules 'events'
       evHandlerSerial   Gestion des caracteres et des chaines provenant de Serial
       evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
       evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
@@ -47,7 +47,7 @@
  *************************************************/
 
 #pragma once
-#include "Arduino.h"
+#include <Arduino.h>
 
 
 // betaEvent handle a minimal time system to get for seconds() minutes() or hours()
@@ -59,6 +59,7 @@
 class EventManager;
 #ifdef BETAEVENTS_CCP
 EventManager* EventManagerPtr; // allow other lib to access the specific instance of the user Sketch
+
 #else
 extern EventManager* EventManagerPtr;
 #endif
@@ -71,24 +72,24 @@ enum tEventCode {
   ev24H,           // 24H when timestamp pass over 24H
   evInChar,
   evInString,
-//  evWEB = 20,
-//  evUser = 100,
+  //  evWEB = 20,
+  //  evUser = 100,
 };
 
 
 // Base structure for event
 struct stdEvent_t  {
-//  stdEvent_t(const uint8_t code = evNill, const int8_t ext = 0) : code(code), ext(ext) {}
-//  stdEvent_t(const uint8_t code = evNill) : code(code), aInt(0) {};
+  //  stdEvent_t(const uint8_t code = evNill, const int8_t ext = 0) : code(code), ext(ext) {}
+  //  stdEvent_t(const uint8_t code = evNill) : code(code), aInt(0) {};
   stdEvent_t(const uint8_t code = evNill, const int aInt = 0) : code(code), aInt(aInt) {};
-//  stdEvent_t(const uint8_t code = evNill, const uint8_t ext ) : code(code), ext(ext) {};
-//  stdEvent_t(const uint8_t code = evNill, const char aChar) : code(code), aChar(aChar) {};
+  //  stdEvent_t(const uint8_t code = evNill, const uint8_t ext ) : code(code), ext(ext) {};
+  //  stdEvent_t(const uint8_t code = evNill, const char aChar) : code(code), aChar(aChar) {};
 
   stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), ext(stdevent.ext) {}
   union   {
     uint8_t ext;        // extCode of the event
-    char    aChar;   
-    int     aInt;  
+    char    aChar;
+    int     aInt;
     String* aStringPtr;
   };
   uint8_t code;       // code of the event
@@ -117,11 +118,16 @@ class eventHandler_t
 {
   public:
     eventHandler_t *next;  // handle suivant
-    eventHandler_t() {
-      next = nullptr;
-    } ;
+    eventHandler_t();
+
+    //    {
+    //      EventManagerPtr->addHandleEvent(this);
+    //      next = nullptr;
+    //    } ;
     virtual void handleEvent()  {};
-    virtual byte getEvent()   {return evNill; };
+    virtual byte getEvent()   {
+      return evNill;
+    };
 };
 
 //// base pour un eventHandler (gestionaire avec un handleEvent);
@@ -152,7 +158,7 @@ class EventManager
     void   begin();
     byte   getEvent(const bool sleep = true);
     void   handleEvent();
-    
+
     bool   removeDelayEvent(const byte codeevent);
     bool   pushEvent(const stdEvent_t& eventPtr);
     bool   pushEvent(const uint8_t code, const int16_t param = 0);
@@ -160,9 +166,9 @@ class EventManager
     //    int    syncroSeconde(const int millisec = 0);
 #ifndef _Time_h
     //#ifdef  __AVR__
-    friend byte   second() ;
-    friend byte   minute() ;
-    friend byte   hour()   ;
+ //   friend byte   second() ;
+ //   friend byte   minute() ;
+ //   friend byte   hour()   ;
     //#endif
 #endif
     stdEvent_t currentEvent;
@@ -171,20 +177,21 @@ class EventManager
 #ifndef _Time_h
     uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
 #endif
-  private:
+
     void   addHandleEvent(eventHandler_t* eventHandlerPtr);
     void   addGetEvent(eventHandler_t* eventHandlerPtr);
+  private:
     byte   nextEvent();  // Recherche du prochain event disponible
     void   parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay);
     void   addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* aItem);
     bool   removeDelayEventFromList(const byte codeevent, delayEventItem_t** nextItemPtr);
 
-   public:
+  public:
     unsigned long      _loopCounter = 0;
     unsigned long      _loopParsec = 0;
     unsigned long      _evNillParsec = 0;
     byte       _percentCPU = 0;
-   private:
+  private:
     unsigned long      _evNillCounter = 0;
     uint16_t           _idleMillisec = 0;  // CPU millisecondes en pause
     eventItem_t* eventList = nullptr;
@@ -197,15 +204,22 @@ class EventManager
 
 
 #ifndef _Time_h
-//#ifdef  __AVR__
-byte  second()  {
-  return ( EventManagerPtr->timestamp % 60);
-}
-byte  minute()  {
-  return ( (EventManagerPtr->timestamp / 60) % 60);
-}
-byte  hour()  {
-  return ( (EventManagerPtr->timestamp / 3600) % 24);
-}
-//#endif
+
+#ifdef BETAEVENTS_CCP
+    //#ifdef  __AVR__
+     byte   second() ;
+     byte   minute() ;
+     byte   hour()   ;
+    //#endif
+
+#else
+     //#ifdef  __AVR__
+     extern byte   second() ;
+     extern byte   minute() ;
+      extern byte   hour()   ;
+    //#endif
+
+#endif
+
+
 #endif
