@@ -96,6 +96,7 @@ enum tUserEventCode {
 // instances poussoir
 evHandlerButton MyBP0(evBP0, BP0);
 evHandlerButton MyBP1(evBP1, BP1);
+evHandlerDebug  MyDebug;
 
 // instance LED
 evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
@@ -248,6 +249,7 @@ void loop() {
       if (MyKeyboard.inputString.equals(F("S"))) {
         sleepOk = !sleepOk;
         Serial.print(F("Sleep=")); Serial.println(sleepOk);
+        D_println(*MyEvent.currentEvent.aStringPtr);
       }
 
       if (MyKeyboard.inputString.equals(F("P"))) {

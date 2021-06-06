@@ -62,6 +62,12 @@ EventManager* EventManagerPtr; // allow other lib to access the specific instanc
 
 #else
 extern EventManager* EventManagerPtr;
+#ifndef _Time_h
+extern byte   second() ;
+extern byte   minute() ;
+extern byte   hour()   ;
+#endif
+
 #endif
 
 enum tEventCode {
@@ -166,9 +172,9 @@ class EventManager
     //    int    syncroSeconde(const int millisec = 0);
 #ifndef _Time_h
     //#ifdef  __AVR__
- //   friend byte   second() ;
- //   friend byte   minute() ;
- //   friend byte   hour()   ;
+    friend byte   second() ;
+    friend byte   minute() ;
+    friend byte   hour()   ;
     //#endif
 #endif
     stdEvent_t currentEvent;
@@ -206,18 +212,18 @@ class EventManager
 #ifndef _Time_h
 
 #ifdef BETAEVENTS_CCP
-    //#ifdef  __AVR__
-     byte   second() ;
-     byte   minute() ;
-     byte   hour()   ;
-    //#endif
+//#ifdef  __AVR__
+//     byte   second() ;
+//     byte   minute() ;
+//     byte   hour()   ;
+//#endif
 
 #else
-     //#ifdef  __AVR__
-     extern byte   second() ;
-     extern byte   minute() ;
-      extern byte   hour()   ;
-    //#endif
+//#ifdef  __AVR__
+//     extern byte   second() ;
+//     extern byte   minute() ;
+//    extern byte   hour()   ;
+//#endif
 
 #endif
 

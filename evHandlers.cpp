@@ -42,6 +42,7 @@
 
 evHandlerSerial::evHandlerSerial(const uint32_t speed) {
   Serial.begin(speed);  // par defaut 115200
+  EventManagerPtr->addGetEvent(this);
 }
 
 byte evHandlerSerial::getEvent()  {

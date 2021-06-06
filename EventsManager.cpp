@@ -50,8 +50,9 @@
 #endif
 
 eventHandler_t::eventHandler_t() {
-  EventManagerPtr->addHandleEvent(this);
   next = nullptr;
+  EventManagerPtr->addHandleEvent(this);
+  
 } ;
 
 
