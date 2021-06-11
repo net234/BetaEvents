@@ -33,7 +33,7 @@
 //#if  defined(__AVR__)
 //#include <avr/wdt.h>
 //#elif defined(ESP8266)
-#include <ESP8266WiFi.h>
+//#include <ESP8266WiFi.h>
 //#elif defined(ESP32)
 //#include <WiFi.h>
 //#endif

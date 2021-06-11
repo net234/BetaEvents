@@ -58,6 +58,7 @@ enum tUserEventCode {
 
 // instances poussoir
 evHandlerButton MyBP0(evBP0, BP0);
+//evHandlerButton MyBP1(evBP1, BP1);
 
 // instance LED
 evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
