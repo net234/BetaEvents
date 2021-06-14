@@ -40,6 +40,7 @@
 
  *************************************************/
 #define BETAEVENTS_CCP
+#pragma message "compile BetaEvents.cpp"
 
 #include "EventsManager.h"
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
@@ -368,4 +369,4 @@ int EventManager::freeRam () {
 }
 #endif
 
-//================ trackEvent =====================
+#pragma message "END compile BetaEvents.cpp"

@@ -31,6 +31,7 @@
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
 
     *************************************************/ 
+#pragma message "compile evHandlers.cpp"
 #include  "evHandlers.h"
 
 
@@ -229,3 +230,5 @@ void evHandlerDebug::handleEvent() {
       break;
   }
 };
+
+#pragma message "END compile evHandlers.cpp"

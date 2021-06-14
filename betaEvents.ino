@@ -40,7 +40,7 @@
 
 
     *************************************************/
-
+#pragma message "compile BetaEvents.ino"
 #define APP_NAME "betaEvents V2.0"
 
 #if  defined(__AVR__)
@@ -283,3 +283,4 @@ void loop() {
 
   }
 }
+#pragma message "END compile BetaEvents.ino"

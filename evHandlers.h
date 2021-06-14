@@ -35,7 +35,7 @@
 
 
     *************************************************/
-
+#pragma message "compile evHandlers.h"
 #pragma once
 #include <Arduino.h>
 #include  "EventsManager.h"

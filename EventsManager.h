@@ -45,7 +45,7 @@
        split EventManger and BetaEvents
 
  *************************************************/
-
+#pragma message "compile EventManager.h"
 #pragma once
 #include <Arduino.h>
 
@@ -141,10 +141,15 @@ class EventManager
   public:
 
     EventManager() {  // constructeur
-      if (EventManagerPtr != NULL) {
-        Serial.print(F("Error: Only one instance for EventManager (BetaEvents)"));
-        while (true) delay(100);
-      }
+#ifdef  EventManagerInstance        
+#error "EventManager already intancied"
+#else
+#define EventManagerInstance
+#endif
+//      if (EventManagerPtr != NULL) {
+ //       Serial.print(F("Error: Only one instance for EventManager (BetaEvents)"));
+ //       while (true) delay(100);
+ //      }
       EventManagerPtr = this;
       currentEvent.code = evNill;
     }
