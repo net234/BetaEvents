@@ -48,8 +48,10 @@
 #include "EventsManager.h"
 
 #ifndef evBP0
+
 #define evBP0 80
 #pragma message "evBP0 should be define by user"
+
 
 #endif
 #ifndef evLed0
