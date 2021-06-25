@@ -43,17 +43,14 @@
 
 
  *************************************************/
-#pragma message "compile EasyEvents.h"
-#ifndef APP_NAME 
+
 #include "EventsManager.h"
 
 #ifndef evBP0
-
 #define evBP0 80
-#pragma message "evBP0 should be define by user"
-
-
+#pragma message "evBP0 should be define by user > 100"
 #endif
+
 #ifndef evLed0
 #define evLed0 81  // should be define by user > 100
 #endif
@@ -64,10 +61,10 @@
 #elif defined(ESP8266) || defined(ESP32)
 #define pinBP0 D1 // D1
 #endif
-#endif
+
 
 // instance eventsManager
-EventManager MyEvent;
+EventManager BetaEvents;
 
 // instances poussoir
 evHandlerButton MyBP0(evBP0, pinBP0);
@@ -78,5 +75,3 @@ evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
 // instance Serial
 evHandlerSerial MyKeyboard;
 #endif
-
-#pragma message "END compile EasyEvents.h"

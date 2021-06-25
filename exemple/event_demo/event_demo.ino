@@ -29,21 +29,7 @@
 
 #define APP_NAME "event_demo V2.0"
 
-
-//#if  defined(__AVR__)
-//#include <avr/wdt.h>
-//#elif defined(ESP8266)
-//#include <ESP8266WiFi.h>
-//#elif defined(ESP32)
-//#include <WiFi.h>
-//#endif
-
-
-
-
-
-
-/* Evenements du Manager (voir betaEvents.h)
+/* Evenements du Manager (voir EventsManager.h)
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
@@ -55,11 +41,11 @@
 
 // Liste des evenements specifique a ce projet
 enum tUserEventCode {
-  // evenement recu
-  evBP0 = 100,
-  evBP1,
-  evLed0,
-  evLed1,
+  // evenement utilisateurs
+//  evBP0 = 100,
+//  evBP1,
+//  evLed0,
+//  evLed1,
 
   // evenement action
   doReset,
@@ -78,7 +64,10 @@ enum tUserEventCode {
 
 // instance betaEvent
 
-// cré une instance "betaEvents" avec un poussoir "MyBP0" une LED "MyLed0" un clavier "MyKeyboard"
+//  une instance "betaEvents" avec un poussoir "MyBP0" une LED "MyLed0" un clavier "MyKeyboard"
+//  MyBP0 genere un evenement evBP0 a chaque pression
+//  MyLed0 genere un evenement evLed0 a chaque clignotement
+
 #include "BetaEvents.h"
 
 
@@ -88,41 +77,25 @@ int  multi = 0; // nombre de clic rapide
 
 
 void setup() {
-  // IO Setup
-#if defined(ESP8266)
-  WiFi.forceSleepBegin();
-#elif defined(ESP32)
-  WiFi.mode(WIFI_OFF);
-  btStop();
-#endif
-  Serial.begin(115200);
-  Serial.println(F("\r\n\n" APP_NAME));
+
   // Start instance
-  MyEvent.begin();
-//  MyEvent.addEventHandler(&MyKeyboard);
-//  
-////  MyEvent.addEventHandler(new evHandlerDebug );  
-//  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
-////  MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
-//  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
-//  MyLed0.setFrequence(1, 10);
-////  MyEvent.addEventHandler(&MyLed1);       // ajout LED1
+  BetaEvents.begin();
+
+//  Serial.begin(115200);
+  Serial.println(F("\r\n\n" APP_NAME));
+
   Serial.println("Bonjour ....");
 
 }
 
 byte BP0Multi = 0;
 
-//int ev1000HzCnt = 0;
-//int ev100HzCnt = 0;
-//int ev10HzCnt = 0;
-
 
 void loop() {
-  // test
-  MyEvent.getEvent(sleepOk);
-  MyEvent.handleEvent();
-  switch (MyEvent.currentEvent.code)
+
+  BetaEvents.getEvent(sleepOk);
+  BetaEvents.handleEvent();
+  switch (BetaEvents.currentEvent.code)
   {
 
     case ev24H:
@@ -132,7 +105,7 @@ void loop() {
 
  
     case evBP0:
-      switch (MyEvent.currentEvent.ext) {
+      switch (BetaEvents.currentEvent.ext) {
         case evxBPDown:
           MyLed0.setMillisec(500, 50);
           BP0Multi++;
@@ -149,7 +122,7 @@ void loop() {
         case evxBPLongDown:
           if (BP0Multi == 5) {
             Serial.println(F("RESET"));
-            MyEvent.pushEvent(doReset);
+            BetaEvents.pushEvent(doReset);
           }
 
           Serial.println(F("BP0 Long Down"));
@@ -161,29 +134,6 @@ void loop() {
 
       }
       break;
-//    case evBP1:
-//      switch (MyEvent.currentEvent.ext) {
-//        case evxBPDown:
-//          MyLed1.setFrequence(3, 50);
-//          Serial.print(F("BP1 Down "));
-//          Serial.println(MyBP0.isDown() ? "and BP0 Down" : "and BP0 Up");
-//          break;
-//        case evxBPUp:
-//          MyLed1.setOn(false);
-//          Serial.println(F("BP1 Up"));
-//          break;
-//        case evxBPLongDown:
-//          MyLed1.setFrequence(1, 50);
-//          Serial.println(F("BP1 Long Down"));
-//          break;
-//        case evxBPLongUp:  Serial.println(F("BP1 Long Up")); break;
-//
-//      }
-//      break;
-
-
-
- 
 
     case doReset:
       delay(100);
@@ -200,7 +150,7 @@ void loop() {
 
 
     case evInChar:
-      switch (toupper(MyEvent.currentEvent.aChar))
+      switch (toupper(BetaEvents.currentEvent.aChar))
       {
         case '0': delay(10); break;
         case '1': delay(100); break;
@@ -216,10 +166,9 @@ void loop() {
 
     case evInString:
 
-
       if (MyKeyboard.inputString.equals(F("RESET"))) {
         Serial.println(F("RESET"));
-        MyEvent.pushEvent(doReset);
+        BetaEvents.pushEvent(doReset);
       }
 
       break;
