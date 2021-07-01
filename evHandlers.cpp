@@ -31,6 +31,7 @@
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
 
     *************************************************/ 
+#pragma message "compile evHandlers.cpp"
 #include  "evHandlers.h"
 
 
@@ -42,12 +43,14 @@
 
 evHandlerSerial::evHandlerSerial(const uint32_t speed) {
   Serial.begin(speed);  // par defaut 115200
+  EventManagerPtr->addGetEvent(this);
 }
 
-byte evHandlerSerial::nextEvent()  {
+byte evHandlerSerial::getEvent()  {
   if (this->stringComplete)   {
     this->stringComplete = false;
     this->stringErase = true;      // la chaine sera effacee au prochain caractere recu
+    EventManagerPtr->currentEvent.aStringPtr = &this->inputString;
     return (EventManagerPtr->currentEvent.code = evInString);
   }
   if (Serial.available())   {
@@ -62,7 +65,7 @@ byte evHandlerSerial::nextEvent()  {
     if (this->inChar == '\n' || this->inChar == '\r') {
       this->stringComplete = (this->inputString.length() > 0);
     }
-    EventManagerPtr->currentEvent.param = this->inChar;
+    EventManagerPtr->currentEvent.aChar = this->inChar;
     return (EventManagerPtr->currentEvent.code = evInChar);
   }
   return (evNill);
@@ -86,17 +89,17 @@ evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber) {
 
 void evHandlerLed::handleEvent()  {
   if (EventManagerPtr->currentEvent.code == this->evCode) {
-    switch (EventManagerPtr->currentEvent.param) {
+    switch (EventManagerPtr->currentEvent.ext) {
 
-      case evpLedOff:
+      case evxLedOff:
         digitalWrite(this->pinNumber, !this->levelON);   // led off
         break;
 
-      case evpLedOn:
+      case evxLedOn:
         digitalWrite(this->pinNumber, (this->percent == 0) ^ this->levelON );
         if (this->percent > 0 && this->percent < 100) {
-          EventManagerPtr->pushDelayEvent(this->millisecondes, this->evCode, evpLedOn);
-          EventManagerPtr->pushDelayEvent(this->millisecondes * this->percent / 100, this->evCode, evpLedOff, true);
+          EventManagerPtr->pushDelayEvent(this->millisecondes, this->evCode, evxLedOn);
+          EventManagerPtr->pushDelayEvent(this->millisecondes * this->percent / 100, this->evCode, evxLedOff, true);
         }
         break;
     }
@@ -112,7 +115,7 @@ void  evHandlerLed::setOn(const bool status) {
 void  evHandlerLed::setMillisec(const uint16_t millisecondes, const uint8_t percent) {
   this->millisecondes = max(millisecondes, (uint16_t)2);
   this->percent = percent;
-  EventManagerPtr->pushDelayEvent(0, this->evCode, (this->percent > 0) ? evpLedOn : evpLedOff );
+  EventManagerPtr->pushDelayEvent(0, this->evCode, (this->percent > 0) ? evxLedOn : evxLedOff );
 }
 
 void  evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent) {
@@ -140,11 +143,11 @@ void evHandlerButton::handleEvent()  {
     if ( this->BPDown != (digitalRead(this->pinNumber) == LOW)) { // changement d'etat BP0
       this->BPDown = !this->BPDown;
       if (this->BPDown) {
-        EventManagerPtr->pushEvent(this->evCode, evBPDown);
-        EventManagerPtr->pushDelayEvent(2000, this->evCode, evBPLongDown); // arme un event BP0 long down
+        EventManagerPtr->pushEvent(this->evCode, evxBPDown);
+        EventManagerPtr->pushDelayEvent(2000, this->evCode, evxBPLongDown); // arme un event BP0 long down
       } else {
-        EventManagerPtr->pushEvent(this->evCode, evBPUp);
-        EventManagerPtr->pushDelayEvent(1000, this->evCode, evBPLongUp); // arme un event BP0 long up
+        EventManagerPtr->pushEvent(this->evCode, evxBPUp);
+        EventManagerPtr->pushDelayEvent(1000, this->evCode, evxBPLongUp); // arme un event BP0 long up
       }
     }
   }
@@ -184,13 +187,13 @@ void evHandlerDebug::handleEvent() {
 
     case ev10Hz:
 
-      this->ev10HzMissed += EventManagerPtr->currentEvent.param - 1;
+      this->ev10HzMissed += EventManagerPtr->currentEvent.aInt - 1;
       if (this->trackTime > 1 ) {
 
-        if (EventManagerPtr->currentEvent.param > 1) {
+        if (EventManagerPtr->currentEvent.aInt > 1) {
           //        for (int N = 2; N<currentEvent.param; N++) Serial.print(' ');
           Serial.print('X');
-          Serial.print(EventManagerPtr->currentEvent.param - 1);
+          Serial.print(EventManagerPtr->currentEvent.aInt - 1);
         } else {
           Serial.print('|');
         }
@@ -198,24 +201,24 @@ void evHandlerDebug::handleEvent() {
       break;
 
     case ev100Hz:
-      this->ev100HzMissed += EventManagerPtr->currentEvent.param - 1;
+      this->ev100HzMissed += EventManagerPtr->currentEvent.aInt - 1;
 
       if (this->trackTime > 2)
       {
 
-        if (EventManagerPtr->currentEvent.param > 1) {
+        if (EventManagerPtr->currentEvent.aInt > 1) {
           //      for (int N = 3; N<currentEvent.param; N++) Serial.print(' ');
           Serial.print('x');
-          Serial.print(EventManagerPtr->currentEvent.param - 1);
+          Serial.print(EventManagerPtr->currentEvent.aInt - 1);
         } else {
           Serial.print('_');
         }
       }
       break;
-   // case evInString:
-      //if (EventManagerPtr->inputString.equals("T")) {
-     case evInChar: 
-       if (EventManagerPtr->currentEvent.param == 'T') {
+    case evInString:
+      if (EventManagerPtr->currentEvent.aStringPtr->equals("T")) {
+     //case evInChar: 
+     //  if (EventManagerPtr->currentEvent.aChar == 'T') {
         if ( ++(this->trackTime) > 3 ) {
 
           this->trackTime = 0;
@@ -227,3 +230,5 @@ void evHandlerDebug::handleEvent() {
       break;
   }
 };
+
+#pragma message "END compile evHandlers.cpp"

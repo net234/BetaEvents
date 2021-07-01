@@ -69,19 +69,7 @@ void  EventManager::begin() {
 }
 
 
-#ifndef _Time_h
-//#ifdef  __AVR__
-byte  second()  {
-  return ( EventManagerPtr->timestamp % 60);
-}
-byte  minute()  {
-  return ( (EventManagerPtr->timestamp / 60) % 60);
-}
-byte  hour()  {
-  return ( (EventManagerPtr->timestamp / 3600) % 24);
-}
-//#endif
-#endif
+
 
 static uint32_t milliSeconds = 0;
 static uint16_t delta1Hz = 0;
@@ -271,20 +259,7 @@ void  EventManager::handleEvent() {
 //      }
 //      break;
 
-#ifdef  USE_SERIALEVENT
-    case  evInChar:
-      if (_stringErase) {
-        inputString = "";
-        _stringErase = false;
-      }
-      if (isPrintable(inChar) && (inputString.length() < _inputStringSizeMax)) {
-        inputString += inChar;
-      };
-      if (inChar == '\n' || inChar == '\r') {
-        _stringComplete = (inputString.length() > 0);
-      }
-      break;
-#endif
+
   }
 }
 

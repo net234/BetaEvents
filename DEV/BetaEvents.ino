@@ -40,7 +40,7 @@
 
 
     *************************************************/
-
+#pragma message "compile BetaEvents.ino"
 #define APP_NAME "betaEvents V2.0"
 
 #if  defined(__AVR__)
@@ -51,7 +51,7 @@
 #include <WiFi.h>
 #endif
 
-#include "betaEvents.h"
+#include "EventsManager.h"
 
 
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
@@ -96,6 +96,7 @@ enum tUserEventCode {
 // instances poussoir
 evHandlerButton MyBP0(evBP0, BP0);
 evHandlerButton MyBP1(evBP1, BP1);
+evHandlerDebug  MyDebug;
 
 // instance LED
 evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
@@ -121,16 +122,16 @@ void setup() {
   Serial.println(F("\r\n\n" APP_NAME));
   // Start instance
   MyEvent.begin();
-  MyEvent.addEventHandler(&MyKeyboard);
+//  MyEvent.addEventHandler(&MyKeyboard);
   
-  MyEvent.addEventHandler(new evHandlerDebug );
-  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
-  MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
-  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
+//  MyEvent.addEventHandler(new evHandlerDebug );
+//  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
+//  MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
+//  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
   MyLed0.setFrequence(1, 10);
-  MyEvent.addEventHandler(&MyLed1);       // ajout LED1
+//  MyEvent.addEventHandler(&MyLed1);       // ajout LED1
   Serial.println("Bonjour ....");
-
+  D_println(sizeof(stdEvent_t));
 }
 
 byte BP0Multi = 0;
@@ -154,8 +155,8 @@ void loop() {
 
  
     case evBP0:
-      switch (MyEvent.currentEvent.param) {
-        case evBPDown:
+      switch (MyEvent.currentEvent.ext) {
+        case evxBPDown:
           MyLed0.setMillisec(500, 50);
           BP0Multi++;
           Serial.println(F("BP0 Down"));
@@ -163,11 +164,11 @@ void loop() {
             D_println(BP0Multi);
           }
           break;
-        case evBPUp:
+        case evxBPUp:
           MyLed0.setMillisec(1000, 10);
           Serial.println(F("BP0 Up"));
           break;
-        case evBPLongDown:
+        case evxBPLongDown:
           if (BP0Multi == 5) {
             Serial.println(F("RESET"));
             MyEvent.pushEvent(doReset);
@@ -175,7 +176,7 @@ void loop() {
 
           Serial.println(F("BP0 Long Down"));
           break;
-        case evBPLongUp:
+        case evxBPLongUp:
           BP0Multi = 0;
           Serial.println(F("BP0 Long Up"));
           break;
@@ -183,21 +184,21 @@ void loop() {
       }
       break;
     case evBP1:
-      switch (MyEvent.currentEvent.param) {
-        case evBPDown:
+      switch (MyEvent.currentEvent.ext) {
+        case evxBPDown:
           MyLed1.setFrequence(3, 50);
           Serial.print(F("BP1 Down "));
           Serial.println(MyBP0.isDown() ? "and BP0 Down" : "and BP0 Up");
           break;
-        case evBPUp:
+        case evxBPUp:
           MyLed1.setOn(false);
           Serial.println(F("BP1 Up"));
           break;
-        case evBPLongDown:
+        case evxBPLongDown:
           MyLed1.setFrequence(1, 50);
           Serial.println(F("BP1 Long Down"));
           break;
-        case evBPLongUp:  Serial.println(F("BP1 Long Up")); break;
+        case evxBPLongUp:  Serial.println(F("BP1 Long Up")); break;
 
       }
       break;
@@ -229,7 +230,7 @@ void loop() {
 
 
     case evInChar:
-      switch (toupper(MyEvent.currentEvent.param))
+      switch (toupper(MyEvent.currentEvent.ext))
       {
         case '0': delay(10); break;
         case '1': delay(100); break;
@@ -248,6 +249,7 @@ void loop() {
       if (MyKeyboard.inputString.equals(F("S"))) {
         sleepOk = !sleepOk;
         Serial.print(F("Sleep=")); Serial.println(sleepOk);
+        D_println(*MyEvent.currentEvent.aStringPtr);
       }
 
       if (MyKeyboard.inputString.equals(F("P"))) {
@@ -281,3 +283,4 @@ void loop() {
 
   }
 }
+#pragma message "END compile BetaEvents.ino"
