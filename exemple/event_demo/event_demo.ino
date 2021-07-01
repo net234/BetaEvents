@@ -1,6 +1,6 @@
 /*************************************************
  *************************************************
-    Sketch betaEvents.ino   validation of lib betaEvents to deal nicely with events programing with Arduino
+    Sketch event_demo.ino   validation of lib betaEvents to deal nicely with events programing with Arduino
     Copyright 2020 Pierre HENRY net23@frdev.com All - right reserved.
 
   This file is part of betaEvents.
@@ -42,32 +42,20 @@
 // Liste des evenements specifique a ce projet
 enum tUserEventCode {
   // evenement utilisateurs
-//  evBP0 = 100,
-//  evBP1,
-//  evLed0,
-//  evLed1,
-
+  evBP0 = 100,
+  evLed0,
   // evenement action
   doReset,
 };
 
-//#if  defined(__AVR__)
-//#define BP0 2  // D2
-//#define BP1 3  // D3
-//#define LED1 4
-//#elif defined(ESP8266) || defined(ESP32)
-#define BP0 D1 // D1
-//#define BP1 D2 // D2
-//#define LED1 16
-//
-//#endif
 
 // instance betaEvent
 
-//  une instance "betaEvents" avec un poussoir "MyBP0" une LED "MyLed0" un clavier "MyKeyboard"
+//  une instance "MyEvents" avec un poussoir "MyBP0" une LED "MyLed0" un clavier "MyKeyboard"
 //  MyBP0 genere un evenement evBP0 a chaque pression
 //  MyLed0 genere un evenement evLed0 a chaque clignotement
-
+//  MyKeyboard genere un evenement evChar a char caractere recu et un evenement evString a chaque ligne recue
+//  MyDebug permet sur reception d'un "T" sur l'entrée Serial d'afficher les infos de charge du CPU
 #include "BetaEvents.h"
 
 
@@ -79,9 +67,9 @@ int  multi = 0; // nombre de clic rapide
 void setup() {
 
   // Start instance
-  BetaEvents.begin();
+  MyEvents.begin();
 
-//  Serial.begin(115200);
+  //  Serial.begin(115200);
   Serial.println(F("\r\n\n" APP_NAME));
 
   Serial.println("Bonjour ....");
@@ -93,9 +81,9 @@ byte BP0Multi = 0;
 
 void loop() {
 
-  BetaEvents.getEvent(sleepOk);
-  BetaEvents.handleEvent();
-  switch (BetaEvents.currentEvent.code)
+  MyEvents.getEvent(sleepOk);
+  MyEvents.handleEvent();
+  switch (MyEvents.currentEvent.code)
   {
 
     case ev24H:
@@ -103,9 +91,9 @@ void loop() {
       break;
 
 
- 
+
     case evBP0:
-      switch (BetaEvents.currentEvent.ext) {
+      switch (MyEvents.currentEvent.ext) {
         case evxBPDown:
           MyLed0.setMillisec(500, 50);
           BP0Multi++;
@@ -122,7 +110,7 @@ void loop() {
         case evxBPLongDown:
           if (BP0Multi == 5) {
             Serial.println(F("RESET"));
-            BetaEvents.pushEvent(doReset);
+            MyEvents.pushEvent(doReset);
           }
 
           Serial.println(F("BP0 Long Down"));
@@ -150,7 +138,7 @@ void loop() {
 
 
     case evInChar:
-      switch (toupper(BetaEvents.currentEvent.aChar))
+      switch (toupper(MyEvents.currentEvent.aChar))
       {
         case '0': delay(10); break;
         case '1': delay(100); break;
@@ -168,7 +156,7 @@ void loop() {
 
       if (MyKeyboard.inputString.equals(F("RESET"))) {
         Serial.println(F("RESET"));
-        BetaEvents.pushEvent(doReset);
+        MyEvents.pushEvent(doReset);
       }
 
       break;

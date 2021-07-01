@@ -46,6 +46,7 @@
 
 #include "EventsManager.h"
 
+// definition des evBP0 et evLed0 si ceux si sont absent
 #ifndef evBP0
 #define evBP0 80
 #pragma message "evBP0 should be define by user > 100"
@@ -55,23 +56,32 @@
 #define evLed0 81  // should be define by user > 100
 #endif
 
+
+// definition GPIO sur D2 pour BP0 si celuici n'est pas defini
 #ifndef pinBP0
 #if  defined(__AVR__)
 #define pinBP0 2  // D2
 #elif defined(ESP8266) || defined(ESP32)
-#define pinBP0 D1 // D1
+#define pinBP0 D2 // D2
+#endif
 #endif
 
+//definition GPIO sur LED_BUILTIN pour LED0 si il n'est pas defini par l'utilisateur
+#ifndef pinLed0
+#define pinLed0 LED_BUILTIN
+#endif
 
 // instance eventsManager
-EventManager BetaEvents;
+EventManager MyEvents;
 
-// instances poussoir
+// instance poussoir
 evHandlerButton MyBP0(evBP0, pinBP0);
 
 // instance LED
-evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
+evHandlerLed    MyLed0(evLed0, pinLed0);
 
 // instance Serial
 evHandlerSerial MyKeyboard;
-#endif
+
+// instance debugger
+evHandlerDebug MyDebug;
