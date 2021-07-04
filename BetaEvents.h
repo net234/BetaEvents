@@ -49,12 +49,14 @@
 // definition des evBP0 et evLed0 si ceux si sont absent
 #ifndef evBP0
 #define evBP0 80
-#pragma message "evBP0 should be define by user > 100"
+//#pragma message "evBP0 should be define by user > 100"
 #endif
 
 #ifndef evLed0
-#define evLed0 81  // should be define by user > 100
+#define evLed0 81
+//#pragma message "evLed0 should be define by user > 100"
 #endif
+
 
 
 // definition GPIO sur D2 pour BP0 si celuici n'est pas defini
@@ -71,6 +73,14 @@
 #define pinLed0 LED_BUILTIN
 #endif
 
+// reverted led on AVR UNO and NANO
+//#if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_NANO)
+#if  defined(__AVR__)
+  const bool MyLed0Revert = true;
+#else
+  const bool MyLed0Revert = false;
+#endif
+
 // instance eventsManager
 EventManager MyEvents;
 
@@ -78,7 +88,10 @@ EventManager MyEvents;
 evHandlerButton MyBP0(evBP0, pinBP0);
 
 // instance LED
-evHandlerLed    MyLed0(evLed0, pinLed0);
+
+
+// led clignotante a 1Hz 
+evHandlerLed    MyLed0(evLed0, pinLed0, MyLed0Revert , 1);
 
 // instance Serial
 evHandlerSerial MyKeyboard;

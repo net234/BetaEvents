@@ -51,10 +51,13 @@
 #include <WiFi.h>
 #endif
 
+
+
+
 #include "EventsManager.h"
 
 
-#define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
+
 
 EventManager MyEvent;   // local instance de eventManager
 

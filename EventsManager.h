@@ -45,7 +45,6 @@
        split EventManger and BetaEvents
 
  *************************************************/
-#pragma message "compile EventManager.h"
 #pragma once
 #include <Arduino.h>
 
@@ -76,10 +75,11 @@ enum tEventCode {
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
   ev24H,           // 24H when timestamp pass over 24H
+  evInit,          // event pushed par MyEvent.begin()
   evInChar,
   evInString,
-  evPB0,
-  evLED0
+  //evPB0,
+  //evLED0
   //  evWEB = 20,
   //  evUser = 100,
 };
@@ -199,3 +199,11 @@ class EventManager
     eventHandler_t*   handleEventList = nullptr;
     eventHandler_t*   getEventList = nullptr;
 };
+
+
+//Helper
+// D_println(variable); permet d'afficher le nom de variable suivit de sa valeur
+
+#define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
+String Digit2_str(const uint16_t value);
+void   helperReset();

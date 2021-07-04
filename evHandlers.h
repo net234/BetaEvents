@@ -35,7 +35,6 @@
 
 
     *************************************************/
-#pragma message "compile evHandlers.h"
 #pragma once
 #include <Arduino.h>
 #include  "EventsManager.h"
@@ -48,11 +47,11 @@
 
 class evHandlerSerial : public eventHandler_t {
   public:
-    evHandlerSerial(const uint32_t speeed = 115200);
+    evHandlerSerial();
     //virtual void handleEvent()  override;
     virtual byte getEvent()  override;
     String inputString = "";
-    char  inChar = '\0';
+    char   inputChar = '\0';
   private:
     const byte inputStringSizeMax = 50;
     bool stringComplete = false;
@@ -77,7 +76,7 @@ enum tLedEventParam  {
 
 class evHandlerLed : public eventHandler_t {
   public:
-    evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber);
+    evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool revert, const uint8_t frequence = 0);
     virtual void handleEvent()  override;
     bool isOn()  {
       return ledOn;
@@ -93,7 +92,7 @@ class evHandlerLed : public eventHandler_t {
     uint16_t millisecondes;
     uint8_t percent;
     bool    ledOn = false;
-    const bool   levelON = false;
+    bool    levelON = false;
 
 };
 
@@ -139,9 +138,9 @@ class evHandlerDebug : public eventHandler_t {
   public:
     //evHandlerDebug();
     virtual void handleEvent()  override;
-
+    uint8_t trackTime = 0;
   private:
     uint16_t ev100HzMissed = 0;
     uint16_t ev10HzMissed = 0;
-    uint8_t trackTime = 0;
+
 };

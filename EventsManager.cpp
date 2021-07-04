@@ -31,16 +31,15 @@
     - Inclusion TimeLib.h
     - Gestion des event en liste chainée
     V2.0  20/04/2021
-    - Mise en liste chainée de modules 'events' 
+    - Mise en liste chainée de modules 'events'
       evHandlerSerial   Gestion des caracteres et des chaines provenant de Serial
       evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
       evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
-    
+
 
  *************************************************/
 #define BETAEVENTS_CCP
-#pragma message "compile BetaEvents.cpp"
 
 #include "EventsManager.h"
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
@@ -48,6 +47,7 @@
 
 #ifdef  __AVR__
 #include <avr/sleep.h>
+#include <avr/wdt.h>
 #endif
 
 eventHandler_t::eventHandler_t() {
@@ -72,6 +72,7 @@ void  EventManager::begin() {
   set_sleep_mode(SLEEP_MODE_IDLE);
   sleep_enable();
 #endif
+  pushEvent(evInit);
 }
 
 
@@ -81,7 +82,7 @@ static uint32_t milliSeconds = 0;
 static uint16_t delta1Hz = 0;
 static uint16_t delta10Hz = 0;
 static uint16_t delta100Hz = 0;
-//static uint16_t delta1000Hz = 0;
+
 
 //int EventManager::syncroSeconde(const int millisec) {
 //  int result =  millisec - delta1Hz;
@@ -115,7 +116,7 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
 #ifdef  __AVR__
     sleep_mode();
 #else
-    // pour l'ESP8266 pas sleep simple
+    // pour l'ESP8266 pas de sleep simple
     // !! TODO :  faire un meilleur sleep ESP32 & ESP8266
     //while (milliSeconds == millis()) yield();
     delay(1);  // to allow wifi sleep in modem mode
@@ -254,17 +255,17 @@ void  EventManager::handleEvent() {
 
       }
       break;
-//    case evLEDOff:
-//      digitalWrite(_LEDPinNumber, !LED_PULSE_ON);   // led off
-//      break;
-//
-//    case evLEDOn:
-//      digitalWrite(_LEDPinNumber, _LEDPercent > 0 ? LED_PULSE_ON : !LED_PULSE_ON );
-//      if (_LEDPercent > 0 && _LEDPercent < 100) {
-//        pushDelayEvent(_LEDMillisecondes, evLEDOn);
-//        pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
-//      }
-//      break;
+      //    case evLEDOff:
+      //      digitalWrite(_LEDPinNumber, !LED_PULSE_ON);   // led off
+      //      break;
+      //
+      //    case evLEDOn:
+      //      digitalWrite(_LEDPinNumber, _LEDPercent > 0 ? LED_PULSE_ON : !LED_PULSE_ON );
+      //      if (_LEDPercent > 0 && _LEDPercent < 100) {
+      //        pushDelayEvent(_LEDMillisecondes, evLEDOn);
+      //        pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
+      //      }
+      //      break;
 
 
   }
@@ -369,4 +370,26 @@ int EventManager::freeRam () {
 }
 #endif
 
-#pragma message "END compile BetaEvents.cpp"
+//Helper
+
+String Digit2_str(const uint16_t value) {
+  String result = "";
+  if (value < 10) result = '0';
+  result += value;
+  return result;
+}
+
+
+void helperReset() {
+  delay(100);
+#ifdef  __AVR__
+  wdt_enable(WDTO_120MS);
+#else
+  ESP. restart();
+#endif
+  while (1)
+  {
+    delay(1);
+  }
+
+}

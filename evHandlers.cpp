@@ -24,25 +24,24 @@
    works with beteEvents 2.0
 
     V2.0  20/04/2021
-    - Mise en liste chainée de modules 'events' 
+    - Mise en liste chainée de modules 'events'
       evHandlerSerial   Gestion des caracteres et des chaines provenant de Serial
       evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
       evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
 
-    *************************************************/ 
-#pragma message "compile evHandlers.cpp"
+    *************************************************/
 #include  "evHandlers.h"
 
 
 /**********************************************************
- * 
- * gestion de Serial pour generer les   evInChar et  evInString
- * 
+
+   gestion de Serial pour generer les   evInChar et  evInString
+
  ***********************************************************/
 
-evHandlerSerial::evHandlerSerial(const uint32_t speed) {
-  Serial.begin(speed);  // par defaut 115200
+evHandlerSerial::evHandlerSerial() {
+  //Serial.begin(speed);  // par defaut 115200
   EventManagerPtr->addGetEvent(this);
 }
 
@@ -54,18 +53,18 @@ byte evHandlerSerial::getEvent()  {
     return (EventManagerPtr->currentEvent.code = evInString);
   }
   if (Serial.available())   {
-    this->inChar = Serial.read();
+    this->inputChar = Serial.read();
     if (this->stringErase) {
       this->inputString = "";
       this->stringErase = false;
     }
-    if (isPrintable(this->inChar) && (this->inputString.length() < this->inputStringSizeMax)) {
-      this->inputString += this->inChar;
+    if (isPrintable(this->inputChar) && (this->inputString.length() < this->inputStringSizeMax)) {
+      this->inputString += this->inputChar;
     };
-    if (this->inChar == '\n' || this->inChar == '\r') {
+    if (this->inputChar == '\n' || this->inputChar == '\r') {
       this->stringComplete = (this->inputString.length() > 0);
     }
-    EventManagerPtr->currentEvent.aChar = this->inChar;
+    EventManagerPtr->currentEvent.aChar = this->inputChar;
     return (EventManagerPtr->currentEvent.code = evInChar);
   }
   return (evNill);
@@ -73,18 +72,21 @@ byte evHandlerSerial::getEvent()  {
 
 
 /**********************************************************
- * 
- * gestion d'une Led sur un port   clignotement en frequence ou en millisecondes
- * 
+
+   gestion d'une Led sur un port   clignotement en frequence ou en millisecondes
+
  ***********************************************************/
 
-
-
-evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber) {
+evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool revert, const uint8_t frequence) {
   this->pinNumber = aPinNumber;
   pinMode(aPinNumber, OUTPUT);
+  this->levelON = revert;
   this->evCode = aEventCode;
-  this->setOn(false);
+  if (frequence == 0) {
+    this->setOn(false);
+  } else {
+    this->setFrequence(frequence);
+  }
 }
 
 void evHandlerLed::handleEvent()  {
@@ -125,9 +127,9 @@ void  evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent)
 
 
 /**********************************************************
- * 
- * gestion d'un poussoir sur un port   genere evBPDown, evBPUp, evBPLongDown, evBPLongUp
- * 
+
+   gestion d'un poussoir sur un port   genere evBPDown, evBPUp, evBPLongDown, evBPLongUp
+
  ***********************************************************/
 
 
@@ -155,9 +157,9 @@ void evHandlerButton::handleEvent()  {
 
 
 /**********************************************************
- * 
- * gestion d'un traceur de debugage touche 'T' pour visualiser la charge CPU
- * 
+
+   gestion d'un traceur de debugage touche 'T' pour visualiser la charge CPU
+
  ***********************************************************/
 
 
@@ -166,17 +168,28 @@ void evHandlerDebug::handleEvent() {
     case ev1Hz:
 
       if (this->trackTime) {
+        Serial.print(Digit2_str(hour()));
+        Serial.print(':');
+        Serial.print(Digit2_str(minute()));
+        Serial.print(':');
+        Serial.print(Digit2_str(second()));
+        Serial.print(F(",CPU="));
+        Serial.print(EventManagerPtr->_percentCPU);
+        Serial.print('%');
+        if (this->trackTime < 2) {
 
-        char aBuffer[60];
-
-        snprintf(aBuffer, 60 , " %02d:%02d:%02d,CPU=%d%%,Loop=%lu,Nill=%lu,Ram=%u", hour(), minute(), second(), EventManagerPtr->_percentCPU, EventManagerPtr->_loopParsec, EventManagerPtr->_evNillParsec, EventManagerPtr->freeRam());
-
-
-        Serial.print(aBuffer);
-
+          Serial.print(F(",Loop="));
+          Serial.print(EventManagerPtr->_loopParsec);
+          Serial.print(F(",Nill="));
+          Serial.print(EventManagerPtr->_evNillParsec);
+          Serial.print(F(",Ram="));
+          Serial.print(EventManagerPtr->freeRam());
+        }
         if (this->ev100HzMissed + this->ev10HzMissed) {
-          sprintf(aBuffer, " Miss:%d/%d", this->ev100HzMissed, this->ev10HzMissed);
-          Serial.print(aBuffer);
+          Serial.print(F(" Miss:"));
+          Serial.print(this->ev100HzMissed);
+          Serial.print('/');
+          Serial.print(this->ev10HzMissed);
           this->ev100HzMissed = 0;
           this->ev10HzMissed = 0;
         }
@@ -217,8 +230,8 @@ void evHandlerDebug::handleEvent() {
       break;
     case evInString:
       if (EventManagerPtr->currentEvent.aStringPtr->equals("T")) {
-     //case evInChar: 
-     //  if (EventManagerPtr->currentEvent.aChar == 'T') {
+        //case evInChar:
+        //  if (EventManagerPtr->currentEvent.aChar == 'T') {
         if ( ++(this->trackTime) > 3 ) {
 
           this->trackTime = 0;
@@ -230,5 +243,3 @@ void evHandlerDebug::handleEvent() {
       break;
   }
 };
-
-#pragma message "END compile evHandlers.cpp"

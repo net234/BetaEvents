@@ -40,7 +40,7 @@ isDown	KEYWORD2
 #######################################
 EventManagerPtr	KEYWORD2
 currentEvent	KEYWORD2
-inChar	KEYWORD2
+inputChar	KEYWORD2
 inputString	KEYWORD2
 #######################################
 # Constants (LITERAL1)
@@ -52,6 +52,7 @@ ev100Hz	LITERAL1
 ev10Hz	LITERAL1
 ev1Hz	LITERAL1
 ev24H	LITERAL1 
+evInit	LITERAL1 
 evxLedOff	LITERAL1
 evxLedOn	LITERAL1
 evInChar	LITERAL1
