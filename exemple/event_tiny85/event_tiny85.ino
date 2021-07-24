@@ -1,6 +1,6 @@
 /*************************************************
  *************************************************
-    Sketch event_minimal.ino   validation of lib betaEvents to deal nicely with events programing with Arduino
+    Sketch event_tiny85.ino   validation of lib betaEvents to deal nicely with events programing with Arduino
     Copyright 2020 Pierre HENRY net23@frdev.com All - right reserved.
 
   This file is part of betaEvents.
@@ -24,8 +24,15 @@
     V2.0  20/04/2021
 
  *************************************************/
-
-#define APP_NAME "event_minimal V2.0"
+// ATMEL ATTINY45 / ARDUINO
+//
+//                  +-\/-+
+// Ain0 (D 5) PB5  1|    |8  Vcc
+// Ain3 (D 3) PB3  2|    |7  PB2 (D 2)  Ain1
+// Ain2 (D 4) PB4  3|    |6  PB1 (D 1) pwm1
+//            GND  4|    |5  PB0 (D 0) pwm0
+//                  +----+
+#define APP_NAME "event_tiny85 V2.0"
 
 #include "EventsManager.h"
 //#include "evHandlers.h"
@@ -61,15 +68,25 @@ evHandlerButton MyBP0(evBP0, BP0);
 //evHandlerButton MyBP1(evBP1, BP1);
 
 // instance LED
-evHandlerLed    MyLed0(evLed0, LED_BUILTIN,false,1);
+evHandlerLed    MyLed0(evLed0, PB1,true,1);
+
+#if defined (__AVR_ATtiny85__) 
+#include <SoftwareSerial.h>
+#define RX    PB3   // *** D3, Pin 2
+#define TX    PB4   // *** D4, Pin 3
+
+SoftwareSerial Serial(RX, TX);
+#endif
+
+
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println(F("\r\n\n" APP_NAME));
   // Start instance
   MyEvent.begin();
   MyLed0.setFrequence(1, 10);
-  Serial.println("Bonjour ....");
+  Serial.println(F("Bonjour ...."));
 }
 
 void loop() {

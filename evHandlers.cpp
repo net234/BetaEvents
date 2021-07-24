@@ -36,43 +36,6 @@
 
 /**********************************************************
 
-   gestion de Serial pour generer les   evInChar et  evInString
-
- ***********************************************************/
-
-evHandlerSerial::evHandlerSerial() {
-  //Serial.begin(speed);  // par defaut 115200
-  EventManagerPtr->addGetEvent(this);
-}
-
-byte evHandlerSerial::getEvent()  {
-  if (this->stringComplete)   {
-    this->stringComplete = false;
-    this->stringErase = true;      // la chaine sera effacee au prochain caractere recu
-    EventManagerPtr->currentEvent.aStringPtr = &this->inputString;
-    return (EventManagerPtr->currentEvent.code = evInString);
-  }
-  if (Serial.available())   {
-    this->inputChar = Serial.read();
-    if (this->stringErase) {
-      this->inputString = "";
-      this->stringErase = false;
-    }
-    if (isPrintable(this->inputChar) && (this->inputString.length() < this->inputStringSizeMax)) {
-      this->inputString += this->inputChar;
-    };
-    if (this->inputChar == '\n' || this->inputChar == '\r') {
-      this->stringComplete = (this->inputString.length() > 0);
-    }
-    EventManagerPtr->currentEvent.aChar = this->inputChar;
-    return (EventManagerPtr->currentEvent.code = evInChar);
-  }
-  return (evNill);
-}
-
-
-/**********************************************************
-
    gestion d'une Led sur un port   clignotement en frequence ou en millisecondes
 
  ***********************************************************/
@@ -153,6 +116,43 @@ void evHandlerButton::handleEvent()  {
       }
     }
   }
+}
+
+#ifndef __AVR_ATtiny85__
+/**********************************************************
+
+   gestion de Serial pour generer les   evInChar et  evInString
+
+ ***********************************************************/
+
+evHandlerSerial::evHandlerSerial() {
+  //Serial.begin(speed);  // par defaut 115200
+  EventManagerPtr->addGetEvent(this);
+}
+
+byte evHandlerSerial::getEvent()  {
+  if (this->stringComplete)   {
+    this->stringComplete = false;
+    this->stringErase = true;      // la chaine sera effacee au prochain caractere recu
+    EventManagerPtr->currentEvent.aStringPtr = &this->inputString;
+    return (EventManagerPtr->currentEvent.code = evInString);
+  }
+  if (Serial.available())   {
+    this->inputChar = Serial.read();
+    if (this->stringErase) {
+      this->inputString = "";
+      this->stringErase = false;
+    }
+    if (isPrintable(this->inputChar) && (this->inputString.length() < this->inputStringSizeMax)) {
+      this->inputString += this->inputChar;
+    };
+    if (this->inputChar == '\n' || this->inputChar == '\r') {
+      this->stringComplete = (this->inputString.length() > 0);
+    }
+    EventManagerPtr->currentEvent.aChar = this->inputChar;
+    return (EventManagerPtr->currentEvent.code = evInChar);
+  }
+  return (evNill);
 }
 
 
@@ -243,3 +243,5 @@ void evHandlerDebug::handleEvent() {
       break;
   }
 };
+
+#endif

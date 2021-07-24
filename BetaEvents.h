@@ -43,18 +43,18 @@
 
 
  *************************************************/
-
+//#ifdef APP_NAME
 #include "EventsManager.h"
 
 // definition des evBP0 et evLed0 si ceux si sont absent
 #ifndef evBP0
 #define evBP0 80
-//#pragma message "evBP0 should be define by user > 100"
+//#error "evBP0 should be define by user > 100"
 #endif
 
 #ifndef evLed0
 #define evLed0 81
-//#pragma message "evLed0 should be define by user > 100"
+//#error "evLed0 should be define by user > 100"
 #endif
 
 
@@ -98,3 +98,4 @@ evHandlerSerial MyKeyboard;
 
 // instance debugger
 evHandlerDebug MyDebug;
+//#endif

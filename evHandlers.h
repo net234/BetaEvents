@@ -39,25 +39,6 @@
 #include <Arduino.h>
 #include  "EventsManager.h"
 
-/**********************************************************
- * 
- * gestion de Serial pour generer les   evInChar et  evInString
- * 
- ***********************************************************/
-
-class evHandlerSerial : public eventHandler_t {
-  public:
-    evHandlerSerial();
-    //virtual void handleEvent()  override;
-    virtual byte getEvent()  override;
-    String inputString = "";
-    char   inputChar = '\0';
-  private:
-    const byte inputStringSizeMax = 50;
-    bool stringComplete = false;
-    bool stringErase = false;
-
-};
 
 
 /**********************************************************
@@ -126,6 +107,31 @@ class evHandlerButton : public eventHandler_t {
 
 };
 
+#ifndef __AVR_ATtiny85__
+/**********************************************************
+ * 
+ * gestion de Serial pour generer les   evInChar et  evInString
+ * 
+ ***********************************************************/
+
+class evHandlerSerial : public eventHandler_t {
+  public:
+    evHandlerSerial();
+    //virtual void handleEvent()  override;
+    virtual byte getEvent()  override;
+    String inputString = "";
+    char   inputChar = '\0';
+  private:
+    const byte inputStringSizeMax = 50;
+    bool stringComplete = false;
+    bool stringErase = false;
+
+};
+
+
+
+
+
 /**********************************************************
  * 
  * gestion d'un traceur de debugage touche 'T' pour visualiser la charge CPU
@@ -144,3 +150,5 @@ class evHandlerDebug : public eventHandler_t {
     uint16_t ev10HzMissed = 0;
 
 };
+
+#endif
