@@ -57,11 +57,11 @@ void evHandlerLed::handleEvent()  {
     switch (EventManagerPtr->currentEvent.ext) {
 
       case evxLedOff:
-        digitalWrite(this->pinNumber, !this->levelON);   // led off
+        digitalWrite(this->pinNumber, false ^ this->levelON);   // led off
         break;
 
       case evxLedOn:
-        digitalWrite(this->pinNumber, (this->percent == 0) ^ this->levelON );
+        digitalWrite(this->pinNumber, (this->percent != 0) ^ this->levelON );
         if (this->percent > 0 && this->percent < 100) {
           EventManagerPtr->pushDelayEvent(this->millisecondes, this->evCode, evxLedOn);
           EventManagerPtr->pushDelayEvent(this->millisecondes * this->percent / 100, this->evCode, evxLedOff, true);
@@ -73,7 +73,7 @@ void evHandlerLed::handleEvent()  {
 
 void  evHandlerLed::setOn(const bool status) {
   setMillisec(1000, status ? 100 : 0);
-  digitalWrite(this->pinNumber, status ^ this->levelON );  // make result instant if event delayed (not realy needed)
+  digitalWrite(this->pinNumber, status ^ this->levelON );  // make result instant needed  outside event loop
 }
 
 
@@ -84,6 +84,10 @@ void  evHandlerLed::setMillisec(const uint16_t millisecondes, const uint8_t perc
 }
 
 void  evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent) {
+  if (frequence == 0) {
+    this->setOn(false);
+    return;
+  }
   this->setMillisec(1000U / frequence, percent);
 }
 
