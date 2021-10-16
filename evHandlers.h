@@ -57,7 +57,7 @@ enum tLedEventParam  {
 
 class evHandlerLed : public eventHandler_t {
   public:
-    evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool revert, const uint8_t frequence = 0);
+    evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool revert = false, const uint8_t frequence = 0);
     virtual void handleEvent()  override;
     bool isOn()  {
       return ledOn;

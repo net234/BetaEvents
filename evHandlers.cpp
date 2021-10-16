@@ -57,11 +57,11 @@ void evHandlerLed::handleEvent()  {
     switch (EventManagerPtr->currentEvent.ext) {
 
       case evxLedOff:
-        digitalWrite(this->pinNumber, false ^ this->levelON);   // led off
+        digitalWrite(this->pinNumber, !this->levelON);   // led off
         break;
 
       case evxLedOn:
-        digitalWrite(this->pinNumber, (this->percent != 0) ^ this->levelON );
+        digitalWrite(this->pinNumber, (this->percent == 0) ^ this->levelON );
         if (this->percent > 0 && this->percent < 100) {
           EventManagerPtr->pushDelayEvent(this->millisecondes, this->evCode, evxLedOn);
           EventManagerPtr->pushDelayEvent(this->millisecondes * this->percent / 100, this->evCode, evxLedOff, true);
@@ -73,7 +73,7 @@ void evHandlerLed::handleEvent()  {
 
 void  evHandlerLed::setOn(const bool status) {
   setMillisec(1000, status ? 100 : 0);
-  digitalWrite(this->pinNumber, status ^ this->levelON );  // make result instant needed  outside event loop
+  digitalWrite(this->pinNumber, status ^ !this->levelON );  // make result instant needed  outside event loop
 }
 
 
@@ -188,6 +188,12 @@ void evHandlerDebug::handleEvent() {
           Serial.print(EventManagerPtr->_evNillParsec);
           Serial.print(F(",Ram="));
           Serial.print(EventManagerPtr->freeRam());
+#ifndef __AVR__
+          Serial.print(F(",Frag="));
+          Serial.print(ESP.getHeapFragmentation() );
+          Serial.print(F("%,MaxMem="));
+          Serial.print(ESP.getMaxFreeBlockSize());
+#endif
         }
         if (this->ev100HzMissed + this->ev10HzMissed) {
           Serial.print(F(" Miss:"));
@@ -234,8 +240,6 @@ void evHandlerDebug::handleEvent() {
       break;
     case evInString:
       if (EventManagerPtr->currentEvent.aStringPtr->equals("T")) {
-        //case evInChar:
-        //  if (EventManagerPtr->currentEvent.aChar == 'T') {
         if ( ++(this->trackTime) > 3 ) {
 
           this->trackTime = 0;
