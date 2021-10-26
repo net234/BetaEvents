@@ -76,9 +76,9 @@
 // reverted led on AVR UNO and NANO
 //#if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_NANO)
 #if  defined(__AVR__)
-  const bool MyLed0Revert = false;
-#else
   const bool MyLed0Revert = true;
+#else
+  const bool MyLed0Revert = false;
 #endif
 
 // instance eventsManager

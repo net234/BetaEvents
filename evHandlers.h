@@ -31,7 +31,8 @@
 
     V2.0  20/04/2021
     - Mise en liste chainée de modules 'events' test avec un evButton
-
+    V2.0.1  26/10/2021
+      corections evHandlerLed sur le true/false
 
 
     *************************************************/
@@ -57,7 +58,7 @@ enum tLedEventParam  {
 
 class evHandlerLed : public eventHandler_t {
   public:
-    evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool revert, const uint8_t frequence = 0);
+    evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool revert = false, const uint8_t frequence = 0);
     virtual void handleEvent()  override;
     bool isOn()  {
       return ledOn;
@@ -122,7 +123,7 @@ class evHandlerSerial : public eventHandler_t {
     String inputString = "";
     char   inputChar = '\0';
   private:
-    const byte inputStringSizeMax = 50;
+    const byte inputStringSizeMax = 100;
     bool stringComplete = false;
     bool stringErase = false;
 

@@ -36,7 +36,8 @@
       evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
       evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
-
+    V2.0.1  26/10/2021
+      corections evHandlerLed sur le true/false
 
 
     *************************************************/
@@ -125,14 +126,7 @@ void setup() {
   Serial.println(F("\r\n\n" APP_NAME));
   // Start instance
   MyEvent.begin();
-//  MyEvent.addEventHandler(&MyKeyboard);
-  
-//  MyEvent.addEventHandler(new evHandlerDebug );
-//  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
-//  MyEvent.addEventHandler(&MyBP1);        // ajout d'un bouton sur BP1
-//  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
   MyLed0.setFrequence(1, 10);
-//  MyEvent.addEventHandler(&MyLed1);       // ajout LED1
   Serial.println("Bonjour ....");
   D_println(sizeof(stdEvent_t));
 }
@@ -286,4 +280,3 @@ void loop() {
 
   }
 }
-#pragma message "END compile BetaEvents.ino"

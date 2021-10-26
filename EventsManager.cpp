@@ -194,9 +194,9 @@ void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t de
       //Serial.print("done waitingdelay : ");
       //D_println((*ItemPtr)->code);
       delayEventItem_t* aDelayItemPtr = *ItemPtr;
+      *ItemPtr = (*ItemPtr)->nextItemPtr;
       pushEvent(*aDelayItemPtr);
       delete aDelayItemPtr;
-      *ItemPtr = (*ItemPtr)->nextItemPtr;
     }
   }
 }
