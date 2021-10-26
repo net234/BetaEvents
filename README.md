@@ -25,7 +25,8 @@
 	      evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
 	      evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
 	      evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
-
+	    V2.0.1  26/10/2021
+	      corections evHandlerLed sur le true/false
 
 	/*************************************************
 	     Sketch betaEvents.ino   validation of lib betaEvents to deal nicely with events programing with Arduino
