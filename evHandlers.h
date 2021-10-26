@@ -31,7 +31,8 @@
 
     V2.0  20/04/2021
     - Mise en liste chainée de modules 'events' test avec un evButton
-
+    V2.0.1  26/10/2021
+      corections evHandlerLed sur le true/false
 
 
     *************************************************/
@@ -122,7 +123,7 @@ class evHandlerSerial : public eventHandler_t {
     String inputString = "";
     char   inputChar = '\0';
   private:
-    const byte inputStringSizeMax = 50;
+    const byte inputStringSizeMax = 100;
     bool stringComplete = false;
     bool stringErase = false;
 

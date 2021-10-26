@@ -26,10 +26,6 @@
     - Ajout du percentCPU pour une meilleur visualisation de l'usage CPU
 
 
-  e croquis utilise 267736 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-  Les variables globales utilisent 27348 octets (33%) de mémoire dynamique, ce qui laisse 54572 octets pour les
-e croquis utilise 267904 octets (25%) de l'espace de stockage de programmes. Le maximum est de 1044464 octets.
-Les variables globales utilisent 27300 octets (33%) de mémoire dynamique, ce qui laisse 54620 octets pour les variables locales. Le maximum est de 81920 oct
  *************************************************/
 
 #define APP_NAME "event_demo V2.0"
@@ -63,7 +59,7 @@ enum tUserEventCode {
 //  MyKeyboard genere un evenement evChar a char caractere recu et un evenement evString a chaque ligne recue
 //  MyDebug permet sur reception d'un "T" sur l'entrée Serial d'afficher les infos de charge du CPU
 
-#define pinBP0   8                 //   By default BP0 is on D2 you can change it
+//#define pinBP0   8                 //   By default BP0 is on D2 you can change it
 //#define pinLed0  3 //LED_BUILTIN   //   By default Led0 is on LED_BUILTIN you can change it
 #include <BetaEvents.h>
 
@@ -80,10 +76,10 @@ void setup() {
 
   // Start instance
   MyEvents.begin();
-
-
+  pinMode(pinBP0, INPUT_PULLUP);
   Serial.println("Bonjour ....");
   //D_println(LED_BUILTIN);
+  
 }
 
 byte BP0Multi = 0;
@@ -95,8 +91,6 @@ void loop() {
   MyEvents.handleEvent();
   switch (MyEvents.currentEvent.code)
   {
-
-
     case evInit:
       Serial.println("Init");
       break;
