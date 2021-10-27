@@ -60,7 +60,7 @@
 
 
 
-EventManager MyEvent;   // local instance de eventManager
+//EventManager MyEvent;   // local instance de eventManager
 
 /* Evenements du Manager (voir betaEvents.h)
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
@@ -87,24 +87,24 @@ enum tUserEventCode {
 };
 
 #if  defined(__AVR__)
-#define BP0 2  // D2
-#define BP1 3  // D3
-#define LED1 4
+#define BP0 D4  // D2
+#define BP1 D5  // D3
+#define LED1 D6
 #elif defined(ESP8266) || defined(ESP32)
-#define BP0 D1 // D1
-#define BP1 D2 // D2
-#define LED1 16
+#define BP0 D4 // D1
+#define BP1 D5 // D2
+#define LED1 D6
 
 #endif
 
 // instances poussoir
-evHandlerButton MyBP0(evBP0, BP0);
-evHandlerButton MyBP1(evBP1, BP1);
-evHandlerDebug  MyDebug;
+evHandlerButton BP0(evBP0, BP0);
+evHandlerButton BP1(evBP1, BP1);
+evHandlerDebug  Debug;
 
 // instance LED
-evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
-evHandlerLed    MyLed1(evLed1, LED1);
+evHandlerLed    Led0(evLed0, LED_BUILTIN);
+evHandlerLed    Led1(evLed1, LED1);
 
 // instance Serial
 evHandlerSerial MyKeyboard;

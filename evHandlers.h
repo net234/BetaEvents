@@ -59,7 +59,7 @@ enum tLedEventParam  {
 class evHandlerLed : public eventHandler_t {
   public:
     evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool revert = false, const uint8_t frequence = 0);
-    virtual void handleEvent()  override;
+    virtual void handle()  override;
     bool isOn()  {
       return ledOn;
     };
@@ -98,7 +98,7 @@ enum tBPEventParam  {
 class evHandlerButton : public eventHandler_t {
   public:
     evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber);
-    virtual void handleEvent()  override;
+    virtual void handle()  override;
     bool isDown()  {return BPDown; };
 
   private:
@@ -119,7 +119,7 @@ class evHandlerSerial : public eventHandler_t {
   public:
     evHandlerSerial();
     //virtual void handleEvent()  override;
-    virtual byte getEvent()  override;
+    virtual byte get()  override;
     String inputString = "";
     char   inputChar = '\0';
   private:
@@ -144,7 +144,7 @@ class evHandlerSerial : public eventHandler_t {
 class evHandlerDebug : public eventHandler_t {
   public:
     //evHandlerDebug();
-    virtual void handleEvent()  override;
+    virtual void handle()  override;
     uint8_t trackTime = 0;
   private:
     uint16_t ev100HzMissed = 0;

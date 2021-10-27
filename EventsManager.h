@@ -43,6 +43,8 @@
 
      V2.1  05/06/2021
        split EventManger and BetaEvents
+     V2.2  27/10/2021
+       more arduino like lib with self built in instance
 
  *************************************************/
 #pragma once
@@ -56,19 +58,21 @@
 
 
 class EventManager;
-#ifdef BETAEVENTS_CCP
-EventManager* EventManagerPtr; // allow other lib to access the specific instance of the user Sketch
-
-#else
-extern EventManager* EventManagerPtr;
+//#ifdef BETAEVENTS_CCP
+//EventManager* EventManagerPtr; // allow other lib to access the specific instance of the user Sketch
+//
+//#else
+//extern EventManager* EventManagerPtr;
 #ifndef _Time_h
 extern byte   second() ;
 extern byte   minute() ;
 extern byte   hour()   ;
 #endif
 
-#endif
+//#endif
 
+
+//Basic system events
 enum tEventCode {
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
@@ -127,8 +131,8 @@ class eventHandler_t
   public:
     eventHandler_t *next;  // handle suivant
     eventHandler_t();
-    virtual void handleEvent()  {};
-    virtual byte getEvent()   {
+    virtual void handle()  {};
+    virtual byte get()   {
       return evNill;
     };
 };
@@ -136,7 +140,7 @@ class eventHandler_t
 #include "evHandlers.h"
 
 
-class EventManager
+class EventManager : public stdEvent_t
 {
   public:
 
@@ -150,17 +154,17 @@ class EventManager
  //       Serial.print(F("Error: Only one instance for EventManager (BetaEvents)"));
  //       while (true) delay(100);
  //      }
-      EventManagerPtr = this;
-      currentEvent.code = evNill;
+//      EventManagerPtr = this;
+        this->code = evNill;
     }
     void   begin();
-    byte   getEvent(const bool sleep = true);
-    void   handleEvent();
+    byte   get(const bool sleep = true);
+    void   handle();
 
     bool   removeDelayEvent(const byte codeevent);
-    bool   pushEvent(const stdEvent_t& eventPtr);
-    bool   pushEvent(const uint8_t code, const int16_t param = 0);
-    bool   pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0, const bool force = false);
+    bool   push(const stdEvent_t& eventPtr);
+    bool   push(const uint8_t code, const int16_t param = 0);
+    bool   pushDelay(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0, const bool force = false);
     //    int    syncroSeconde(const int millisec = 0);
 #ifndef _Time_h
     //#ifdef  __AVR__
@@ -169,7 +173,7 @@ class EventManager
     friend byte   hour()   ;
     //#endif
 #endif
-    stdEvent_t currentEvent;
+//    stdEvent_t currentEvent;
 
     int freeRam();
 #ifndef _Time_h
@@ -199,6 +203,8 @@ class EventManager
     eventHandler_t*   handleEventList = nullptr;
     eventHandler_t*   getEventList = nullptr;
 };
+
+extern EventManager Events;
 
 
 //Helper

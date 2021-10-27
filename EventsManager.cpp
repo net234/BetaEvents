@@ -42,7 +42,7 @@
 #define BETAEVENTS_CCP
 
 #include "EventsManager.h"
-#define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
+//#define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
 
 #ifdef  __AVR__
@@ -52,7 +52,7 @@
 
 eventHandler_t::eventHandler_t() {
   next = nullptr;
-  EventManagerPtr->addHandleEvent(this);
+  Events.addHandleEvent(this);
 } ;
 
 
@@ -72,7 +72,7 @@ void  EventManager::begin() {
   set_sleep_mode(SLEEP_MODE_IDLE);
   sleep_enable();
 #endif
-  pushEvent(evInit);
+  push(evInit);
 }
 
 
@@ -95,8 +95,8 @@ static uint16_t delta100Hz = 0;
 //}
 
 
-byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
-  bool eventWasNill = ( currentEvent.code == evNill);
+byte EventManager::get(const bool sleepOk ) {  //  sleep = true;
+  bool eventWasNill = ( this->code == evNill);
   _loopCounter++;
   // cumul du temps passé
   uint32_t delta = millis() - milliSeconds;
@@ -108,7 +108,7 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
     delta1Hz += delta;
   }
   // recuperation des events passés
-  if (nextEvent()) return (currentEvent.code);
+  if (nextEvent()) return (this->code);
 
   // si SleepOk et que l'evenement precedent etait un nillEvent on frezze le CPU
   if (sleepOk  && eventWasNill) {
@@ -131,10 +131,10 @@ byte EventManager::getEvent(const bool sleepOk ) {  //  sleep = true;
       delta1Hz += delta;
     }
     // recuperation des events passés
-    if (nextEvent()) return (currentEvent.code);
+    if (nextEvent()) return (this->code);
   }
   _evNillCounter++;
-  return (currentEvent.code = evNill);
+  return (this->code = evNill);
 }
 
 
@@ -146,29 +146,29 @@ byte EventManager::nextEvent() {
   // il sont utilisé pour les DelayCentEvent
 
   if (delta100Hz >= 10)  {
-    currentEvent.aInt = (delta100Hz / 10);  // nombre d'ev100Hz d'un coup
-    delta100Hz -= (currentEvent.aInt) * 10;
-    return (currentEvent.code = ev100Hz);
+    this->aInt = (delta100Hz / 10);  // nombre d'ev100Hz d'un coup
+    delta100Hz -= (this->aInt) * 10;
+    return (this->code = ev100Hz);
   }
 
   // les ev10Hz ne sont pas tous restitués
   if (delta10Hz >= 100)  {
-    currentEvent.aInt = (delta10Hz / 100);  // nombre d'ev10Hz d'un coup
-    delta10Hz -= (currentEvent.aInt) * 100;
-    return (currentEvent.code = ev10Hz);
+    this->aInt = (delta10Hz / 100);  // nombre d'ev10Hz d'un coup
+    delta10Hz -= (this->aInt) * 100;
+    return (this->code = ev10Hz);
   }
 
   // par contre les ev1Hz sont tous restirués meme avec du retard
   if (delta1Hz >= 1000)  {
     //    __cnt1Hz--;
     delta1Hz -= 1000;
-    return (currentEvent.code = ev1Hz);
+    return (this->code = ev1Hz);
   }
 
   // gestionaire de getEvent
   eventHandler_t** ItemPtr = &this->getEventList;
   while (*ItemPtr) {
-    if ( (*ItemPtr)->getEvent() ) return (currentEvent.code);
+    if ( (*ItemPtr)->get() ) return (this->code);
     ItemPtr = &((*ItemPtr)->next);
   }
 
@@ -176,13 +176,14 @@ byte EventManager::nextEvent() {
   // les delais sont gere via ev100HZ
   if (eventList) {
     eventItem_t* itemPtr = eventList->nextItemPtr;
-    currentEvent = *eventList;
+    Events.code = eventList->code;
+    Events.aInt = eventList->aInt;
     delete eventList;
     eventList = itemPtr;
-    return (currentEvent.code);
+    return (Events.code);
   }
 
-  return (currentEvent.code = evNill);
+  return (Events.code = evNill);
 }
 
 void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay) {
@@ -195,32 +196,32 @@ void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t de
       //D_println((*ItemPtr)->code);
       delayEventItem_t* aDelayItemPtr = *ItemPtr;
       *ItemPtr = (*ItemPtr)->nextItemPtr;
-      pushEvent(*aDelayItemPtr);
+      push(*aDelayItemPtr);
       delete aDelayItemPtr;
     }
   }
 }
 
-void  EventManager::handleEvent() {
+void  EventManager::handle() {
   // parse event list
   eventHandler_t** ItemPtr = &this->handleEventList;
   while (*ItemPtr) {
-    (*ItemPtr)->handleEvent();
+    (*ItemPtr)->handle();
     ItemPtr = &((*ItemPtr)->next);
   }
-  switch (currentEvent.code)
+  switch (this->code)
   {
     // gestion des evenement avec delay au 100' de seconde
     // todo  gerer des event repetitifs
 
     case ev100Hz: {
-        parseDelayList( &(this->eventCentsList), currentEvent.aInt);
+        parseDelayList( &(this->eventCentsList), aInt);
       }
 
       break;
 
     case ev10Hz: {
-        parseDelayList( &(this->eventTenthList), currentEvent.aInt);
+        parseDelayList( &(this->eventTenthList), aInt);
       }
 
       break;
@@ -272,16 +273,16 @@ void  EventManager::handleEvent() {
 }
 
 
-bool  EventManager::pushEvent(const stdEvent_t& aevent) {
+bool  EventManager::push(const stdEvent_t& aevent) {
   eventItem_t** itemPtr = &(this->eventList);
   while (*itemPtr) itemPtr = &((*itemPtr)->nextItemPtr);
   *itemPtr = new eventItem_t(aevent);
   return (true);
 }
 
-bool   EventManager::pushEvent(const uint8_t codeP, const int16_t paramP) {
+bool   EventManager::push(const uint8_t codeP, const int16_t paramP) {
   eventItem_t aEvent(codeP, paramP);
-  return ( pushEvent(aEvent) );
+  return ( push(aEvent) );
 }
 
 
@@ -304,10 +305,10 @@ void EventManager::addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* a
   *ItemPtr = aItem;
 }
 
-bool   EventManager::pushDelayEvent(const uint32_t delayMillisec, const uint8_t code, const int16_t param, const bool force) {
+bool   EventManager::pushDelay(const uint32_t delayMillisec, const uint8_t code, const int16_t param, const bool force) {
   if (!force) removeDelayEvent(code);
   if (delayMillisec == 0) {
-    return ( pushEvent(code, param) );
+    return ( push(code, param) );
   }
   if (delayMillisec < 2000) { // moins de 2 secondes
     addDelayEvent( &(this->eventMillisList), new delayEventItem_t(delayMillisec, code, param) );
@@ -345,16 +346,21 @@ bool   EventManager::removeDelayEvent(const byte codeevent) {
 #ifndef _Time_h
 //#ifdef  __AVR__
 byte  second()  {
-  return ( EventManagerPtr->timestamp % 60);
+  return ( Events.timestamp % 60);
 }
 byte  minute()  {
-  return ( (EventManagerPtr->timestamp / 60) % 60);
+  return ( (Events.timestamp / 60) % 60);
 }
 byte  hour()  {
-  return ( (EventManagerPtr->timestamp / 3600) % 24);
+  return ( (Events.timestamp / 3600) % 24);
 }
 //#endif
 #endif
+
+
+
+
+
 
 
 //====== Sram dispo =========
@@ -369,6 +375,12 @@ int EventManager::freeRam () {
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
 #endif
+
+
+// Preinstantiate Objects /// as Nicolas Zambetti with Wire.cpp /////
+
+EventManager Events = EventManager();
+
 
 //Helper
 
