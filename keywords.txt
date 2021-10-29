@@ -23,7 +23,7 @@ handle	KEYWORD2
 addEventHandler	KEYWORD2
 removeDelayEvent	KEYWORD2
 push	KEYWORD2
-pushDelay	KEYWORD2
+delayedPush	KEYWORD2
 second	KEYWORD2
 minute	KEYWORD2
 hour	KEYWORD2

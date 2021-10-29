@@ -53,7 +53,7 @@ enum tUserEventCode {
 //  Keyboard genere un evenement evChar a char caractere recu et un evenement evString a chaque ligne recue
 //  Debug permet sur reception d'un "T" sur l'entrée Serial d'afficher les infos de charge du CPU
 
-//#define BP0_PIN   D2                 //   Par defaut BP0 est sur D4 
+//#define BP0_PIN   4                 //   Par defaut BP0 est sur D4 
 //#define Led0_PIN  LED_BUILTIN     //   Par defaut Led0 est sur LED_BUILTIN 
 #include <BetaEvents.h>
 

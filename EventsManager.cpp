@@ -99,7 +99,7 @@ byte EventManager::get(const bool sleepOk ) {  //  sleep = true;
   bool eventWasNill = (code == evNill);
   _loopCounter++;
   // cumul du temps passé
-  uint32_t delta = millis() - milliSeconds;
+  uint16_t delta = millis() - milliSeconds;
   if (delta) {
     milliSeconds += delta;
     parseDelayList(&(eventMillisList), delta);
@@ -142,8 +142,7 @@ byte EventManager::get(const bool sleepOk ) {  //  sleep = true;
 // get next done event
 byte EventManager::nextEvent() {
 
-  // les ev100Hz ne sont pas tous restitués
-  // il sont utilisé pour les DelayCentEvent
+  // les ev100Hz ne sont pas tous restitués mais le nombre est dans aInt de l'event
 
   if (delta100Hz >= 10)  {
     aInt = (delta100Hz / 10);  // nombre d'ev100Hz d'un coup
@@ -151,7 +150,7 @@ byte EventManager::nextEvent() {
     return (code = ev100Hz);
   }
 
-  // les ev10Hz ne sont pas tous restitués
+  // les ev10Hz ne sont pas tous restitués mais le nombre est dans aInt de l'event
   if (delta10Hz >= 100)  {
     aInt = (delta10Hz / 100);  // nombre d'ev10Hz d'un coup
     delta10Hz -= (aInt) * 100;
@@ -173,11 +172,12 @@ byte EventManager::nextEvent() {
   }
 
   // les evenements sans delay sont geré ici
-  // les delais sont gere via ev100HZ
+  // les delais sont gere via ev100HZ ev1Hz
   if (eventList) {
     eventItem_t* itemPtr = eventList->nextItemPtr;
-    Events.code = eventList->code;
-    Events.aInt = eventList->aInt;
+    //stdEvent_t(*eventList);
+    code = eventList->code;
+    aInt = eventList->aInt;
     delete eventList;
     eventList = itemPtr;
     return (Events.code);
@@ -202,6 +202,24 @@ void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t de
   }
 }
 
+void  EventManager::parseLongDelayList(longDelayEventItem_t** ItemPtr, const uint16_t aDelay) {
+  while (*ItemPtr) {
+    if ((*ItemPtr)->longDelay > aDelay ) {
+      (*ItemPtr)->longDelay -= aDelay;
+      ItemPtr = &((*ItemPtr)->nextLongItemPtr);
+    } else {
+      //Serial.print("done waitingdelay : ");
+      //D_println((*ItemPtr)->code);
+      longDelayEventItem_t* aItemPtr = *ItemPtr;
+      *ItemPtr = (*ItemPtr)->nextLongItemPtr;
+      push(*aItemPtr);
+      delete aItemPtr;
+    }
+  }
+}
+
+
+
 void  EventManager::handle() {
   // parse event list
   eventHandler_t** ItemPtr = &handleEventList;
@@ -211,12 +229,12 @@ void  EventManager::handle() {
   }
   switch (code)
   {
-    // gestion des evenement avec delay au 100' de seconde
-    // todo  gerer des event repetitifs
+      // gestion des evenement avec delay au 100' de seconde
+      // todo  gerer des event repetitifs
 
-    case ev100Hz: {
-        parseDelayList( &(eventCentsList), aInt);
-      }
+      //    case ev100Hz: {
+      //        parseDelayList( &(eventCentsList), aInt);
+      //      }
 
       break;
 
@@ -230,13 +248,14 @@ void  EventManager::handle() {
 
 
     case ev1Hz: {
+
         _percentCPU = 100 - (100UL * _idleMillisec / 1000 );
 
 #ifndef _Time_h
         timestamp++;
         uint16_t aDay = timestamp / 86400L;
         if (timestamp % 86400L == 0) {  // 60 * 60 * 24
-          push(ev24H,aDay);  // User may take care of days
+          push(ev24H, aDay); // User may take care of days
         }
 #else
         static uint8_t oldDay = 0;
@@ -247,6 +266,7 @@ void  EventManager::handle() {
         }
 
 #endif
+        parseLongDelayList( &eventSecondsList, 1);
         //        Serial.print("iddle="); Serial.println(_idleMillisec);
         //        Serial.print("CPU% ="); Serial.println(_percentCPU);
         //        Serial.print("_evNillCounter="); Serial.println(_evNillCounter);
@@ -260,19 +280,6 @@ void  EventManager::handle() {
 
       }
       break;
-      //    case evLEDOff:
-      //      digitalWrite(_LEDPinNumber, !LED_PULSE_ON);   // led off
-      //      break;
-      //
-      //    case evLEDOn:
-      //      digitalWrite(_LEDPinNumber, _LEDPercent > 0 ? LED_PULSE_ON : !LED_PULSE_ON );
-      //      if (_LEDPercent > 0 && _LEDPercent < 100) {
-      //        pushDelayEvent(_LEDMillisecondes, evLEDOn);
-      //        pushDelayEvent(_LEDMillisecondes * _LEDPercent / 100, evLEDOff);
-      //      }
-      //      break;
-
-
   }
 }
 
@@ -308,22 +315,29 @@ void EventManager::addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* a
   while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextItemPtr);
   *ItemPtr = aItem;
 }
+void EventManager::addLongDelayEvent(longDelayEventItem_t** ItemPtr, longDelayEventItem_t* aItem) {
+  while (*ItemPtr) ItemPtr = &((*ItemPtr)->nextLongItemPtr);
+  *ItemPtr = aItem;
+}
 
-bool   EventManager::pushDelay(const uint32_t delayMillisec, const uint8_t code, const int16_t param, const bool force) {
+
+
+
+bool   EventManager::delayedPush(const uint32_t delayMillisec, const uint8_t code, const int16_t param, const bool force) {
   if (!force) removeDelayEvent(code);
   if (delayMillisec == 0) {
     return ( push(code, param) );
   }
-  if (delayMillisec < 2000) { // moins de 2 secondes
+  if (delayMillisec <  1000UL) { // moins de 1 secondes
     addDelayEvent( &(eventMillisList), new delayEventItem_t(delayMillisec, code, param) );
     return (true);
   }
-  if (delayMillisec < 60000) { // moins d'une minute
-    addDelayEvent( &(eventCentsList), new delayEventItem_t(delayMillisec / 10, code, param) );
+  if (delayMillisec < 600UL * 1000UL) { // moins de 10 minute
+    addDelayEvent( &(eventTenthList), new delayEventItem_t(delayMillisec / 100, code, param) );
     return (true);
   }
+  addLongDelayEvent( &(eventSecondsList), new longDelayEventItem_t(delayMillisec / 1000, code, param) );
 
-  addDelayEvent( &(eventTenthList), new delayEventItem_t(delayMillisec / 100, code, param) );
   return (true);
 }
 
@@ -340,11 +354,26 @@ bool   EventManager::removeDelayEventFromList(const byte codeevent, delayEventIt
   }
   return (false);
 }
+bool   EventManager::removeLongDelayEventFromList(const byte codeevent, longDelayEventItem_t** nextItemPtr) {
+  while (*nextItemPtr) {
+    if ((*nextItemPtr)->code == codeevent) {
+      longDelayEventItem_t* aevent = *nextItemPtr;
+      *nextItemPtr = (*nextItemPtr)->nextLongItemPtr;
+      delete aevent;
+      return true;
+    }
+    nextItemPtr = &((*nextItemPtr)->nextLongItemPtr);
+  }
+  return (false);
+}
+
+
+
 
 bool   EventManager::removeDelayEvent(const byte codeevent) {
   return ( removeDelayEventFromList(codeevent, &(eventMillisList)) ||
-           removeDelayEventFromList(codeevent, &(eventCentsList)) ||
-           removeDelayEventFromList(codeevent, &(eventTenthList)) );
+           removeDelayEventFromList(codeevent, &(eventTenthList)) ||
+           removeLongDelayEventFromList(codeevent, &(eventSecondsList)) );
 }
 
 #ifndef _Time_h

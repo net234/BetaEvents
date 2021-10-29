@@ -60,8 +60,8 @@ void evHandlerLed::handle()  {
       case evxLedOn:
         digitalWrite(pinNumber, (percent == 0) ^ levelON );
         if (percent > 0 && percent < 100) {
-          Events.pushDelay(millisecondes, evCode, evxLedOn);
-          Events.pushDelay(millisecondes * percent / 100, evCode, evxLedOff, true);
+          Events.delayedPush(millisecondes, evCode, evxLedOn);
+          Events.delayedPush(millisecondes * percent / 100, evCode, evxLedOff, true);
         }
         break;
     }
@@ -77,7 +77,7 @@ void  evHandlerLed::setOn(const bool status) {
 void  evHandlerLed::setMillisec(const uint16_t aMillisecondes, const uint8_t aPercent) {
   millisecondes = max(aMillisecondes, (uint16_t)2);
   percent = aPercent;
-  Events.pushDelay(0, evCode, (percent > 0) ? evxLedOn : evxLedOff );
+  Events.delayedPush(0, evCode, (percent > 0) ? evxLedOn : evxLedOff );
 }
 
 void  evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent) {
@@ -111,10 +111,10 @@ void evHandlerButton::handle()  {
       BPDown = !BPDown;
       if (BPDown) {
         Events.push(evCode, evxBPDown);
-        Events.pushDelay(longDelay, evCode, evxBPLongDown); // arme un event BP0 long down
+        Events.delayedPush(longDelay, evCode, evxBPLongDown); // arme un event BP0 long down
       } else {
         Events.push(evCode, evxBPUp);
-        Events.pushDelay(longDelay, evCode, evxBPLongUp); // arme un event BP0 long up
+        Events.delayedPush(longDelay, evCode, evxBPLongUp); // arme un event BP0 long up
       }
     }
   }

@@ -58,23 +58,17 @@
 
 
 class EventManager;
-//#ifdef BETAEVENTS_CCP
-//EventManager* EventManagerPtr; // allow other lib to access the specific instance of the user Sketch
-//
-//#else
-//extern EventManager* EventManagerPtr;
+
 #ifndef _Time_h
 extern byte   second() ;
 extern byte   minute() ;
 extern byte   hour()   ;
 #endif
 
-//#endif
-
 
 //Basic system events
 enum tEventCode {
-  evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
+  evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use delayedPushEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
@@ -92,17 +86,19 @@ enum tEventCode {
 // Base structure for event
 struct stdEvent_t  {
   //  stdEvent_t(const uint8_t code = evNill, const int8_t ext = 0) : code(code), ext(ext) {}
-  //  stdEvent_t(const uint8_t code = evNill) : code(code), aInt(0) {};
+
   stdEvent_t(const uint8_t code = evNill, const int aInt = 0) : code(code), aInt(aInt) {};
   //  stdEvent_t(const uint8_t code = evNill, const uint8_t ext ) : code(code), ext(ext) {};
   //  stdEvent_t(const uint8_t code = evNill, const char aChar) : code(code), aChar(aChar) {};
 
-  stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), ext(stdevent.ext) {}
+  stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), data(stdevent.data) {}
+
   union   {
     uint8_t ext;        // extCode of the event
     char    aChar;
     int     aInt;
     String* aStringPtr;
+    size_t  data;
   };
   uint8_t code;       // code of the event
 };
@@ -111,19 +107,24 @@ struct stdEvent_t  {
 struct eventItem_t : public stdEvent_t {
   eventItem_t(const uint8_t code = evNill, const uint8_t ext = 0) : stdEvent_t(code, ext), nextItemPtr(nullptr) {}
   eventItem_t(const stdEvent_t& stdEvent) : stdEvent_t(stdEvent), nextItemPtr(nullptr) {}
-  //  eventItem_t(const uint8_t codeP,const int16_t paramP) : stdEvent_t(codeP,paramP),nextItemPtr(nullptr) {}
   eventItem_t* nextItemPtr;
 };
 
-
-
 struct delayEventItem_t : public stdEvent_t {
-  uint16_t delay;         // delay millis cents or thenth;
-  delayEventItem_t(const uint32_t delay, const uint8_t code, const int8_t ext = 0) : stdEvent_t(code, ext), delay(delay), nextItemPtr(nullptr) {}
-  delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(delay), nextItemPtr(nullptr) {}
+  delayEventItem_t(const uint16_t aDelay, const uint8_t code, const int8_t ext = 0) : stdEvent_t(code, ext), delay(aDelay), nextItemPtr(nullptr) {}
+  delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(stdEvent.delay), nextItemPtr(nullptr) {}
+  uint16_t delay;         // delay millis  thenth;
   delayEventItem_t*  nextItemPtr;
-
 };
+
+struct longDelayEventItem_t : public stdEvent_t {
+  longDelayEventItem_t(const uint32_t aDelay, const uint8_t code, const int8_t ext = 0) : stdEvent_t(code, ext), longDelay(aDelay), nextLongItemPtr(nullptr) {}
+  longDelayEventItem_t(const longDelayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , longDelay(stdEvent.longDelay), nextLongItemPtr(nullptr) {}
+  uint32_t longDelay;         // delay seconds; up to 150 years :)
+  longDelayEventItem_t*  nextLongItemPtr;
+};
+
+
 
 // base pour un eventHandler (gestionaire avec un handleEvent);
 class eventHandler_t
@@ -159,14 +160,14 @@ class EventManager : public stdEvent_t
     bool   removeDelayEvent(const byte codeevent);
     bool   push(const stdEvent_t& eventPtr);
     bool   push(const uint8_t code, const int16_t param = 0);
-    bool   pushDelay(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0, const bool force = false);
+    bool   delayedPush(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0, const bool force = false);
     //    int    syncroSeconde(const int millisec = 0);
 #ifndef _Time_h
     friend byte   second() ;
     friend byte   minute() ;
     friend byte   hour()   ;
 #endif
-//    int freeRam();
+    //    int freeRam();
 #ifndef _Time_h
     uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
 #endif
@@ -175,9 +176,12 @@ class EventManager : public stdEvent_t
     void   addGetEvent(eventHandler_t* eventHandlerPtr);
   private:
     byte   nextEvent();  // Recherche du prochain event disponible
-    void   parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay);
+    void   parseDelayList(delayEventItem_t** ItemPtr, const uint16_t aDelay);
+    void   parseLongDelayList(longDelayEventItem_t** ItemPtr, const uint16_t aDelay);
     void   addDelayEvent(delayEventItem_t** ItemPtr, delayEventItem_t* aItem);
+    void   addLongDelayEvent(longDelayEventItem_t** ItemPtr, longDelayEventItem_t* aItem);
     bool   removeDelayEventFromList(const byte codeevent, delayEventItem_t** nextItemPtr);
+    bool   removeLongDelayEventFromList(const byte codeevent, longDelayEventItem_t** nextItemPtr);
 
   public:
     unsigned long      _loopCounter = 0;
@@ -188,9 +192,9 @@ class EventManager : public stdEvent_t
     unsigned long      _evNillCounter = 0;
     uint16_t           _idleMillisec = 0;  // CPU millisecondes en pause
     eventItem_t* eventList = nullptr;
-    delayEventItem_t* eventMillisList = nullptr;
-    delayEventItem_t* eventCentsList = nullptr;
-    delayEventItem_t* eventTenthList = nullptr;
+    delayEventItem_t* eventMillisList = nullptr;  // event < 1 seconde
+    delayEventItem_t* eventTenthList = nullptr;   // event < 1 Minute
+    longDelayEventItem_t* eventSecondsList = nullptr; // autres events up
     eventHandler_t*   handleEventList = nullptr;
     eventHandler_t*   getEventList = nullptr;
 };

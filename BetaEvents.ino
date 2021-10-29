@@ -63,7 +63,7 @@
 //EventManager MyEvent;   // local instance de eventManager
 
 /* Evenements du Manager (voir betaEvents.h)
-  evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
+  evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use delayedPushEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
   ev1Hz,           // un tick 1HZ   cumulative (see betaEvent.h)
@@ -133,6 +133,7 @@ void setup() {
   D_println(sizeof(size_t));
   D_println(sizeof(eventItem_t));
   D_println(sizeof(delayEventItem_t));
+  D_println(sizeof(longDelayEventItem_t));
 }
 
 byte BP0Multi = 0;
@@ -253,20 +254,28 @@ void loop() {
         D_println(*Events.aStringPtr);
       }
 
+     if (Keyboard.inputString.equals(F("O"))) {
+        Serial.println(F("Push 3 delay events"));
+        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+        Events.delayedPush(1000, ev1S);
+        Events.delayedPush(2000, ev2S);
+        Events.delayedPush(3000, ev3S);
+        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+      }
       if (Keyboard.inputString.equals(F("P"))) {
         Serial.println(F("Push 3 delay events"));
         Serial.print(F("Ram=")); Serial.println(helperFreeRam());
-        Events.pushDelay(1000, ev1S);
-        Events.pushDelay(2000, ev2S);
-        Events.pushDelay(3000, ev3S);
+        Events.delayedPush(1000, ev1S);
+        Events.delayedPush(2000, ev2S);
+        Events.delayedPush(3000, ev3S);
         Serial.print(F("Ram=")); Serial.println(helperFreeRam());
       }
       if (Keyboard.inputString.equals(F("Q"))) {
         Serial.println(F("Push 3 events"));
         Serial.print(F("Ram=")); Serial.println(helperFreeRam());
-        Events.pushDelay(0, ev1S);
-        Events.pushDelay(0, ev2S);
-        Events.pushDelay(0, ev3S);
+        Events.delayedPush(0, ev1S);
+        Events.delayedPush(0, ev2S);
+        Events.delayedPush(0, ev3S);
         Serial.print(F("Ram=")); Serial.println(helperFreeRam());
       }
 

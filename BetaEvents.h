@@ -63,12 +63,12 @@
 //
 //
 //
-// definition GPIO sur D4 pour BP0 si celuici n'est pas defini
+// definition GPIO sur D5 pour BP0 si celuici n'est pas defini
 #ifndef BP0_PIN
 #if  defined(__AVR__)
-#define BP0_PIN 4
+#define BP0_PIN 5
 #elif defined(ESP8266) || defined(ESP32)
-#define BP0_PIN D4 // D2
+#define BP0_PIN D5 // D2
 #endif
 #endif
 
@@ -78,7 +78,6 @@
 #endif
 
 // reverted led on AVR UNO and NANO
-//#if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_NANO)
 #if  defined(__AVR__)
   const bool Led0Revert = true;
 #else
