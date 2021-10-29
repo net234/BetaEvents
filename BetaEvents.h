@@ -99,7 +99,7 @@ evHandlerButton BP0(evBP0, BP0_PIN);
 evHandlerLed    Led0(evLed0, LED0_PIN, Led0Revert , 1);
 
 // instance Serial
-evHandlerSerial Keyboard;
+evHandlerSerial Keyboard(100);
 
 // instance debugger
 evHandlerDebug  Debug;
