@@ -33,7 +33,8 @@
     - Mise en liste chainée de modules 'events' test avec un evButton
     V2.0.1  26/10/2021
       corections evHandlerLed sur le true/false
-
+    V2.2  27/10/2021
+       more arduino like lib with self built in instance
 
     *************************************************/
 #pragma once
@@ -117,14 +118,13 @@ class evHandlerButton : public eventHandler_t {
 
 class evHandlerSerial : public eventHandler_t {
   public:
-    evHandlerSerial();
+    evHandlerSerial(const uint8_t inputStringSize = 20);
     //virtual void handleEvent()  override;
     virtual byte get()  override;
     String inputString = "";
     char   inputChar = '\0';
-    //long speed = 115200;
   private:
-    const byte inputStringSizeMax = 100;
+    uint8_t inputStringSizeMax = 20;
     bool stringComplete = false;
     bool stringErase = false;
 

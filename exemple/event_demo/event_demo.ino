@@ -18,11 +18,13 @@
     You should have received a copy of the GNU Lesser General Public License
     along with betaEvents.  If not, see <https://www.gnu.org/licenses/lglp.txt>.
 
+    V2.2  27/10/2021
+       more arduino like lib with self built in instance
 
 
  *************************************************/
 
-#define APP_NAME "event_demo V2.0"
+#define APP_NAME "event_demo V2.2"
 
 /* Evenements du Manager (voir EventsManager.h)
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
@@ -53,8 +55,8 @@ enum tUserEventCode {
 //  Keyboard genere un evenement evChar a char caractere recu et un evenement evString a chaque ligne recue
 //  Debug permet sur reception d'un "T" sur l'entrée Serial d'afficher les infos de charge du CPU
 
-//#define BP0_PIN   4                 //   Par defaut BP0 est sur D4 
-//#define Led0_PIN  LED_BUILTIN     //   Par defaut Led0 est sur LED_BUILTIN 
+//#define BP0_PIN   5                 //   Par defaut BP0 est sur D5
+//#define Led0_PIN  LED_BUILTIN     //   Par defaut Led0 est sur LED_BUILTIN
 #include <BetaEvents.h>
 
 int  multi = 0; // nombre de clic rapide
@@ -62,7 +64,7 @@ int  multi = 0; // nombre de clic rapide
 
 void setup() {
 
-  Serial.begin(115200);  
+  Serial.begin(115200);
   Serial.println(F("\r\n\n" APP_NAME));
 
   // Start instance
@@ -74,11 +76,11 @@ void setup() {
 }
 
 byte BP0Multi = 0;  // detection de click rapide sur le poussoir
-
+bool sleepOk = true;
 
 void loop() {
 
-  Events.get();         // generation du prochain evenement
+  Events.get(sleepOk);         // generation du prochain evenement
   Events.handle();      // passage de l'evenement au systeme
   switch (Events.code)  // gestion de l'evenement
   {
@@ -129,44 +131,46 @@ void loop() {
       break;
 
 
-      //    case evInChar: {
-      //        if (MyDebug.trackTime < 2) {
-      //          char aChar = MyKeyboard.inputChar;
-      //          if (isPrintable(aChar)) {
-      //            D_println(aChar);
-      //          } else {
-      //            D_println(int(aChar));
-      //          }
-      //        }
-      //        switch (toupper(MyKeyboard.inputChar))
-      //        {
-      //          case '0': delay(10); break;
-      //          case '1': delay(100); break;
-      //          case '2': delay(200); break;
-      //          case '3': delay(300); break;
-      //          case '4': delay(400); break;
-      //          case '5': delay(500); break;
-      //        }
-      //
-      //
-      //        break;
-      //
-      //      }
-      //
-      //    case evInString:
-      //      if (MyDebug.trackTime < 2) {
-      //        D_println(MyKeyboard.inputString);
-      //      }
-      //      if (MyKeyboard.inputString.equals("RESET")) {
-      //        Serial.println(F("RESET"));
-      //        MyEvents.pushEvent(doReset);
-      //      }
-      //      if (MyKeyboard.inputString.equals("S")) {
-      //        sleepOk = !sleepOk;
-      //        D_println(sleepOk);
-      //      }
-      //
-      //      break;
+    case evInChar: {
+        if (Debug.trackTime < 2) {
+          char aChar = Events.aChar;
+          if (isPrintable(aChar)) {
+            D_println(Keyboard.inputChar);
+          } else {
+            D_println(int(aChar));
+          }
+        }
+        switch (toupper(Events.aChar))
+        {
+          case '0': delay(10); break;
+          case '1': delay(100); break;
+          case '2': delay(200); break;
+          case '3': delay(300); break;
+          case '4': delay(400); break;
+          case '5': delay(500); break;
+        }
+
+
+        break;
+
+      }
+      
+          case evInString:
+            if (Debug.trackTime < 2) {
+              D_println(Keyboard.inputString);
+            }
+            if (Keyboard.inputString.equals("RESET")) {
+              Serial.println(F("RESET"));
+              Events.push(doReset);
+            }
+            if (Keyboard.inputString.equals("S")) {
+//            if (Events.aStringPtr->equals("S")) {
+  
+              sleepOk = !sleepOk;
+              D_println(sleepOk);
+            }
+      
+            break;
 
   }
 }

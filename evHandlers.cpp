@@ -31,7 +31,9 @@
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
     V2.0.1  26/10/2021
       corections evHandlerLed sur le true/false
-      
+    V2.2  27/10/2021
+       more arduino like lib with self built in instance
+             
     *************************************************/
 #include  "evHandlers.h"
 
@@ -127,8 +129,10 @@ void evHandlerButton::handle()  {
 
  ***********************************************************/
 
-evHandlerSerial::evHandlerSerial() {
+evHandlerSerial::evHandlerSerial(const uint8_t inputStringSize ) {
   //Serial.begin(speed);  // par defaut 115200
+  inputStringSizeMax = inputStringSize;
+  inputString.reserve(inputStringSize);
   Events.addGetEvent(this);
 }
 
@@ -145,10 +149,10 @@ byte evHandlerSerial::get()  {
       inputString = "";
       stringErase = false;
     }
-    if (isPrintable(inputChar) && (inputString.length() < inputStringSizeMax)) {
+    if (isPrintable(inputChar) && (inputString.length() <= inputStringSizeMax)) {
       inputString += inputChar;
     };
-    if (inputChar == '\n' || inputChar == '\r') {
+    if (inputChar == '\n' || inputChar == '\r' ) {
       stringComplete = (inputString.length() > 0);
     }
     Events.aChar = inputChar;

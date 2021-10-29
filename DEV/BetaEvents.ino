@@ -38,6 +38,8 @@
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
     V2.0.1  26/10/2021
       corections evHandlerLed sur le true/false
+    V2.2  27/10/2021
+       more arduino like lib with self built in instance
 
 
     *************************************************/
@@ -208,12 +210,15 @@ void loop() {
 
 
     case ev1S:
+      Serial.print(F("Ram=")); Serial.println(helperFreeRam());
       Serial.println(F("EV1S"));
       break;
     case ev2S:
+      Serial.print(F("Ram=")); Serial.println(helperFreeRam());
       Serial.println(F("EV2S"));
       break;
     case ev3S:
+      Serial.print(F("Ram=")); Serial.println(helperFreeRam());
       Serial.println(F("EV3S"));
       break;
 
@@ -254,12 +259,12 @@ void loop() {
         D_println(*Events.aStringPtr);
       }
 
-     if (Keyboard.inputString.equals(F("O"))) {
+      if (Keyboard.inputString.equals(F("O"))) {
         Serial.println(F("Push 3 delay events"));
         Serial.print(F("Ram=")); Serial.println(helperFreeRam());
-        Events.delayedPush(1000, ev1S);
-        Events.delayedPush(2000, ev2S);
-        Events.delayedPush(3000, ev3S);
+        Events.delayedPush(500, ev1S);
+        Events.delayedPush(11 * 1000, ev2S);
+        Events.delayedPush(11L * 60  * 1000, ev3S);
         Serial.print(F("Ram=")); Serial.println(helperFreeRam());
       }
       if (Keyboard.inputString.equals(F("P"))) {

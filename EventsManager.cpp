@@ -36,6 +36,8 @@
       evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
       evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
+    V2.2  27/10/2021
+       more arduino like lib with self built in instance
 
 
  *************************************************/

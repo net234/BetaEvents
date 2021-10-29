@@ -41,6 +41,8 @@
       evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
     - V2.1 27/10/2020
+    V2.2  27/10/2021
+       more arduino like lib with self built in instance
 
  *************************************************/
 #pragma once
@@ -68,7 +70,7 @@
 #if  defined(__AVR__)
 #define BP0_PIN 5
 #elif defined(ESP8266) || defined(ESP32)
-#define BP0_PIN D5 // D2
+#define BP0_PIN D5 
 #endif
 #endif
 

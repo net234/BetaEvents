@@ -27,13 +27,15 @@ delayedPush	KEYWORD2
 second	KEYWORD2
 minute	KEYWORD2
 hour	KEYWORD2
-freeRam	KEYWORD2
+helperFreeRam	KEYWORD2
 timestamp	KEYWORD2
 
 setOn	KEYWORD2
 setMillisec	KEYWORD2
 setFrequence	KEYWORD2
 isDown	KEYWORD2
+inputChar	KEYWORD2
+inputString	KEYWORD2
 
 #######################################
 # Instances (KEYWORD2)
@@ -41,12 +43,14 @@ isDown	KEYWORD2
 Events	KEYWORD2
 inputChar	KEYWORD2
 inputString	KEYWORD2
+Keyboard	KEYWORD2
+BP0	KEYWORD2
+Led0 KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################
 
 evNill	LITERAL1
-ev1000Hz	LITERAL1
 ev100Hz	LITERAL1
 ev10Hz	LITERAL1
 ev1Hz	LITERAL1
