@@ -54,7 +54,7 @@ enum tUserEventCode {
 //  Debug permet sur reception d'un "T" sur l'entrée Serial d'afficher les infos de charge du CPU
 
 //#define BP0_PIN   D2                 //   Par defaut BP0 est sur D4 
-//#define Led0_PIN  3LED_BUILTIN     //   Par defaut Led0 est sur LED_BUILTIN 
+//#define Led0_PIN  LED_BUILTIN     //   Par defaut Led0 est sur LED_BUILTIN 
 #include <BetaEvents.h>
 
 int  multi = 0; // nombre de clic rapide

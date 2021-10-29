@@ -58,7 +58,7 @@ enum tLedEventParam  {
 
 class evHandlerLed : public eventHandler_t {
   public:
-    evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool revert = false, const uint8_t frequence = 0);
+    evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool ledOn = HIGH, const uint8_t frequence = 0);
     virtual void handle()  override;
     bool isOn()  {
       return ledOn;
@@ -97,7 +97,7 @@ enum tBPEventParam  {
 
 class evHandlerButton : public eventHandler_t {
   public:
-    evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber);
+    evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay = 1500);
     virtual void handle()  override;
     bool isDown()  {return BPDown; };
 
@@ -105,7 +105,7 @@ class evHandlerButton : public eventHandler_t {
     uint8_t pinNumber;
     uint8_t evCode;
     bool    BPDown = false;
-
+    uint16_t longDelay;
 };
 
 #ifndef __AVR_ATtiny85__
@@ -122,6 +122,7 @@ class evHandlerSerial : public eventHandler_t {
     virtual byte get()  override;
     String inputString = "";
     char   inputChar = '\0';
+    //long speed = 115200;
   private:
     const byte inputStringSizeMax = 100;
     bool stringComplete = false;

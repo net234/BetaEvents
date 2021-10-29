@@ -31,7 +31,7 @@
     - Inclusion TimeLib.h
     - Gestion des event en liste chainée
     V2.0  20/04/2021
-    - Mise en liste chainée de modules 'events' 
+    - Mise en liste chainée de modules 'events'
       evHandlerSerial   Gestion des caracteres et des chaines provenant de Serial
       evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
       evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
@@ -87,13 +87,13 @@ enum tUserEventCode {
 };
 
 #if  defined(__AVR__)
-#define BP0_PIN 4  
-#define BP1_PIN 5  
-#define LED1_PIN 6
+#define BP0_PIN 5
+#define BP1_PIN 6
+#define LED1_PIN 4
 #elif defined(ESP8266) || defined(ESP32)
-#define BP0_PIN D4 // D1
-#define BP1_PIN D5 // D2
-#define LED1_PIN D6
+#define BP0_PIN D5 // D1
+#define BP1_PIN D6 // D2
+#define LED1_PIN D0 // GPIO16
 
 #endif
 
@@ -103,8 +103,8 @@ evHandlerButton BP1(evBP1, BP1_PIN);
 evHandlerDebug  Debug;
 
 // instance LED
-evHandlerLed    Led0(evLed0, LED_BUILTIN, true);
-evHandlerLed    Led1(evLed1, LED1_PIN);
+evHandlerLed    Led0(evLed0, LED_BUILTIN, HIGH);
+evHandlerLed    Led1(evLed1, LED1_PIN, HIGH);
 
 // instance Serial
 evHandlerSerial Keyboard;
@@ -127,8 +127,12 @@ void setup() {
   // Start instance
   Events.begin();
   Led0.setFrequence(1, 10);
+  Led1.setMillisec(2000, 10);
   Serial.println("Bonjour ....");
   D_println(sizeof(stdEvent_t));
+  D_println(sizeof(size_t));
+  D_println(sizeof(eventItem_t));
+  D_println(sizeof(delayEventItem_t));
 }
 
 byte BP0Multi = 0;
@@ -140,8 +144,8 @@ byte BP0Multi = 0;
 
 void loop() {
   // test
- Events.get(sleepOk);
- Events.handle();
+  Events.get(sleepOk);
+  Events.handle();
   switch (Events.code)
   {
 
@@ -150,7 +154,7 @@ void loop() {
       break;
 
 
- 
+
     case evBP0:
       switch (Events.ext) {
         case evxBPDown:
@@ -168,7 +172,7 @@ void loop() {
         case evxBPLongDown:
           if (BP0Multi == 5) {
             Serial.println(F("RESET"));
-           Events.push(doReset);
+            Events.push(doReset);
           }
 
           Serial.println(F("BP0 Long Down"));

@@ -52,9 +52,9 @@
 
 
 // betaEvent handle a minimal time system to get for seconds() minutes() or hours()
-//#ifndef  __AVR__
+#ifndef  __AVR__
 #include <TimeLib.h>          // uncomment this if you prefer to use arduino TimeLib.h  (it will use little more ram and flash)
-//#endif
+#endif
 
 
 class EventManager;
@@ -145,17 +145,12 @@ class EventManager : public stdEvent_t
   public:
 
     EventManager() {  // constructeur
-#ifdef  EventManagerInstance        
+#ifdef  EventManagerInstance
 #error "EventManager already intancied"
 #else
 #define EventManagerInstance
 #endif
-//      if (EventManagerPtr != NULL) {
- //       Serial.print(F("Error: Only one instance for EventManager (BetaEvents)"));
- //       while (true) delay(100);
- //      }
-//      EventManagerPtr = this;
-        this->code = evNill;
+      code = evNill;
     }
     void   begin();
     byte   get(const bool sleep = true);
@@ -173,7 +168,7 @@ class EventManager : public stdEvent_t
     friend byte   hour()   ;
     //#endif
 #endif
-//    stdEvent_t currentEvent;
+    //    stdEvent_t currentEvent;
 
     int freeRam();
 #ifndef _Time_h

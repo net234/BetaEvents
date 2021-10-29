@@ -42,31 +42,26 @@
 
  ***********************************************************/
 
-evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool revert, const uint8_t frequence) {
-  this->pinNumber = aPinNumber;
+evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool ledOn, const uint8_t frequence) {
+  pinNumber = aPinNumber;
   pinMode(aPinNumber, OUTPUT);
-  this->levelON = revert;
-  this->evCode = aEventCode;
-  if (frequence == 0) {
-    this->setOn(false);
-  } else {
-    this->setFrequence(frequence);
-  }
+  levelON = ledOn;
+  evCode = aEventCode;
+  setFrequence(frequence);
 }
 
 void evHandlerLed::handle()  {
-  if (Events.code == this->evCode) {
+  if (Events.code == evCode) {
     switch (Events.ext) {
-
       case evxLedOff:
-        digitalWrite(this->pinNumber, !this->levelON);   // led off
+        digitalWrite(pinNumber, !levelON);   // led off
         break;
 
       case evxLedOn:
-        digitalWrite(this->pinNumber, (this->percent == 0) ^ this->levelON );
-        if (this->percent > 0 && this->percent < 100) {
-          Events.pushDelay(this->millisecondes, this->evCode, evxLedOn);
-          Events.pushDelay(this->millisecondes * this->percent / 100, this->evCode, evxLedOff, true);
+        digitalWrite(pinNumber, (percent == 0) ^ levelON );
+        if (percent > 0 && percent < 100) {
+          Events.pushDelay(millisecondes, evCode, evxLedOn);
+          Events.pushDelay(millisecondes * percent / 100, evCode, evxLedOff, true);
         }
         break;
     }
@@ -75,22 +70,22 @@ void evHandlerLed::handle()  {
 
 void  evHandlerLed::setOn(const bool status) {
   setMillisec(1000, status ? 100 : 0);
-  digitalWrite(this->pinNumber, status ^ !this->levelON );  // make result instant needed  outside event loop
+  digitalWrite(pinNumber, !status ^ levelON );  // make result instant needed  outside event loop
 }
 
 
-void  evHandlerLed::setMillisec(const uint16_t millisecondes, const uint8_t percent) {
-  this->millisecondes = max(millisecondes, (uint16_t)2);
-  this->percent = percent;
-  Events.pushDelay(0, this->evCode, (this->percent > 0) ? evxLedOn : evxLedOff );
+void  evHandlerLed::setMillisec(const uint16_t aMillisecondes, const uint8_t aPercent) {
+  millisecondes = max(aMillisecondes, (uint16_t)2);
+  percent = aPercent;
+  Events.pushDelay(0, evCode, (percent > 0) ? evxLedOn : evxLedOff );
 }
 
 void  evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent) {
   if (frequence == 0) {
-    this->setOn(false);
+    setOn(false);
     return;
   }
-  this->setMillisec(1000U / frequence, percent);
+  setMillisec(1000U / frequence, percent);
 }
 
 
@@ -103,22 +98,23 @@ void  evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent)
 
 
 
-evHandlerButton::evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber) {
-  this->pinNumber = aPinNumber;
+evHandlerButton::evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay) {
+  pinNumber = aPinNumber;
   pinMode(aPinNumber, INPUT_PULLUP);
-  this->evCode = aEventCode;
+  evCode = aEventCode;
+  longDelay = aLongDelay;
 }
 
 void evHandlerButton::handle()  {
   if (Events.code == ev10Hz) {
-    if ( this->BPDown != (digitalRead(this->pinNumber) == LOW)) { // changement d'etat BP0
-      this->BPDown = !this->BPDown;
-      if (this->BPDown) {
-        Events.push(this->evCode, evxBPDown);
-        Events.pushDelay(2000, this->evCode, evxBPLongDown); // arme un event BP0 long down
+    if ( BPDown != (digitalRead(pinNumber) == LOW)) { // changement d'etat BP0
+      BPDown = !BPDown;
+      if (BPDown) {
+        Events.push(evCode, evxBPDown);
+        Events.pushDelay(longDelay, evCode, evxBPLongDown); // arme un event BP0 long down
       } else {
-        Events.push(this->evCode, evxBPUp);
-        Events.pushDelay(1000, this->evCode, evxBPLongUp); // arme un event BP0 long up
+        Events.push(evCode, evxBPUp);
+        Events.pushDelay(longDelay, evCode, evxBPLongUp); // arme un event BP0 long up
       }
     }
   }
@@ -137,25 +133,25 @@ evHandlerSerial::evHandlerSerial() {
 }
 
 byte evHandlerSerial::get()  {
-  if (this->stringComplete)   {
-    this->stringComplete = false;
-    this->stringErase = true;      // la chaine sera effacee au prochain caractere recu
-    Events.aStringPtr = &this->inputString;
+  if (stringComplete)   {
+    stringComplete = false;
+    stringErase = true;      // la chaine sera effacee au prochain caractere recu
+    Events.aStringPtr = &inputString;
     return (Events.code = evInString);
   }
   if (Serial.available())   {
-    this->inputChar = Serial.read();
-    if (this->stringErase) {
-      this->inputString = "";
-      this->stringErase = false;
+    inputChar = Serial.read();
+    if (stringErase) {
+      inputString = "";
+      stringErase = false;
     }
-    if (isPrintable(this->inputChar) && (this->inputString.length() < this->inputStringSizeMax)) {
-      this->inputString += this->inputChar;
+    if (isPrintable(inputChar) && (inputString.length() < inputStringSizeMax)) {
+      inputString += inputChar;
     };
-    if (this->inputChar == '\n' || this->inputChar == '\r') {
-      this->stringComplete = (this->inputString.length() > 0);
+    if (inputChar == '\n' || inputChar == '\r') {
+      stringComplete = (inputString.length() > 0);
     }
-    Events.aChar = this->inputChar;
+    Events.aChar = inputChar;
     return (Events.code = evInChar);
   }
   return (evNill);
@@ -173,7 +169,7 @@ void evHandlerDebug::handle() {
   switch (Events.code) {
     case ev1Hz:
 
-      if (this->trackTime) {
+      if (trackTime) {
         Serial.print(Digit2_str(hour()));
         Serial.print(':');
         Serial.print(Digit2_str(minute()));
@@ -182,7 +178,7 @@ void evHandlerDebug::handle() {
         Serial.print(F(",CPU="));
         Serial.print(Events._percentCPU);
         Serial.print('%');
-        if (this->trackTime < 2) {
+        if (trackTime < 2) {
 
           Serial.print(F(",Loop="));
           Serial.print(Events._loopParsec);
@@ -197,13 +193,13 @@ void evHandlerDebug::handle() {
           Serial.print(ESP.getMaxFreeBlockSize());
 #endif
         }
-        if (this->ev100HzMissed + this->ev10HzMissed) {
+        if (ev100HzMissed + ev10HzMissed) {
           Serial.print(F(" Miss:"));
-          Serial.print(this->ev100HzMissed);
+          Serial.print(ev100HzMissed);
           Serial.print('/');
-          Serial.print(this->ev10HzMissed);
-          this->ev100HzMissed = 0;
-          this->ev10HzMissed = 0;
+          Serial.print(ev10HzMissed);
+          ev100HzMissed = 0;
+          ev10HzMissed = 0;
         }
         Serial.println();
       }
@@ -212,8 +208,8 @@ void evHandlerDebug::handle() {
 
     case ev10Hz:
 
-      this->ev10HzMissed += Events.aInt - 1;
-      if (this->trackTime > 1 ) {
+      ev10HzMissed += Events.aInt - 1;
+      if (trackTime > 1 ) {
 
         if (Events.aInt > 1) {
           //        for (int N = 2; N<currentEvent.param; N++) Serial.print(' ');
@@ -226,9 +222,9 @@ void evHandlerDebug::handle() {
       break;
 
     case ev100Hz:
-      this->ev100HzMissed += Events.aInt - 1;
+      ev100HzMissed += Events.aInt - 1;
 
-      if (this->trackTime > 2)
+      if (trackTime > 2)
       {
 
         if (Events.aInt > 1) {
@@ -242,12 +238,12 @@ void evHandlerDebug::handle() {
       break;
     case evInString:
       if (Events.aStringPtr->equals("T")) {
-        if ( ++(this->trackTime) > 3 ) {
+        if ( ++(trackTime) > 3 ) {
 
-          this->trackTime = 0;
+          trackTime = 0;
         }
         Serial.print("\nTrackTime=");
-        Serial.println(this->trackTime);
+        Serial.println(trackTime);
       }
 
       break;

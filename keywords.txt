@@ -18,12 +18,12 @@ evHandlerDebug	KEYWORD1
 #######################################
 
 begin	KEYWORD2
-getEvent	KEYWORD2
-handleEvent	KEYWORD2
+get	KEYWORD2
+handle	KEYWORD2
 addEventHandler	KEYWORD2
 removeDelayEvent	KEYWORD2
-pushEvent	KEYWORD2
-pushDelayEvent	KEYWORD2
+push	KEYWORD2
+pushDelay	KEYWORD2
 second	KEYWORD2
 minute	KEYWORD2
 hour	KEYWORD2
@@ -38,8 +38,7 @@ isDown	KEYWORD2
 #######################################
 # Instances (KEYWORD2)
 #######################################
-EventManagerPtr	KEYWORD2
-currentEvent	KEYWORD2
+Events	KEYWORD2
 inputChar	KEYWORD2
 inputString	KEYWORD2
 #######################################
