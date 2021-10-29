@@ -230,18 +230,22 @@ void  EventManager::handle() {
 
 
     case ev1Hz: {
-#ifndef _Time_h
-        timestamp++;
-#endif
-
         _percentCPU = 100 - (100UL * _idleMillisec / 1000 );
 
-
-        // TODO: add ev24H with TimeLib
 #ifndef _Time_h
+        timestamp++;
+        uint16_t aDay = timestamp / 86400L;
         if (timestamp % 86400L == 0) {  // 60 * 60 * 24
-          push(ev24H);  // User may take care of days
+          push(ev24H,aDay);  // User may take care of days
         }
+#else
+        static uint8_t oldDay = 0;
+        uint16_t aDay = day();
+        if (oldDay != aDay) {
+          oldDay = aDay;
+          push(ev24H, aDay); // User may take care of days
+        }
+
 #endif
         //        Serial.print("iddle="); Serial.println(_idleMillisec);
         //        Serial.print("CPU% ="); Serial.println(_percentCPU);
