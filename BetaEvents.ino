@@ -255,24 +255,24 @@ void loop() {
 
       if (Keyboard.inputString.equals(F("P"))) {
         Serial.println(F("Push 3 delay events"));
-        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
+        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
         Events.pushDelay(1000, ev1S);
         Events.pushDelay(2000, ev2S);
         Events.pushDelay(3000, ev3S);
-        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
+        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
       }
       if (Keyboard.inputString.equals(F("Q"))) {
         Serial.println(F("Push 3 events"));
-        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
+        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
         Events.pushDelay(0, ev1S);
         Events.pushDelay(0, ev2S);
         Events.pushDelay(0, ev3S);
-        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
+        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
       }
 
 
       if (Keyboard.inputString.equals(F("FREE"))) {
-        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
+        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
       }
 
       if (Keyboard.inputString.equals(F("RESET"))) {

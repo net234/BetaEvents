@@ -185,7 +185,7 @@ void evHandlerDebug::handle() {
           Serial.print(F(",Nill="));
           Serial.print(Events._evNillParsec);
           Serial.print(F(",Ram="));
-          Serial.print(Events.freeRam());
+          Serial.print(helperFreeRam());
 #ifndef __AVR__
           Serial.print(F(",Frag="));
           Serial.print(ESP.getHeapFragmentation() );

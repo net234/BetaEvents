@@ -348,7 +348,6 @@ bool   EventManager::removeDelayEvent(const byte codeevent) {
 }
 
 #ifndef _Time_h
-//#ifdef  __AVR__
 byte  second()  {
   return ( Events.timestamp % 60);
 }
@@ -358,7 +357,6 @@ byte  minute()  {
 byte  hour()  {
   return ( (Events.timestamp / 3600) % 24);
 }
-//#endif
 #endif
 
 
@@ -367,18 +365,6 @@ byte  hour()  {
 
 
 
-//====== Sram dispo =========
-#ifndef __AVR__
-int EventManager::freeRam () {
-  return ESP.getFreeHeap();
-}
-#else
-int EventManager::freeRam () {
-  extern int __heap_start, *__brkval;
-  int v;
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
-}
-#endif
 
 
 // Preinstantiate Objects /// as Nicolas Zambetti with Wire.cpp /////
@@ -401,7 +387,7 @@ void helperReset() {
 #ifdef  __AVR__
   wdt_enable(WDTO_120MS);
 #else
-  ESP. restart();
+  ESP.restart();
 #endif
   while (1)
   {
@@ -409,3 +395,16 @@ void helperReset() {
   }
 
 }
+
+//====== Sram dispo =========
+#ifndef __AVR__
+int helperFreeRam () {
+  return ESP.getFreeHeap();
+}
+#else
+int helperFreeRam () {
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+}
+#endif

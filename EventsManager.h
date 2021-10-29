@@ -162,15 +162,11 @@ class EventManager : public stdEvent_t
     bool   pushDelay(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0, const bool force = false);
     //    int    syncroSeconde(const int millisec = 0);
 #ifndef _Time_h
-    //#ifdef  __AVR__
     friend byte   second() ;
     friend byte   minute() ;
     friend byte   hour()   ;
-    //#endif
 #endif
-    //    stdEvent_t currentEvent;
-
-    int freeRam();
+//    int freeRam();
 #ifndef _Time_h
     uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
 #endif
@@ -208,3 +204,4 @@ extern EventManager Events;
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 String Digit2_str(const uint16_t value);
 void   helperReset();
+int    helperFreeRam();
