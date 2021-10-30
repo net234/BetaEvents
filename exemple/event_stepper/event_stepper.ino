@@ -25,12 +25,24 @@
 
  *************************************************/
 
-#define APP_NAME "event_minimal V2.0"
+#define APP_NAME "test_stepper V2.0"
 
-#include "betaEvents.h"
+#if  defined(__AVR__)
+#define BP0 2  // D2    //
+#elif defined(ESP8266) || defined(ESP32)
+#define BP0 D2 // D2
+#endif
+
+// Liste des evenements specifique a ce projet
+enum tUserEventCode {
+  // evenement recu
+  evBP0 = 100,
+  evLed0,
+};
+
+#include <BetaEvents.h>
 #include <CheapStepper.h>
 
-EventManager MyEvent;   // local instance de eventManager
 
 /* Evenements du Manager (voir betaEvents.h)
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
@@ -42,12 +54,7 @@ EventManager MyEvent;   // local instance de eventManager
   evInString,
 */
 
-// Liste des evenements specifique a ce projet
-enum tUserEventCode {
-  // evenement recu
-  evBP0 = 100,
-  evLed0,
-};
+
 
 CheapStepper stepper;
 // here we declare our stepper using default pins:
@@ -58,42 +65,22 @@ CheapStepper stepper;
 // 11 <--> IN4
 
 
-
-#if  defined(__AVR__)
-#define BP0 2  // D2    //
-#elif defined(ESP8266) || defined(ESP32)
-#define BP0 D2 // D2
-#endif
-
-// instance Push Button
-evHandlerButton MyBP0(evBP0, BP0);
-
-// instance LED
-evHandlerLed    MyLed0(evLed0, LED_BUILTIN);
-
-// instance Serial
-evHandlerSerial MyKeyboard;
-
 boolean moveClockwise = true;
 
 void setup() {
   Serial.begin(115200);
   Serial.println(F("\r\n\n" APP_NAME));
   // Start instance
-  MyEvent.begin();
-  MyEvent.addEventHandler(&MyKeyboard);
-  MyEvent.addEventHandler(new evHandlerDebug );
-  MyEvent.addEventHandler(&MyBP0);        // ajout d'un bouton sur BP0
-  MyEvent.addEventHandler(&MyLed0);       // ajout LED0
-  MyLed0.setFrequence(1, 10);
+  Events.begin();
+  Led0.setFrequence(1, 10);
   stepper.setRpm(20);
   Serial.println("Bonjour ....");
 }
 
 void loop() {
   // test
-  MyEvent.getEvent(false);
-  MyEvent.handleEvent();
+  Events.get(false);
+  Events.handle();
   int step = stepper.getStepsLeft();
   if ( step > 0 && step < 100 ) {
     Serial.println(stepper.getStepsLeft());
@@ -102,25 +89,25 @@ void loop() {
     stepper.newMove (true, 4076);
   }
   stepper.run();
-  switch (MyEvent.currentEvent.code)
+  switch (Events.code)
   {
     case evBP0:
-      switch (MyEvent.currentEvent.param) {
-        case evBPDown:
-          MyLed0.setMillisec(500, 50);
+      switch (Events.ext) {
+        case evxBPDown:
+          Led0.setMillisec(500, 50);
           Serial.println(F("BP0 Down"));
           stepper.newMove (true, 4076);
           break;
-        case evBPUp:
-          MyLed0.setMillisec(1000, 10);
+        case evxBPUp:
+          Led0.setMillisec(1000, 10);
           Serial.println(F("BP0 Up"));
           stepper.stop();
           stepper.off();
           break;
-        case evBPLongDown:
+        case evxBPLongDown:
           Serial.println(F("BP0 Long Down"));
           break;
-        case evBPLongUp:
+        case evxBPLongUp:
           Serial.println(F("BP0 Long Up"));
           break;
 
