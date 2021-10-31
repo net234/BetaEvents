@@ -38,10 +38,11 @@
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
     V2.2  27/10/2021
        more arduino like lib with self built in instance
-
+       
 
  *************************************************/
-#define BETAEVENTS_CCP
+//#define BETAEVENTS_CCP
+
 
 #include "EventsManager.h"
 //#define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
@@ -260,11 +261,13 @@ void  EventManager::handle() {
           push(ev24H, aDay); // User may take care of days
         }
 #else
+        // Ev24h only when day change but not just after a boot
         static uint8_t oldDay = 0;
         uint16_t aDay = day();
         if (oldDay != aDay) {
+          if (oldDay>0) push(ev24H, aDay); // User may take care of days
           oldDay = aDay;
-          push(ev24H, aDay); // User may take care of days
+          
         }
 
 #endif

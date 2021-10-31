@@ -44,7 +44,7 @@
 
     *************************************************/
 
-#define APP_NAME "betaEvents V2.0.1"
+#define APP_NAME "betaEvents V2.2"
 
 #if  defined(__AVR__)
 #include <avr/wdt.h>
@@ -152,8 +152,18 @@ void loop() {
   switch (Events.code)
   {
 
-    case ev24H:
-      Serial.println("---- 24H ---");
+
+
+    case evInit: {
+        Serial.println("ev init");
+      }
+      break;
+      
+    case ev24H: {
+        Serial.println("---- 24H ---");
+        int aDay = Events.ext;
+        D_println(aDay);
+      }
       break;
 
 
