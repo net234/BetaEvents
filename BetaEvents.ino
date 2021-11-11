@@ -40,11 +40,12 @@
       corections evHandlerLed sur le true/false
     V2.2  27/10/2021
        more arduino like lib with self built in instance
-
+    V2.2a  11/11/2021 
+       add begin in evHandles  
 
     *************************************************/
 
-#define APP_NAME "betaEvents V2.2"
+#define APP_NAME "betaEvents V2.2a"
 
 #if  defined(__AVR__)
 #include <avr/wdt.h>

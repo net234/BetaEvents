@@ -75,6 +75,13 @@ void  EventManager::begin() {
   set_sleep_mode(SLEEP_MODE_IDLE);
   sleep_enable();
 #endif
+  // parse event list
+  eventHandler_t** ItemPtr = &handleEventList;
+  while (*ItemPtr) {
+    (*ItemPtr)->begin();
+    ItemPtr = &((*ItemPtr)->next);
+  }
+
   push(evInit);
 }
 

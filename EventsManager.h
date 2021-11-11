@@ -132,7 +132,8 @@ class eventHandler_t
   public:
     eventHandler_t *next;  // handle suivant
     eventHandler_t();
-    virtual void handle()  {};
+    virtual void begin() {};  // called with eventManager::begin
+    virtual void handle()  {};  // called 
     virtual byte get()   {
       return evNill;
     };
