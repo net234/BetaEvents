@@ -33,10 +33,10 @@
       corections evHandlerLed sur le true/false
     V2.2  27/10/2021
        more arduino like lib with self built in instance
-    V2.2a  11/11/2021 
-       add begin in evHandles  
+    V2.2a  11/11/2021
+       add begin in evHandles
 
-             
+
     *************************************************/
 #include  "evHandlers.h"
 
@@ -47,13 +47,11 @@
 
  ***********************************************************/
 
-evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool ledOn, const uint8_t frequence) {
-  pinNumber = aPinNumber;
-  pinMode(aPinNumber, OUTPUT);
-  levelON = ledOn;
-  evCode = aEventCode;
+evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool ledOn, const uint8_t frequence) :
+  pinNumber(aPinNumber), levelON(ledOn), evCode(aEventCode) {
+  pinMode(pinNumber, OUTPUT);
   setFrequence(frequence);
-}
+};
 
 void evHandlerLed::handle()  {
   if (Events.code == evCode) {
@@ -103,12 +101,11 @@ void  evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent)
 
 
 
-evHandlerButton::evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay) {
-  pinNumber = aPinNumber;
-  pinMode(aPinNumber, INPUT_PULLUP);
-  evCode = aEventCode;
-  longDelay = aLongDelay;
-}
+evHandlerButton::evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay) :
+  pinNumber(aPinNumber), evCode(aEventCode), longDelay(aLongDelay) {
+  pinMode(pinNumber, INPUT_PULLUP);
+};
+
 
 void evHandlerButton::handle()  {
   if (Events.code == ev10Hz) {
@@ -132,11 +129,16 @@ void evHandlerButton::handle()  {
 
  ***********************************************************/
 
-evHandlerSerial::evHandlerSerial(const uint8_t inputStringSize ) {
-  //Serial.begin(speed);  // par defaut 115200
-  inputStringSizeMax = inputStringSize;
+evHandlerSerial::evHandlerSerial(const uint32_t aSerialSpeed, const uint8_t inputStringSize) :
+  serialSpeed(aSerialSpeed),
+  inputStringSizeMax (inputStringSize)
+{
   inputString.reserve(inputStringSize);
   Events.addGetEvent(this);
+}
+
+void evHandlerSerial::begin() {
+  Serial.begin(serialSpeed);
 }
 
 byte evHandlerSerial::get()  {

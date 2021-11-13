@@ -207,6 +207,7 @@ extern EventManager Events;
 // D_println(variable); permet d'afficher le nom de variable suivit de sa valeur
 
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
+#define DX_println(x) Serial.print(F(#x " => '0x")); Serial.print(x,HEX); Serial.println("'");
 String Digit2_str(const uint16_t value);
 void   helperReset();
 int    helperFreeRam();

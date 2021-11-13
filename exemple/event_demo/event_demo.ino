@@ -55,8 +55,10 @@ enum tUserEventCode {
 //  Keyboard genere un evenement evChar a char caractere recu et un evenement evString a chaque ligne recue
 //  Debug permet sur reception d'un "T" sur l'entrée Serial d'afficher les infos de charge du CPU
 
-//#define BP0_PIN   5                 //   Par defaut BP0 est sur D5
-//#define Led0_PIN  LED_BUILTIN     //   Par defaut Led0 est sur LED_BUILTIN
+//#define BP0_PIN   5                //   Par defaut BP0 est sur D5
+//#define Led0_PIN  LED_BUILTIN      //   Par defaut Led0 est sur LED_BUILTIN
+//#define SERIAL_SPEED 115200        //   Default at 115200
+
 #include <BetaEvents.h>
 
 int  multi = 0; // nombre de clic rapide
@@ -64,12 +66,10 @@ int  multi = 0; // nombre de clic rapide
 
 void setup() {
 
-  Serial.begin(115200);
-  Serial.println(F("\r\n\n" APP_NAME));
-
-  // Start instance
+  // Start instance`
+  // will setup Serial speed at 115200 by default
   Events.begin();
-  //pinMode(pinBP0, INPUT_PULLUP);
+  Serial.println(F("\r\n\n" APP_NAME));
   Serial.println("Bonjour ....");
   //D_println(LED_BUILTIN);
 
@@ -80,7 +80,7 @@ bool sleepOk = true;
 
 void loop() {
 
-  Events.get(sleepOk);         // generation du prochain evenement
+  Events.get(sleepOk);  // generation du prochain evenement
   Events.handle();      // passage de l'evenement au systeme
   switch (Events.code)  // gestion de l'evenement
   {
@@ -97,30 +97,35 @@ void loop() {
 
     case evBP0:
       switch (Events.ext) {
-        case evxBPDown:
-          Led0.setMillisec(500, 50);
-          BP0Multi++;
-          Serial.println(F("BP0 Down"));
-          if (BP0Multi > 1) {
-            Serial.print(F("BP0 Multi ="));
+        case evxBPDown:                           // push button 0 went down
+          Led0.setMillisec(500, 50);              // set led fast blink
+          BP0Multi++;                             // count multi push
+          Serial.println(F("BP0 Down"));          // warn user on console
+          if (BP0Multi > 1) {                     // if more than 1 multi push
+            Serial.print(F("BP0 Multi ="));       //   warn user
             Serial.println(BP0Multi);
           }
           break;
-        case evxBPUp:
-          Led0.setMillisec(1000, 10);
-          Serial.println(F("BP0 Up"));
+          
+        case evxBPUp:                             // push button 0 went up
+          Led0.setMillisec(1000, 10);             // set led slow blink 
+          Serial.println(F("BP0 Up"));            // warn user
           break;
-        case evxBPLongDown:
-          if (BP0Multi == 5) {
-            Serial.println(F("RESET"));
+          
+        case evxBPLongDown:                       // push button is down for a long time (1.5 sec) 
+
+          // if you click fast 5 times then hold down button a reset will be done
+          if (BP0Multi == 5) {                    // if multi is 5 
+            Serial.println(F("RESET"));           //   do a reset
             Events.push(doReset);
           }
 
-          Serial.println(F("BP0 Long Down"));
+          Serial.println(F("BP0 Long Down"));     // warn user
           break;
-        case evxBPLongUp:
-          BP0Multi = 0;
-          Serial.println(F("BP0 Long Up"));
+          
+        case evxBPLongUp:                         // push button is up for a long time (1.5 sec) 
+          BP0Multi = 0;                           // raz multi who count number of fast click
+          Serial.println(F("BP0 Long Up"));       // warn user
           break;
 
       }
@@ -154,23 +159,23 @@ void loop() {
         break;
 
       }
-      
-          case evInString:
-            if (Debug.trackTime < 2) {
-              D_println(Keyboard.inputString);
-            }
-            if (Keyboard.inputString.equals("RESET")) {
-              Serial.println(F("RESET"));
-              Events.push(doReset);
-            }
-            if (Keyboard.inputString.equals("S")) {
-//            if (Events.aStringPtr->equals("S")) {
-  
-              sleepOk = !sleepOk;
-              D_println(sleepOk);
-            }
-      
-            break;
+
+    case evInString:
+      if (Debug.trackTime < 2) {
+        D_println(Keyboard.inputString);
+      }
+      if (Keyboard.inputString.equals("RESET")) {
+        Serial.println(F("RESET"));
+        Events.push(doReset);
+      }
+      if (Keyboard.inputString.equals("S")) {
+        //            if (Events.aStringPtr->equals("S")) {
+
+        sleepOk = !sleepOk;
+        D_println(sleepOk);
+      }
+
+      break;
 
   }
 }

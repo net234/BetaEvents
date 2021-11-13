@@ -51,20 +51,7 @@
 #include "EventsManager.h"
 // Events Manager build an instance called "Events" who care about events
 
-//// definition des evBP0 et evLed0 si ceux si sont absent
-//#ifndef evBP0
-//#define evBP0 80
-//#warning "evBP0 should be define by user > 100"
-//#endif
-//
-//#ifndef evLed0
-//#define evLed0 81
-//#warning "evLed0 should be define by user > 100"
-//#endif
-//#endif
-//
-//
-//
+
 // definition GPIO sur D5 pour BP0 si celuici n'est pas defini
 #ifndef BP0_PIN
 #if  defined(__AVR__)
@@ -86,9 +73,6 @@
   const bool Led0Revert = false;
 #endif
 
-// instance eventsManager
-//EventManager Events;
-
 // instance poussoir
 evHandlerButton BP0(evBP0, BP0_PIN);
 
@@ -98,8 +82,15 @@ evHandlerButton BP0(evBP0, BP0_PIN);
 // led clignotante a 1Hz 
 evHandlerLed    Led0(evLed0, LED0_PIN, Led0Revert , 1);
 
+
 // instance Serial
-evHandlerSerial Keyboard(100);
+#ifndef SERIAL_SPEED
+#define SERIAL_SPEED 115200
+#endif
+
+#define SERIAL_BUFFERSIZE 100
+
+evHandlerSerial Keyboard(SERIAL_SPEED,SERIAL_BUFFERSIZE);
 
 // instance debugger
 evHandlerDebug  Debug;

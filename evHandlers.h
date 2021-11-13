@@ -19,7 +19,7 @@
     along with betaEvents.  If not, see <https://www.gnu.org/licenses/lglp.txt>.
 
     V2.0  20/04/2021
-    - Mise en liste chainée de modules 'events' 
+    - Mise en liste chainée de modules 'events'
       evHandlerSerial   Gestion des caracteres et des chaines provenant de Serial
       evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
       evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
@@ -35,8 +35,8 @@
       corections evHandlerLed sur le true/false
     V2.2  27/10/2021
        more arduino like lib with self built in instance
-    V2.2a  11/11/2021 
-       add begin in evHandles  
+    V2.2a  11/11/2021
+       add begin in evHandles
 
 
     *************************************************/
@@ -47,22 +47,23 @@
 
 
 /**********************************************************
- * 
- * gestion d'une Led sur un port   clignotement en frequence ou en millisecondes
- * 
+
+   gestion d'une Led sur un port   clignotement en frequence ou en millisecondes
+
  ***********************************************************/
 
 
-enum tLedEventParam  {
+typedef enum   {
   // evenement recu
   evxLedOff,           // Led Off
   evxLedOn,            // Led On
-};
+} tLedEventExt;
 
 
 class evHandlerLed : public eventHandler_t {
   public:
     evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool ledOn = HIGH, const uint8_t frequence = 0);
+    //virtual void begin()  override;
     virtual void handle()  override;
     bool isOn()  {
       return ledOn;
@@ -84,26 +85,29 @@ class evHandlerLed : public eventHandler_t {
 
 
 /**********************************************************
- * 
- * gestion d'un poussoir sur un port   genere evBPDown, evBPUp, evBPLongDown, evBPLongUp
- * 
+
+   gestion d'un poussoir sur un port   genere evBPDown, evBPUp, evBPLongDown, evBPLongUp
+
  ***********************************************************/
 
 
-enum tBPEventParam  {
-  // evenement recu
+typedef enum  {
+  // evenement ext of button
   evxBPDown,         // BP0 est appuyé
   evxBPUp,            // BP0 est relaché
   evxBPLongDown,      // BP0 est maintenus appuyé plus de 3 secondes
   evxBPLongUp,        // BP0 est relaché plus de 3 secondes
-};
+} tBPEventExt ;
 
 
 class evHandlerButton : public eventHandler_t {
   public:
     evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay = 1500);
+    //virtual void begin()  override;
     virtual void handle()  override;
-    bool isDown()  {return BPDown; };
+    bool isDown()  {
+      return BPDown;
+    };
 
   private:
     uint8_t pinNumber;
@@ -114,22 +118,24 @@ class evHandlerButton : public eventHandler_t {
 
 #ifndef __AVR_ATtiny85__
 /**********************************************************
- * 
- * gestion de Serial pour generer les   evInChar et  evInString
- * 
+
+   gestion de Serial pour generer les   evInChar et  evInString
+
  ***********************************************************/
 
 class evHandlerSerial : public eventHandler_t {
   public:
-    evHandlerSerial(const uint8_t inputStringSize = 20);
-    //virtual void handleEvent()  override;
+    evHandlerSerial(const uint32_t aSerialSpeed = 115200, const uint8_t inputStringSize = 20);
+    virtual void begin()  override;
+    //virtual void handle()  override;
     virtual byte get()  override;
     String inputString = "";
     char   inputChar = '\0';
   private:
-    uint8_t inputStringSizeMax = 20;
+    uint8_t inputStringSizeMax;
     bool stringComplete = false;
     bool stringErase = false;
+    uint32_t serialSpeed;
 
 };
 
@@ -138,9 +144,9 @@ class evHandlerSerial : public eventHandler_t {
 
 
 /**********************************************************
- * 
- * gestion d'un traceur de debugage touche 'T' pour visualiser la charge CPU
- * 
+
+   gestion d'un traceur de debugage touche 'T' pour visualiser la charge CPU
+
  ***********************************************************/
 
 
