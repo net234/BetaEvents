@@ -28,10 +28,6 @@
 #define APP_NAME "event_minimal V2.0"
 
 #include "EventsManager.h"
-//#include "evHandlers.h"
-
-
-EventManager MyEvent;   // local instance de eventManager (kernel of BetaEvents)
 
 /* Evenements du Manager (voir BetaEvents.h)
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
@@ -50,43 +46,40 @@ enum tUserEventCode {
   evLed0,
 };
 
-#if  defined(__AVR__)
-#define BP0 2  // D2    
-#elif defined(ESP8266) || defined(ESP32)
-#define BP0 D1 // D1
-#endif
+#define BP0_PIN 1
+//#endif
 
 // instances poussoir
-evHandlerButton MyBP0(evBP0, BP0);
+evHandlerButton BP0(evBP0,BP0_PIN);
 //evHandlerButton MyBP1(evBP1, BP1);
 
 // instance LED
-evHandlerLed    MyLed0(evLed0, LED_BUILTIN,false,1);
+evHandlerLed    Led0(evLed0, LED_BUILTIN,false);
 
 void setup() {
   Serial.begin(115200);
   Serial.println(F("\r\n\n" APP_NAME));
   // Start instance
-  MyEvent.begin();
-  MyLed0.setFrequence(1, 10);
+  Events.begin();
+  Led0.setFrequence(1, 10);
   Serial.println("Bonjour ....");
 }
 
 void loop() {
   // test
-  MyEvent.getEvent();
-  MyEvent.handleEvent();
-  switch (MyEvent.currentEvent.code)
+  Events.get();
+  Events.handle();
+  switch (Events.code)
   {
 
     case evBP0:
-      switch (MyEvent.currentEvent.ext) {
+      switch (Events.ext) {
         case evxBPDown:
-          MyLed0.setMillisec(500, 50);
+          Led0.setMillisec(500, 50);
           Serial.println(F("BP0 Down"));
           break;
         case evxBPUp:
-          MyLed0.setMillisec(1000, 10);
+          Led0.setMillisec(1000, 10);
           Serial.println(F("BP0 Up"));
           break;
         case evxBPLongDown:

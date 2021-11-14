@@ -1,5 +1,5 @@
 /*************************************************
-     Header betaEvents.h   validation of lib betaEvents to deal nicely with events programing with Arduino
+     Header betaEvents.h   helper yo use a Event system with EventManager
     Copyright 2020 Pierre HENRY net23@frdev.com All - right reserved.
 
   This file is part of betaEvents.
@@ -40,62 +40,57 @@
       evHandlerLed      Gestion d'une led avec ou sans clignotement sur un GPIO (Multiple instance possible)
       evHandlerButton   Gestion d'un pousoir sur un GPIO (Multiple instance possible)
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
-
+    - V2.1 27/10/2020
+    V2.2  27/10/2021
+       more arduino like lib with self built in instance
 
  *************************************************/
-//#ifdef APP_NAME
+#pragma once
+
+
 #include "EventsManager.h"
-
-// definition des evBP0 et evLed0 si ceux si sont absent
-#ifndef evBP0
-#define evBP0 80
-//#error "evBP0 should be define by user > 100"
-#endif
-
-#ifndef evLed0
-#define evLed0 81
-//#error "evLed0 should be define by user > 100"
-#endif
+// Events Manager build an instance called "Events" who care about events
 
 
-
-// definition GPIO sur D2 pour BP0 si celuici n'est pas defini
-#ifndef pinBP0
+// definition GPIO sur D5 pour BP0 si celuici n'est pas defini
+#ifndef BP0_PIN
 #if  defined(__AVR__)
-#define pinBP0 2  // D2
+#define BP0_PIN 5
 #elif defined(ESP8266) || defined(ESP32)
-#define pinBP0 D4 // D2
+#define BP0_PIN D5 
 #endif
 #endif
 
 //definition GPIO sur LED_BUILTIN pour LED0 si il n'est pas defini par l'utilisateur
-#ifndef pinLed0
-#define pinLed0 LED_BUILTIN
+#ifndef LED0_PIN
+#define LED0_PIN LED_BUILTIN
 #endif
 
 // reverted led on AVR UNO and NANO
-//#if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_NANO)
 #if  defined(__AVR__)
-  const bool MyLed0Revert = true;
+  const bool Led0Revert = true;
 #else
-  const bool MyLed0Revert = false;
+  const bool Led0Revert = false;
 #endif
 
-// instance eventsManager
-EventManager MyEvents;
-
 // instance poussoir
-evHandlerButton MyBP0(evBP0, pinBP0);
+evHandlerButton BP0(evBP0, BP0_PIN);
 
 // instance LED
 
 
 // led clignotante a 1Hz 
-evHandlerLed    MyLed0(evLed0, pinLed0, MyLed0Revert , 1);
+evHandlerLed    Led0(evLed0, LED0_PIN, Led0Revert , 1);
+
 
 // instance Serial
-evHandlerSerial MyKeyboard;
+#ifndef SERIAL_SPEED
+#define SERIAL_SPEED 115200
+#endif
+
+#define SERIAL_BUFFERSIZE 100
+
+evHandlerSerial Keyboard(SERIAL_SPEED,SERIAL_BUFFERSIZE);
 
 // instance debugger
-evHandlerDebug MyDebug;
-//#endif
+evHandlerDebug  Debug;

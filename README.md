@@ -1,9 +1,23 @@
-# betaEvents V2.0.1
+# betaEvents V2.2
     Auteur : net23 pierre Henry
     Participation : 
     librairie pour une utilisation simple de la programmation evenementielle
     Pierre HENRY d'apres PH_event V1.3.1 P.henry 15/03/2020
     Gestion d'evenement en boucle GetEvent HandleEvent
+
+   pour commencer utilisez 'event_demo.ino' dans les exemples de 'BetaEvents'
+
+	betaEvent.h est une aide pour construire les elements de base d'une programation evenementiel
+	creer ensuite votre propre gestionaire sur le modèle BetaEvents.h
+
+    betaEvent.h construit automatiquement
+	une instance "Events" avec un poussoir "BP0" une LED "Led0" un clavier "Keyboard"
+	BP0 genere un evenement evBP0 a chaque pression le poussoir connecté sur BP0_PIN (D5)
+	Led0 genere un evenement evLed0 a chaque clignotement de la led precablée sur la platine LED_BUILTIN
+	Keyboard genere un evenement evChar a char caractere recu et un evenement evString a chaque ligne recue
+	Debug permet sur reception d'un "T" sur l'entrée Serial d'afficher les infos de charge du CPU
+
+
 
 ##	  History
 	    V1.0 (21/11/2020)
@@ -27,7 +41,9 @@
 	      evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
 	    V2.0.1  26/10/2021
 	      corections evHandlerLed sur le true/false
-
+		V2.2  27/10/2021
+		       more arduino like lib with self built in instance
+		
 	/*************************************************
 	     Sketch betaEvents.ino   validation of lib betaEvents to deal nicely with events programing with Arduino
 	    Copyright 2020 Pierre HENRY net23@frdev.com All - right reserved.

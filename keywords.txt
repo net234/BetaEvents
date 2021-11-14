@@ -18,36 +18,39 @@ evHandlerDebug	KEYWORD1
 #######################################
 
 begin	KEYWORD2
-getEvent	KEYWORD2
-handleEvent	KEYWORD2
+get	KEYWORD2
+handle	KEYWORD2
 addEventHandler	KEYWORD2
 removeDelayEvent	KEYWORD2
-pushEvent	KEYWORD2
-pushDelayEvent	KEYWORD2
+push	KEYWORD2
+delayedPush	KEYWORD2
 second	KEYWORD2
 minute	KEYWORD2
 hour	KEYWORD2
-freeRam	KEYWORD2
+helperFreeRam	KEYWORD2
 timestamp	KEYWORD2
 
 setOn	KEYWORD2
 setMillisec	KEYWORD2
 setFrequence	KEYWORD2
 isDown	KEYWORD2
+inputChar	KEYWORD2
+inputString	KEYWORD2
 
 #######################################
 # Instances (KEYWORD2)
 #######################################
-EventManagerPtr	KEYWORD2
-currentEvent	KEYWORD2
+Events	KEYWORD2
 inputChar	KEYWORD2
 inputString	KEYWORD2
+Keyboard	KEYWORD2
+BP0	KEYWORD2
+Led0 KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################
 
 evNill	LITERAL1
-ev1000Hz	LITERAL1
 ev100Hz	LITERAL1
 ev10Hz	LITERAL1
 ev1Hz	LITERAL1
