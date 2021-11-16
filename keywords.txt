@@ -31,6 +31,7 @@ helperFreeRam	KEYWORD2
 timestamp	KEYWORD2
 
 setOn	KEYWORD2
+pulse	KEYWORD2
 setMillisec	KEYWORD2
 setFrequence	KEYWORD2
 isDown	KEYWORD2
