@@ -57,11 +57,11 @@ void evHandlerLed::handle()  {
   if (Events.code == evCode) {
     switch (Events.ext) {
       case evxLedOff:
-        digitalWrite(pinNumber, !levelON);   // led off
+        digitalWrite(pinNumber,  not levelON);   // led off
         break;
 
       case evxLedOn:
-        digitalWrite(pinNumber, (percent == 0) ^ levelON );
+        digitalWrite(pinNumber, (percent == 0) xor levelON );
         if (percent > 0 && percent < 100) {
           Events.delayedPush(millisecondes, evCode, evxLedOn);
           Events.delayedPush(millisecondes * percent / 100, evCode, evxLedOff, true);
@@ -73,7 +73,7 @@ void evHandlerLed::handle()  {
 
 void  evHandlerLed::setOn(const bool status) {
   setMillisec(1000, status ? 100 : 0);
-  digitalWrite(pinNumber, !status ^ levelON );  // make result instant needed  outside event loop
+  digitalWrite(pinNumber, (not status) xor levelON );  // make result instant needed  outside event loop
 }
 
 
@@ -91,8 +91,14 @@ void  evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent)
   setMillisec(1000U / frequence, percent);
 }
 
-
-
+void   evHandlerLed::pulse(const uint32_t aDelay) { // pulse d'allumage simple
+   if (aDelay == 0) {
+    setOn(false);
+    return;
+  }
+  setOn(true);
+  Events.delayedPush(aDelay,evCode,evxLedOff);
+}
 /**********************************************************
 
    gestion d'un poussoir sur un port   genere evBPDown, evBPUp, evBPLongDown, evBPLongUp

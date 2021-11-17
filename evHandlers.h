@@ -71,7 +71,7 @@ class evHandlerLed : public eventHandler_t {
     void   setOn(const bool status = true);
     void   setFrequence(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
     void   setMillisec(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
-
+    void   pulse(const uint32_t millisecondes); // pulse d'allumage simple
 
   private:
     uint8_t pinNumber;
