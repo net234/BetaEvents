@@ -52,6 +52,10 @@
 // Events Manager build an instance called "Events" who care about events
 
 
+// instance poussoir si evBP0 existe
+
+#ifdef evPB0
+
 // definition GPIO sur D5 pour BP0 si celuici n'est pas defini
 #ifndef BP0_PIN
 #if  defined(__AVR__)
@@ -60,6 +64,15 @@
 #define BP0_PIN D5 
 #endif
 #endif
+
+evHandlerButton BP0(evBP0, BP0_PIN);
+
+#endif
+
+
+
+// instance LED si evLed0 existe
+#ifdef evLed0
 
 //definition GPIO sur LED_BUILTIN pour LED0 si il n'est pas defini par l'utilisateur
 #ifndef LED0_PIN
@@ -73,16 +86,15 @@
   const bool Led0Revert = false;
 #endif
 
-// instance poussoir
-evHandlerButton BP0(evBP0, BP0_PIN);
-
-// instance LED
-
 
 // led clignotante a 1Hz 
 evHandlerLed    Led0(evLed0, LED0_PIN, Led0Revert , 1);
 
+#endif
 
+
+
+#ifndef NO_SERIAL
 // instance Serial
 #ifndef SERIAL_SPEED
 #define SERIAL_SPEED 115200
@@ -92,5 +104,9 @@ evHandlerLed    Led0(evLed0, LED0_PIN, Led0Revert , 1);
 
 evHandlerSerial Keyboard(SERIAL_SPEED,SERIAL_BUFFERSIZE);
 
+#ifndef NO_DEBUG
+
 // instance debugger
 evHandlerDebug  Debug;
+#endif
+#endif

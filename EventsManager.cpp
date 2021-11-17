@@ -109,7 +109,7 @@ byte EventManager::get(const bool sleepOk ) {  //  sleep = true;
   bool eventWasNill = (code == evNill);
   _loopCounter++;
   // cumul du temps passé
-  uint16_t delta = millis() - milliSeconds;
+  uint16_t delta = millis() - milliSeconds;  // max 64 secondes
   if (delta) {
     milliSeconds += delta;
     parseDelayList(&(eventMillisList), delta);
