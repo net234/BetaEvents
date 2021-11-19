@@ -151,7 +151,7 @@ byte evHandlerSerial::get()  {
   if (stringComplete)   {
     stringComplete = false;
     stringErase = true;      // la chaine sera effacee au prochain caractere recu
-    Events.aStringPtr = &inputString;
+    Events.StringPtr = &inputString;
     return (Events.code = evInString);
   }
   if (Serial.available())   {
@@ -166,7 +166,7 @@ byte evHandlerSerial::get()  {
     if (inputChar == '\n' || inputChar == '\r' ) {
       stringComplete = (inputString.length() > 0);
     }
-    Events.aChar = inputChar;
+    Events.charExt = inputChar;
     return (Events.code = evInChar);
   }
   return (evNill);
@@ -223,13 +223,13 @@ void evHandlerDebug::handle() {
 
     case ev10Hz:
 
-      ev10HzMissed += Events.aInt - 1;
+      ev10HzMissed += Events.intExt - 1;
       if (trackTime > 1 ) {
 
-        if (Events.aInt > 1) {
+        if (Events.intExt > 1) {
           //        for (int N = 2; N<currentEvent.param; N++) Serial.print(' ');
           Serial.print('X');
-          Serial.print(Events.aInt - 1);
+          Serial.print(Events.intExt - 1);
         } else {
           Serial.print('|');
         }
@@ -237,22 +237,22 @@ void evHandlerDebug::handle() {
       break;
 
     case ev100Hz:
-      ev100HzMissed += Events.aInt - 1;
+      ev100HzMissed += Events.intExt - 1;
 
       if (trackTime > 2)
       {
 
-        if (Events.aInt > 1) {
+        if (Events.intExt > 1) {
           //      for (int N = 3; N<currentEvent.param; N++) Serial.print(' ');
           Serial.print('x');
-          Serial.print(Events.aInt - 1);
+          Serial.print(Events.intExt - 1);
         } else {
           Serial.print('_');
         }
       }
       break;
     case evInString:
-      if (Events.aStringPtr->equals("T")) {
+      if (Events.StringPtr->equals("T")) {
         if ( ++(trackTime) > 3 ) {
 
           trackTime = 0;

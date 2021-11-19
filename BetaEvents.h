@@ -53,8 +53,7 @@
 
 
 // instance poussoir si evBP0 existe
-
-#ifdef evPB0
+#ifdef evBP0
 
 // definition GPIO sur D5 pour BP0 si celuici n'est pas defini
 #ifndef BP0_PIN

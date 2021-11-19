@@ -155,15 +155,15 @@ byte EventManager::nextEvent() {
   // les ev100Hz ne sont pas tous restitués mais le nombre est dans aInt de l'event
 
   if (delta100Hz >= 10)  {
-    aInt = (delta100Hz / 10);  // nombre d'ev100Hz d'un coup
-    delta100Hz -= (aInt) * 10;
+    intExt = (delta100Hz / 10);  // nombre d'ev100Hz d'un coup
+    delta100Hz -= (intExt) * 10;
     return (code = ev100Hz);
   }
 
   // les ev10Hz ne sont pas tous restitués mais le nombre est dans aInt de l'event
   if (delta10Hz >= 100)  {
-    aInt = (delta10Hz / 100);  // nombre d'ev10Hz d'un coup
-    delta10Hz -= (aInt) * 100;
+    intExt = (delta10Hz / 100);  // nombre d'ev10Hz d'un coup
+    delta10Hz -= (intExt) * 100;
     return (code = ev10Hz);
   }
 
@@ -187,7 +187,7 @@ byte EventManager::nextEvent() {
     eventItem_t* itemPtr = eventList->nextItemPtr;
     //stdEvent_t(*eventList);
     code = eventList->code;
-    aInt = eventList->aInt;
+    intExt = eventList->intExt;
     delete eventList;
     eventList = itemPtr;
     return (Events.code);
@@ -249,7 +249,7 @@ void  EventManager::handle() {
       break;
 
     case ev10Hz: {
-        parseDelayList( &(eventTenthList), aInt);
+        parseDelayList( &(eventTenthList), intExt);
       }
 
       break;

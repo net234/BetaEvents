@@ -248,7 +248,7 @@ void loop() {
 
 
     case evInChar:
-      switch (toupper(Events.aChar))
+      switch (toupper(Events.charExt))
       {
         case '0': delay(10); break;
         case '1': delay(100); break;
@@ -267,7 +267,7 @@ void loop() {
       if (Keyboard.inputString.equals(F("S"))) {
         sleepOk = !sleepOk;
         Serial.print(F("Sleep=")); Serial.println(sleepOk);
-        D_println(*Events.aStringPtr);
+        D_println(*Events.StringPtr);
       }
 
       if (Keyboard.inputString.equals(F("O"))) {
