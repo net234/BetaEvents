@@ -140,7 +140,7 @@ evHandlerSerial::evHandlerSerial(const uint32_t aSerialSpeed, const uint8_t inpu
   inputStringSizeMax (inputStringSize)
 {
   inputString.reserve(inputStringSize);
-  Events.addGetEvent(this);
+  //Events.(this);
 }
 
 void evHandlerSerial::begin() {
@@ -201,7 +201,7 @@ void evHandlerDebug::handle() {
           Serial.print(Events._evNillParsec);
           Serial.print(F(",Ram="));
           Serial.print(helperFreeRam());
-#ifndef __AVR__
+#ifdef ESP8266
           Serial.print(F(",Frag="));
           Serial.print(ESP.getHeapFragmentation() );
           Serial.print(F("%,MaxMem="));

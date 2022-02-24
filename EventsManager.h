@@ -45,6 +45,8 @@
        split EventManger and BetaEvents
      V2.2  27/10/2021
        more arduino like lib with self built in instance
+       TODO : faire une liste de get event separés
+
 
  *************************************************/
 #pragma once
@@ -176,7 +178,7 @@ class EventManager : public stdEvent_t
 #endif
 
     void   addHandleEvent(eventHandler_t* eventHandlerPtr);
-    void   addGetEvent(eventHandler_t* eventHandlerPtr);
+//    void   addGetEvent(eventHandler_t* eventHandlerPtr);
   private:
     byte   nextEvent();  // Recherche du prochain event disponible
     void   parseDelayList(delayEventItem_t** ItemPtr, const uint16_t aDelay);
@@ -199,7 +201,7 @@ class EventManager : public stdEvent_t
     delayEventItem_t* eventTenthList = nullptr;   // event < 1 Minute
     longDelayEventItem_t* eventSecondsList = nullptr; // autres events up
     eventHandler_t*   handleEventList = nullptr;
-    eventHandler_t*   getEventList = nullptr;
+    //eventHandler_t*   getEventList = nullptr;
 };
 
 extern EventManager Events;
@@ -209,6 +211,7 @@ extern EventManager Events;
 // D_println(variable); permet d'afficher le nom de variable suivit de sa valeur
 
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
+#define D_print(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.print("', ");
 #define DX_println(x) Serial.print(F(#x " => '0x")); Serial.print(x,HEX); Serial.println("'");
 String Digit2_str(const uint16_t value);
 void   helperReset();
