@@ -38,7 +38,7 @@
       evHandlerDebug    Affichage de l'occupation CPU, de la memoire libre et des evenements 100Hz 10Hz et 1Hz
     V2.2  27/10/2021
        more arduino like lib with self built in instance
-       
+
 
  *************************************************/
 //#define BETAEVENTS_CCP
@@ -52,6 +52,10 @@
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 #endif
+
+//#ifdef ESP32
+//#include <driver/uart.h>
+//#endif
 
 eventHandler_t::eventHandler_t() {
   next = nullptr;
@@ -125,11 +129,21 @@ byte EventManager::get(const bool sleepOk ) {  //  sleep = true;
 
 #ifdef  __AVR__
     sleep_mode();
-#else
+#endif
+#ifdef  ESP8266
     // pour l'ESP8266 pas de sleep simple
     // !! TODO :  faire un meilleur sleep ESP32 & ESP8266
     //while (milliSeconds == millis()) yield();
     delay(1);  // to allow wifi sleep in modem mode
+#endif
+#ifdef  ESP32
+  // Minimize power from 65ma to 35ma
+  // TODO: a tester avec le WiFi actif
+  //setCpuFrequencyMhz(80);
+  //delayMicroseconds(700);
+  delay(1);
+  //setCpuFrequencyMhz(240);
+  
 #endif
     delta = millis() - milliSeconds;
     if (delta) {
@@ -155,15 +169,15 @@ byte EventManager::nextEvent() {
   // les ev100Hz ne sont pas tous restitués mais le nombre est dans aInt de l'event
 
   if (delta100Hz >= 10)  {
-    aInt = (delta100Hz / 10);  // nombre d'ev100Hz d'un coup
-    delta100Hz -= (aInt) * 10;
+    intExt = (delta100Hz / 10);  // nombre d'ev100Hz d'un coup
+    delta100Hz -= (intExt) * 10;
     return (code = ev100Hz);
   }
 
   // les ev10Hz ne sont pas tous restitués mais le nombre est dans aInt de l'event
   if (delta10Hz >= 100)  {
-    aInt = (delta10Hz / 100);  // nombre d'ev10Hz d'un coup
-    delta10Hz -= (aInt) * 100;
+    intExt = (delta10Hz / 100);  // nombre d'ev10Hz d'un coup
+    delta10Hz -= (intExt) * 100;
     return (code = ev10Hz);
   }
 
@@ -175,7 +189,7 @@ byte EventManager::nextEvent() {
   }
 
   // gestionaire de getEvent
-  eventHandler_t** ItemPtr = &getEventList;
+  eventHandler_t** ItemPtr = &handleEventList;
   while (*ItemPtr) {
     if ( (*ItemPtr)->get() ) return (code);
     ItemPtr = &((*ItemPtr)->next);
@@ -187,7 +201,7 @@ byte EventManager::nextEvent() {
     eventItem_t* itemPtr = eventList->nextItemPtr;
     //stdEvent_t(*eventList);
     code = eventList->code;
-    aInt = eventList->aInt;
+    intExt = eventList->intExt;
     delete eventList;
     eventList = itemPtr;
     return (Events.code);
@@ -249,7 +263,7 @@ void  EventManager::handle() {
       break;
 
     case ev10Hz: {
-        parseDelayList( &(eventTenthList), aInt);
+        parseDelayList( &(eventTenthList), intExt);
       }
 
       break;
@@ -272,9 +286,9 @@ void  EventManager::handle() {
         static uint8_t oldDay = 0;
         uint16_t aDay = day();
         if (oldDay != aDay) {
-          if (oldDay>0) push(ev24H, aDay); // User may take care of days
+          if (oldDay > 0) push(ev24H, aDay); // User may take care of days
           oldDay = aDay;
-          
+
         }
 
 #endif
@@ -315,11 +329,11 @@ void   EventManager::addHandleEvent(eventHandler_t* aHandler) {
   *ItemPtr = aHandler;
 }
 
-void   EventManager::addGetEvent(eventHandler_t* aHandler) {
-  eventHandler_t** ItemPtr = &getEventList;
-  while (*ItemPtr) ItemPtr = &((*ItemPtr)->next);
-  *ItemPtr = aHandler;
-}
+//void   EventManager::addGetEvent(eventHandler_t* aHandler) {
+//  eventHandler_t** ItemPtr = &getEventList;
+//  while (*ItemPtr) ItemPtr = &((*ItemPtr)->next);
+//  *ItemPtr = aHandler;
+//}
 
 
 

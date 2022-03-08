@@ -45,6 +45,8 @@
        split EventManger and BetaEvents
      V2.2  27/10/2021
        more arduino like lib with self built in instance
+       TODO : faire une liste de get event separés
+
 
  *************************************************/
 #pragma once
@@ -86,8 +88,9 @@ enum tEventCode {
 // Base structure for event
 struct stdEvent_t  {
   //  stdEvent_t(const uint8_t code = evNill, const int8_t ext = 0) : code(code), ext(ext) {}
-
-  stdEvent_t(const uint8_t code = evNill, const int aInt = 0) : code(code), aInt(aInt) {};
+  stdEvent_t() : code(evNill), intExt(0) {};
+  stdEvent_t(const uint8_t code, const int aInt = 0) : code(code), intExt(aInt) {};
+  //stdEvent_t(const uint8_t code = evNill, const float aFloat = 0) : code(code), aFloat(aFloat) {};
   //  stdEvent_t(const uint8_t code = evNill, const uint8_t ext ) : code(code), ext(ext) {};
   //  stdEvent_t(const uint8_t code = evNill, const char aChar) : code(code), aChar(aChar) {};
 
@@ -95,9 +98,9 @@ struct stdEvent_t  {
 
   union   {
     uint8_t ext;        // extCode of the event
-    char    aChar;
-    int     aInt;
-    String* aStringPtr;
+    char    charExt;
+    int     intExt;
+     String* StringPtr;
     size_t  data;
   };
   uint8_t code;       // code of the event
@@ -105,20 +108,20 @@ struct stdEvent_t  {
 
 // Base structure for an EventItem in an EventList
 struct eventItem_t : public stdEvent_t {
-  eventItem_t(const uint8_t code = evNill, const uint8_t ext = 0) : stdEvent_t(code, ext), nextItemPtr(nullptr) {}
+  eventItem_t(const uint8_t code = evNill, const int ext = 0) : stdEvent_t(code, ext), nextItemPtr(nullptr) {}
   eventItem_t(const stdEvent_t& stdEvent) : stdEvent_t(stdEvent), nextItemPtr(nullptr) {}
   eventItem_t* nextItemPtr;
 };
 
 struct delayEventItem_t : public stdEvent_t {
-  delayEventItem_t(const uint16_t aDelay, const uint8_t code, const int8_t ext = 0) : stdEvent_t(code, ext), delay(aDelay), nextItemPtr(nullptr) {}
+  delayEventItem_t(const uint16_t aDelay, const uint8_t code, const int ext = 0) : stdEvent_t(code, ext), delay(aDelay), nextItemPtr(nullptr) {}
   delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(stdEvent.delay), nextItemPtr(nullptr) {}
   uint16_t delay;         // delay millis  thenth;
   delayEventItem_t*  nextItemPtr;
 };
 
 struct longDelayEventItem_t : public stdEvent_t {
-  longDelayEventItem_t(const uint32_t aDelay, const uint8_t code, const int8_t ext = 0) : stdEvent_t(code, ext), longDelay(aDelay), nextLongItemPtr(nullptr) {}
+  longDelayEventItem_t(const uint32_t aDelay, const uint8_t code, const int ext = 0) : stdEvent_t(code, ext), longDelay(aDelay), nextLongItemPtr(nullptr) {}
   longDelayEventItem_t(const longDelayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , longDelay(stdEvent.longDelay), nextLongItemPtr(nullptr) {}
   uint32_t longDelay;         // delay seconds; up to 150 years :)
   longDelayEventItem_t*  nextLongItemPtr;
@@ -133,7 +136,7 @@ class eventHandler_t
     eventHandler_t *next;  // handle suivant
     eventHandler_t();
     virtual void begin() {};  // called with eventManager::begin
-    virtual void handle()  {};  // called 
+    virtual void handle()  {};  // called
     virtual byte get()   {
       return evNill;
     };
@@ -146,13 +149,12 @@ class EventManager : public stdEvent_t
 {
   public:
 
-    EventManager() {  // constructeur
+    EventManager() : stdEvent_t(evNill) {  // constructeur
 #ifdef  EventManagerInstance
 #error "EventManager already intancied"
 #else
 #define EventManagerInstance
 #endif
-      code = evNill;
     }
     void   begin();
     byte   get(const bool sleep = true);
@@ -161,6 +163,8 @@ class EventManager : public stdEvent_t
     bool   removeDelayEvent(const byte codeevent);
     bool   push(const stdEvent_t& eventPtr);
     bool   push(const uint8_t code, const int16_t param = 0);
+ //   bool   pushFloat(const uint8_t code, const float   afloat);
+
     bool   delayedPush(const uint32_t delayMillisec, const uint8_t code, const int16_t param = 0, const bool force = false);
     //    int    syncroSeconde(const int millisec = 0);
 #ifndef _Time_h
@@ -174,7 +178,7 @@ class EventManager : public stdEvent_t
 #endif
 
     void   addHandleEvent(eventHandler_t* eventHandlerPtr);
-    void   addGetEvent(eventHandler_t* eventHandlerPtr);
+//    void   addGetEvent(eventHandler_t* eventHandlerPtr);
   private:
     byte   nextEvent();  // Recherche du prochain event disponible
     void   parseDelayList(delayEventItem_t** ItemPtr, const uint16_t aDelay);
@@ -197,7 +201,7 @@ class EventManager : public stdEvent_t
     delayEventItem_t* eventTenthList = nullptr;   // event < 1 Minute
     longDelayEventItem_t* eventSecondsList = nullptr; // autres events up
     eventHandler_t*   handleEventList = nullptr;
-    eventHandler_t*   getEventList = nullptr;
+    //eventHandler_t*   getEventList = nullptr;
 };
 
 extern EventManager Events;
@@ -207,6 +211,7 @@ extern EventManager Events;
 // D_println(variable); permet d'afficher le nom de variable suivit de sa valeur
 
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
+#define D_print(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.print("', ");
 #define DX_println(x) Serial.print(F(#x " => '0x")); Serial.print(x,HEX); Serial.println("'");
 String Digit2_str(const uint16_t value);
 void   helperReset();

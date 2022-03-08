@@ -20,7 +20,7 @@
 
     V2.2  27/10/2021
        more arduino like lib with self built in instance
-
+    V2.2.1  02/12/2021  test esp32
 
  *************************************************/
 
@@ -55,13 +55,20 @@ enum tUserEventCode {
 //  Keyboard genere un evenement evChar a char caractere recu et un evenement evString a chaque ligne recue
 //  Debug permet sur reception d'un "T" sur l'entrée Serial d'afficher les infos de charge du CPU
 
-//#define BP0_PIN   5                //   Par defaut BP0 est sur D5
-//#define Led0_PIN  LED_BUILTIN      //   Par defaut Led0 est sur LED_BUILTIN
+#define BP0_PIN   5                //   Par defaut BP0 est sur D5
+#define LED0_PIN  2      //   Par defaut Led0 est sur LED_BUILTIN
 //#define SERIAL_SPEED 115200        //   Default at 115200
 
 #include <BetaEvents.h>
 
 int  multi = 0; // nombre de clic rapide
+
+//#if defined(ESP8266)
+//#include <ESP8266WiFi.h>
+//#elif defined(ESP32)
+//#include <WiFi.h>
+//#endif
+
 
 
 void setup() {
@@ -70,6 +77,13 @@ void setup() {
   // will setup Serial speed at 115200 by default
   Events.begin();
   Serial.println(F("\r\n\n" APP_NAME));
+//  #if defined(ESP8266)
+//  WiFi.forceSleepBegin();
+//  //   WiFi.mode(WIFI_OFF);
+//#elif defined(ESP32)
+//  WiFi.mode(WIFI_OFF);
+//  btStop();
+//#endif
   Serial.println("Bonjour ....");
   //D_println(LED_BUILTIN);
 
@@ -138,14 +152,14 @@ void loop() {
 
     case evInChar: {
         if (Debug.trackTime < 2) {
-          char aChar = Events.aChar;
+          char aChar = Events.charExt;
           if (isPrintable(aChar)) {
             D_println(Keyboard.inputChar);
           } else {
             D_println(int(aChar));
           }
         }
-        switch (toupper(Events.aChar))
+        switch (toupper(Events.charExt))
         {
           case '0': delay(10); break;
           case '1': delay(100); break;

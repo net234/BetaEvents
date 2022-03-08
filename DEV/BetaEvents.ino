@@ -40,12 +40,11 @@
       corections evHandlerLed sur le true/false
     V2.2  27/10/2021
        more arduino like lib with self built in instance
-    V2.2a  11/11/2021 
-       add begin in evHandles  
+
 
     *************************************************/
 
-#define APP_NAME "betaEvents V2.2a"
+#define APP_NAME "betaEvents V2.0.1"
 
 #if  defined(__AVR__)
 #include <avr/wdt.h>
@@ -153,18 +152,8 @@ void loop() {
   switch (Events.code)
   {
 
-
-
-    case evInit: {
-        Serial.println("ev init");
-      }
-      break;
-      
-    case ev24H: {
-        Serial.println("---- 24H ---");
-        int aDay = Events.ext;
-        D_println(aDay);
-      }
+    case ev24H:
+      Serial.println("---- 24H ---");
       break;
 
 
@@ -248,7 +237,7 @@ void loop() {
 
 
     case evInChar:
-      switch (toupper(Events.charExt))
+      switch (toupper(Events.aChar))
       {
         case '0': delay(10); break;
         case '1': delay(100); break;
@@ -267,7 +256,7 @@ void loop() {
       if (Keyboard.inputString.equals(F("S"))) {
         sleepOk = !sleepOk;
         Serial.print(F("Sleep=")); Serial.println(sleepOk);
-        D_println(*Events.StringPtr);
+        D_println(*Events.aStringPtr);
       }
 
       if (Keyboard.inputString.equals(F("O"))) {

@@ -53,8 +53,7 @@
 
 
 // instance poussoir si evBP0 existe
-
-#ifdef evPB0
+#ifdef DEFAULT_PIN 
 
 // definition GPIO sur D5 pour BP0 si celuici n'est pas defini
 #ifndef BP0_PIN
@@ -64,7 +63,9 @@
 #define BP0_PIN D5 
 #endif
 #endif
+#endif
 
+#ifdef BP0_PIN
 evHandlerButton BP0(evBP0, BP0_PIN);
 
 #endif
@@ -72,21 +73,22 @@ evHandlerButton BP0(evBP0, BP0_PIN);
 
 
 // instance LED si evLed0 existe
-#ifdef evLed0
+#ifdef DEFAULT_PIN 
 
 //definition GPIO sur LED_BUILTIN pour LED0 si il n'est pas defini par l'utilisateur
 #ifndef LED0_PIN
 #define LED0_PIN LED_BUILTIN
 #endif
 
+#endif
+
+#ifdef  LED0_PIN
 // reverted led on AVR UNO and NANO
 #if  defined(__AVR__)
   const bool Led0Revert = true;
 #else
   const bool Led0Revert = false;
 #endif
-
-
 // led clignotante a 1Hz 
 evHandlerLed    Led0(evLed0, LED0_PIN, Led0Revert , 1);
 
