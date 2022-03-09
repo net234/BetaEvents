@@ -43,9 +43,12 @@
     V2.2a  11/11/2021 
        add begin in evHandles  
 
+    V3.0   08/03/2022
+       refonte pour compatibilabité avec le multi core de L'ESP32    
+
     *************************************************/
 
-#define APP_NAME "betaEvents V2.2a"
+#define APP_NAME "betaEvents V3.0"
 
 #if  defined(__AVR__)
 #include <avr/wdt.h>
@@ -60,7 +63,7 @@
 
 #include "EventsManager.h"
 
-
+EventManager Events = EventManager();
 
 
 //EventManager MyEvent;   // local instance de eventManager
@@ -102,15 +105,15 @@ enum tUserEventCode {
 
 // instances poussoir
 evHandlerButton BP0(evBP0, BP0_PIN);
-evHandlerButton BP1(evBP1, BP1_PIN);
-evHandlerDebug  Debug;
+//evHandlerButton BP1(evBP1, BP1_PIN);
+//evHandlerDebug  Debug;
 
 // instance LED
 evHandlerLed    Led0(evLed0, LED_BUILTIN, HIGH);
 evHandlerLed    Led1(evLed1, LED1_PIN, HIGH);
 
 // instance Serial
-evHandlerSerial Keyboard;
+//evHandlerSerial Keyboard;
 
 bool sleepOk = true;
 int  multi = 0; // nombre de clic rapide
@@ -134,9 +137,9 @@ void setup() {
   Serial.println("Bonjour ....");
   D_println(sizeof(stdEvent_t));
   D_println(sizeof(size_t));
-  D_println(sizeof(eventItem_t));
-  D_println(sizeof(delayEventItem_t));
-  D_println(sizeof(longDelayEventItem_t));
+//  D_println(sizeof(eventItem_t));
+//  D_println(sizeof(delayEventItem_t));
+//  D_println(sizeof(longDelayEventItem_t));
 }
 
 byte BP0Multi = 0;
@@ -221,15 +224,15 @@ void loop() {
 
 
     case ev1S:
-      Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+      Serial.print(F("Ram=")); Serial.println(Events.freeRam());
       Serial.println(F("EV1S"));
       break;
     case ev2S:
-      Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+      Serial.print(F("Ram=")); Serial.println(Events.freeRam());
       Serial.println(F("EV2S"));
       break;
     case ev3S:
-      Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+      Serial.print(F("Ram=")); Serial.println(Events.freeRam());
       Serial.println(F("EV3S"));
       break;
 
@@ -246,6 +249,7 @@ void loop() {
       }
       break;
 
+#ifdef SKIP
 
     case evInChar:
       switch (toupper(Events.charExt))
@@ -306,6 +310,6 @@ void loop() {
       }
 
       break;
-
+#endif
   }
 }

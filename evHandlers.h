@@ -45,6 +45,21 @@
 #include  "EventsManager.h"
 
 
+// base pour un eventHandler (gestionaire avec un handleEvent);
+class eventHandler_t
+{
+  public:
+    eventHandler_t *next;  // handle suivant
+    eventHandler_t();
+    virtual void begin() {};  // called with eventManager::begin
+    virtual void handle()  {};  // called
+    virtual byte get()   {
+      return evNill;
+    };
+  //EventManager owner;  only in multicore
+};
+
+
 
 /**********************************************************
 
@@ -83,7 +98,6 @@ class evHandlerLed : public eventHandler_t {
 
 };
 
-
 /**********************************************************
 
    gestion d'un poussoir sur un port   genere evBPDown, evBPUp, evBPLongDown, evBPLongUp
@@ -115,6 +129,10 @@ class evHandlerButton : public eventHandler_t {
     bool    BPDown = false;
     uint16_t longDelay;
 };
+
+
+#ifdef SKIP
+
 
 #ifndef __AVR_ATtiny85__
 /**********************************************************
@@ -161,5 +179,7 @@ class evHandlerDebug : public eventHandler_t {
     uint16_t ev10HzMissed = 0;
 
 };
+
+#endif
 
 #endif

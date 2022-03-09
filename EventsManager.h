@@ -69,7 +69,7 @@ extern byte   hour()   ;
 
 
 //Basic system events
-enum tEventCode {
+typedef enum  {
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use delayedPushEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
   ev10Hz,          // tick 10HZ     non cumulative (see betaEvent.h)
@@ -82,68 +82,42 @@ enum tEventCode {
   //evLED0
   //  evWEB = 20,
   //  evUser = 100,
-};
+} tEventCode;
+
+
 
 
 // Base structure for event
 struct stdEvent_t  {
-  //  stdEvent_t(const uint8_t code = evNill, const int8_t ext = 0) : code(code), ext(ext) {}
-  stdEvent_t() : code(evNill), intExt(0) {};
+//  //  stdEvent_t(const uint8_t code = evNill, const int8_t ext = 0) : code(code), ext(ext) {}
+//  stdEvent_t() : code(evNill), intExt(0) {};
   stdEvent_t(const uint8_t code, const int aInt = 0) : code(code), intExt(aInt) {};
-  //stdEvent_t(const uint8_t code = evNill, const float aFloat = 0) : code(code), aFloat(aFloat) {};
-  //  stdEvent_t(const uint8_t code = evNill, const uint8_t ext ) : code(code), ext(ext) {};
-  //  stdEvent_t(const uint8_t code = evNill, const char aChar) : code(code), aChar(aChar) {};
-
-  stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), data(stdevent.data) {}
-
+//  //stdEvent_t(const uint8_t code = evNill, const float aFloat = 0) : code(code), aFloat(aFloat) {};
+//  //  stdEvent_t(const uint8_t code = evNill, const uint8_t ext ) : code(code), ext(ext) {};
+//  //  stdEvent_t(const uint8_t code = evNill, const char aChar) : code(code), aChar(aChar) {};
+//
+//  stdEvent_t(const stdEvent_t& stdevent) : code(stdevent.code), data(stdevent.data) {}
+  // this union is ever a 16Bit on 8Bit ARV or  a 32bit on ESP
   union   {
     uint8_t ext;        // extCode of the event
     char    charExt;
-    int     intExt;
+    int     intExt;     
      String* StringPtr;
     size_t  data;
   };
   uint8_t code;       // code of the event
 };
 
-// Base structure for an EventItem in an EventList
-struct eventItem_t : public stdEvent_t {
-  eventItem_t(const uint8_t code = evNill, const int ext = 0) : stdEvent_t(code, ext), nextItemPtr(nullptr) {}
-  eventItem_t(const stdEvent_t& stdEvent) : stdEvent_t(stdEvent), nextItemPtr(nullptr) {}
-  eventItem_t* nextItemPtr;
-};
-
-struct delayEventItem_t : public stdEvent_t {
-  delayEventItem_t(const uint16_t aDelay, const uint8_t code, const int ext = 0) : stdEvent_t(code, ext), delay(aDelay), nextItemPtr(nullptr) {}
-  delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(stdEvent.delay), nextItemPtr(nullptr) {}
-  uint16_t delay;         // delay millis  thenth;
-  delayEventItem_t*  nextItemPtr;
-};
-
-struct longDelayEventItem_t : public stdEvent_t {
-  longDelayEventItem_t(const uint32_t aDelay, const uint8_t code, const int ext = 0) : stdEvent_t(code, ext), longDelay(aDelay), nextLongItemPtr(nullptr) {}
-  longDelayEventItem_t(const longDelayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , longDelay(stdEvent.longDelay), nextLongItemPtr(nullptr) {}
-  uint32_t longDelay;         // delay seconds; up to 150 years :)
-  longDelayEventItem_t*  nextLongItemPtr;
-};
-
-
-
-// base pour un eventHandler (gestionaire avec un handleEvent);
-class eventHandler_t
-{
-  public:
-    eventHandler_t *next;  // handle suivant
-    eventHandler_t();
-    virtual void begin() {};  // called with eventManager::begin
-    virtual void handle()  {};  // called
-    virtual byte get()   {
-      return evNill;
-    };
-};
-
 #include "evHandlers.h"
 
+// Objet to deal with Events
+// There is only one instance of this object on AVR called "Events"
+// On a ESP a secondary instance could be build to deal this secondary core
+
+class eventHandler_t;
+struct eventItem_t;
+struct delayEventItem_t;
+struct longDelayEventItem_t;
 
 class EventManager : public stdEvent_t
 {
@@ -172,7 +146,7 @@ class EventManager : public stdEvent_t
     friend byte   minute() ;
     friend byte   hour()   ;
 #endif
-    //    int freeRam();
+    size_t freeRam();
 #ifndef _Time_h
     uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
 #endif
@@ -201,10 +175,38 @@ class EventManager : public stdEvent_t
     delayEventItem_t* eventTenthList = nullptr;   // event < 1 Minute
     longDelayEventItem_t* eventSecondsList = nullptr; // autres events up
     eventHandler_t*   handleEventList = nullptr;
-    //eventHandler_t*   getEventList = nullptr;
+//    //eventHandler_t*   getEventList = nullptr;
 };
 
-extern EventManager Events;
+
+
+
+
+
+// Base structure for an EventItem in an EventList
+struct eventItem_t : public stdEvent_t {
+  eventItem_t(const uint8_t code = evNill, const int ext = 0) : stdEvent_t(code, ext), nextItemPtr(nullptr) {}
+  eventItem_t(const stdEvent_t& stdEvent) : stdEvent_t(stdEvent), nextItemPtr(nullptr) {}
+  eventItem_t* nextItemPtr;
+};
+
+struct delayEventItem_t : public stdEvent_t {
+  delayEventItem_t(const uint16_t aDelay, const uint8_t code, const int ext = 0) : stdEvent_t(code, ext), delay(aDelay), nextItemPtr(nullptr) {}
+  delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(stdEvent.delay), nextItemPtr(nullptr) {}
+  uint16_t delay;         // delay millis  thenth;
+  delayEventItem_t*  nextItemPtr;
+};
+
+struct longDelayEventItem_t : public stdEvent_t {
+  longDelayEventItem_t(const uint32_t aDelay, const uint8_t code, const int ext = 0) : stdEvent_t(code, ext), longDelay(aDelay), nextLongItemPtr(nullptr) {}
+  longDelayEventItem_t(const longDelayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , longDelay(stdEvent.longDelay), nextLongItemPtr(nullptr) {}
+  uint32_t longDelay;         // delay seconds; up to 150 years :)
+  longDelayEventItem_t*  nextLongItemPtr;
+};
+
+
+
+//extern EventManager Events;
 
 
 //Helper
@@ -213,6 +215,5 @@ extern EventManager Events;
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 #define D_print(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.print("', ");
 #define DX_println(x) Serial.print(F(#x " => '0x")); Serial.print(x,HEX); Serial.println("'");
-String Digit2_str(const uint16_t value);
-void   helperReset();
-int    helperFreeRam();
+//String Digit2_str(const uint16_t value);
+//void   helperReset();

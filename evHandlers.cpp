@@ -39,6 +39,16 @@
 
     *************************************************/
 #include  "evHandlers.h"
+#define owner Events
+extern EventManager Events;
+
+
+eventHandler_t::eventHandler_t() {
+  next = nullptr;
+  owner.addHandleEvent(this);
+} ;
+
+
 
 
 /**********************************************************
@@ -54,8 +64,8 @@ evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, c
 };
 
 void evHandlerLed::handle()  {
-  if (Events.code == evCode) {
-    switch (Events.ext) {
+  if (owner.code == evCode) {
+    switch (owner.ext) {
       case evxLedOff:
         digitalWrite(pinNumber,  not levelON);   // led off
         break;
@@ -63,8 +73,8 @@ void evHandlerLed::handle()  {
       case evxLedOn:
         digitalWrite(pinNumber, (percent == 0) xor levelON );
         if (percent > 0 && percent < 100) {
-          Events.delayedPush(millisecondes, evCode, evxLedOn);
-          Events.delayedPush(millisecondes * percent / 100, evCode, evxLedOff, true);
+          owner.delayedPush(millisecondes, evCode, evxLedOn);
+          owner.delayedPush(millisecondes * percent / 100, evCode, evxLedOff, true);
         }
         break;
     }
@@ -80,7 +90,7 @@ void  evHandlerLed::setOn(const bool status) {
 void  evHandlerLed::setMillisec(const uint16_t aMillisecondes, const uint8_t aPercent) {
   millisecondes = max(aMillisecondes, (uint16_t)2);
   percent = aPercent;
-  Events.delayedPush(0, evCode, (percent > 0) ? evxLedOn : evxLedOff );
+  owner.delayedPush(0, evCode, (percent > 0) ? evxLedOn : evxLedOff );
 }
 
 void  evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent) {
@@ -97,8 +107,11 @@ void   evHandlerLed::pulse(const uint32_t aDelay) { // pulse d'allumage simple
     return;
   }
   setOn(true);
-  Events.delayedPush(aDelay,evCode,evxLedOff);
+  owner.delayedPush(aDelay,evCode,evxLedOff);
 }
+
+
+
 /**********************************************************
 
    gestion d'un poussoir sur un port   genere evBPDown, evBPUp, evBPLongDown, evBPLongUp
@@ -114,20 +127,22 @@ evHandlerButton::evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNum
 
 
 void evHandlerButton::handle()  {
-  if (Events.code == ev10Hz) {
+  if (owner.code == ev10Hz) {
+    
     if ( BPDown != (digitalRead(pinNumber) == LOW)) { // changement d'etat BP0
       BPDown = !BPDown;
+      //Serial.print('.');
       if (BPDown) {
-        Events.push(evCode, evxBPDown);
-        Events.delayedPush(longDelay, evCode, evxBPLongDown); // arme un event BP0 long down
+        owner.push(evCode, evxBPDown);
+        owner.delayedPush(longDelay, evCode, evxBPLongDown); // arme un event BP0 long down
       } else {
-        Events.push(evCode, evxBPUp);
-        Events.delayedPush(longDelay, evCode, evxBPLongUp); // arme un event BP0 long up
+        owner.push(evCode, evxBPUp);
+        owner.delayedPush(longDelay, evCode, evxBPLongUp); // arme un event BP0 long up
       }
     }
   }
 }
-
+#ifdef SKIP
 #ifndef __AVR_ATtiny85__
 /**********************************************************
 
@@ -264,5 +279,7 @@ void evHandlerDebug::handle() {
       break;
   }
 };
+
+#endif
 
 #endif

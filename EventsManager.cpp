@@ -48,20 +48,14 @@
 //#define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
 
-#ifdef  __AVR__
-#include <avr/sleep.h>
-#include <avr/wdt.h>
-#endif
+//#ifdef  __AVR__
+//#include <avr/sleep.h>
+//#include <avr/wdt.h>
+//#endif
 
 //#ifdef ESP32
 //#include <driver/uart.h>
 //#endif
-
-eventHandler_t::eventHandler_t() {
-  next = nullptr;
-  Events.addHandleEvent(this);
-} ;
-
 
 
 
@@ -162,6 +156,7 @@ byte EventManager::get(const bool sleepOk ) {  //  sleep = true;
 }
 
 
+
 ///////////////////////////////////////////////////////////
 // get next done event
 byte EventManager::nextEvent() {
@@ -204,10 +199,10 @@ byte EventManager::nextEvent() {
     intExt = eventList->intExt;
     delete eventList;
     eventList = itemPtr;
-    return (Events.code);
+    return (code);
   }
 
-  return (Events.code = evNill);
+  return (code = evNill);
 }
 
 void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay) {
@@ -402,6 +397,19 @@ bool   EventManager::removeDelayEvent(const byte codeevent) {
            removeLongDelayEventFromList(codeevent, &(eventSecondsList)) );
 }
 
+//====== Sram dispo =========
+#ifndef __AVR__
+size_t EventManager::freeRam () {
+  return ESP.getFreeHeap();
+}
+#else
+size_t EventManager::freeRam () {
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+}
+#endif
+
 #ifndef _Time_h
 byte  second()  {
   return ( Events.timestamp % 60);
@@ -421,11 +429,7 @@ byte  hour()  {
 
 
 
-
-// Preinstantiate Objects /// as Nicolas Zambetti with Wire.cpp /////
-
-EventManager Events = EventManager();
-
+#ifdef SKIP
 
 //Helper
 
@@ -451,15 +455,10 @@ void helperReset() {
 
 }
 
-//====== Sram dispo =========
-#ifndef __AVR__
-int helperFreeRam () {
-  return ESP.getFreeHeap();
-}
-#else
-int helperFreeRam () {
-  extern int __heap_start, *__brkval;
-  int v;
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
-}
+
+
 #endif
+
+//// Preinstantiate Objects /// as Nicolas Zambetti with Wire.cpp /////
+//
+//EventManager Events = EventManager();
