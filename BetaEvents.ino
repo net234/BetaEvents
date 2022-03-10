@@ -43,9 +43,11 @@
     V2.2a  11/11/2021 
        add begin in evHandles  
 
+    V2.3    09/03/2022   isolation of evHandler for compatibility with dual core ESP32
+
     *************************************************/
 
-#define APP_NAME "betaEvents V2.2a"
+#define APP_NAME "betaEvents V3.0"
 
 #if  defined(__AVR__)
 #include <avr/wdt.h>
@@ -59,11 +61,9 @@
 
 
 #include "EventsManager.h"
+// Preinstantiate Objects /// as Nicolas Zambetti with Wire.cpp /////
 
-
-
-
-//EventManager MyEvent;   // local instance de eventManager
+EventManager Events = EventManager();
 
 /* Evenements du Manager (voir betaEvents.h)
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use delayedPushEvent(delay,event)
@@ -134,9 +134,6 @@ void setup() {
   Serial.println("Bonjour ....");
   D_println(sizeof(stdEvent_t));
   D_println(sizeof(size_t));
-  D_println(sizeof(eventItem_t));
-  D_println(sizeof(delayEventItem_t));
-  D_println(sizeof(longDelayEventItem_t));
 }
 
 byte BP0Multi = 0;
@@ -221,29 +218,20 @@ void loop() {
 
 
     case ev1S:
-      Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+      Serial.print(F("Ram=")); Serial.println(Events.freeRam());
       Serial.println(F("EV1S"));
       break;
     case ev2S:
-      Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+      Serial.print(F("Ram=")); Serial.println(Events.freeRam());
       Serial.println(F("EV2S"));
       break;
     case ev3S:
-      Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+      Serial.print(F("Ram=")); Serial.println(Events.freeRam());
       Serial.println(F("EV3S"));
       break;
 
     case doReset:
-      delay(100);
-#ifdef  __AVR__
-      wdt_enable(WDTO_120MS);
-#else
-      ESP. restart();
-#endif
-      while (1)
-      {
-        delay(1);
-      }
+      Events.reset();
       break;
 
 
@@ -272,32 +260,32 @@ void loop() {
 
       if (Keyboard.inputString.equals(F("O"))) {
         Serial.println(F("Push 3 delay events"));
-        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
         Events.delayedPush(500, ev1S);
         Events.delayedPush(11 * 1000, ev2S);
         Events.delayedPush(11L * 60  * 1000, ev3S);
-        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
       }
       if (Keyboard.inputString.equals(F("P"))) {
         Serial.println(F("Push 3 delay events"));
-        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
         Events.delayedPush(1000, ev1S);
         Events.delayedPush(2000, ev2S);
         Events.delayedPush(3000, ev3S);
-        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
       }
       if (Keyboard.inputString.equals(F("Q"))) {
         Serial.println(F("Push 3 events"));
-        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
         Events.delayedPush(0, ev1S);
         Events.delayedPush(0, ev2S);
         Events.delayedPush(0, ev3S);
-        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
       }
 
 
       if (Keyboard.inputString.equals(F("FREE"))) {
-        Serial.print(F("Ram=")); Serial.println(helperFreeRam());
+        Serial.print(F("Ram=")); Serial.println(Events.freeRam());
       }
 
       if (Keyboard.inputString.equals(F("RESET"))) {

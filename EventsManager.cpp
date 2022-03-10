@@ -39,6 +39,7 @@
     V2.2  27/10/2021
        more arduino like lib with self built in instance
 
+    V2.3    09/03/2022   isolation of evHandler for compatibility with dual core ESP32
 
  *************************************************/
 //#define BETAEVENTS_CCP
@@ -46,6 +47,28 @@
 
 #include "EventsManager.h"
 //#define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
+
+// Base structure for an EventItem in an EventList
+struct eventItem_t : public stdEvent_t {
+  eventItem_t(const uint8_t code = evNill, const int ext = 0) : stdEvent_t(code, ext), nextItemPtr(nullptr) {}
+  eventItem_t(const stdEvent_t& stdEvent) : stdEvent_t(stdEvent), nextItemPtr(nullptr) {}
+  eventItem_t* nextItemPtr;
+};
+
+struct delayEventItem_t : public stdEvent_t {
+  delayEventItem_t(const uint16_t aDelay, const uint8_t code, const int ext = 0) : stdEvent_t(code, ext), delay(aDelay), nextItemPtr(nullptr) {}
+  delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(stdEvent.delay), nextItemPtr(nullptr) {}
+  uint16_t delay;         // delay millis  thenth;
+  delayEventItem_t*  nextItemPtr;
+};
+
+struct longDelayEventItem_t : public stdEvent_t {
+  longDelayEventItem_t(const uint32_t aDelay, const uint8_t code, const int ext = 0) : stdEvent_t(code, ext), longDelay(aDelay), nextLongItemPtr(nullptr) {}
+  longDelayEventItem_t(const longDelayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , longDelay(stdEvent.longDelay), nextLongItemPtr(nullptr) {}
+  uint32_t longDelay;         // delay seconds; up to 150 years :)
+  longDelayEventItem_t*  nextLongItemPtr;
+};
+
 
 
 #ifdef  __AVR__
@@ -59,7 +82,7 @@
 
 eventHandler_t::eventHandler_t() {
   next = nullptr;
-  Events.addHandleEvent(this);
+  evManager.addHandleEvent(this);
 } ;
 
 
@@ -204,10 +227,10 @@ byte EventManager::nextEvent() {
     intExt = eventList->intExt;
     delete eventList;
     eventList = itemPtr;
-    return (Events.code);
+    return (evManager.code);
   }
 
-  return (Events.code = evNill);
+  return (evManager.code = evNill);
 }
 
 void  EventManager::parseDelayList(delayEventItem_t** ItemPtr, const uint16_t delay) {
@@ -402,42 +425,19 @@ bool   EventManager::removeDelayEvent(const byte codeevent) {
            removeLongDelayEventFromList(codeevent, &(eventSecondsList)) );
 }
 
-#ifndef _Time_h
-byte  second()  {
-  return ( Events.timestamp % 60);
-}
-byte  minute()  {
-  return ( (Events.timestamp / 60) % 60);
-}
-byte  hour()  {
-  return ( (Events.timestamp / 3600) % 24);
-}
+
+//====== Sram dispo =========
+size_t EventManager::freeRam () {
+#ifndef __AVR__
+  return ESP.getFreeHeap();
+#else
+  extern int __heap_start, *__brkval;
+  int v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);*
 #endif
-
-
-
-
-
-
-
-
-
-// Preinstantiate Objects /// as Nicolas Zambetti with Wire.cpp /////
-
-EventManager Events = EventManager();
-
-
-//Helper
-
-String Digit2_str(const uint16_t value) {
-  String result = "";
-  if (value < 10) result = '0';
-  result += value;
-  return result;
 }
 
-
-void helperReset() {
+void EventManager::reset() {
   delay(100);
 #ifdef  __AVR__
   wdt_enable(WDTO_120MS);
@@ -448,18 +448,37 @@ void helperReset() {
   {
     delay(1);
   }
-
 }
 
-//====== Sram dispo =========
-#ifndef __AVR__
-int helperFreeRam () {
-  return ESP.getFreeHeap();
+
+
+#ifndef _Time_h
+byte  second()  {
+  return ( evManager.timestamp % 60);
 }
-#else
-int helperFreeRam () {
-  extern int __heap_start, *__brkval;
-  int v;
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+byte  minute()  {
+  return ( (evManager.timestamp / 60) % 60);
+}
+byte  hour()  {
+  return ( (evManager.timestamp / 3600) % 24);
 }
 #endif
+
+
+
+
+
+
+
+
+
+
+
+//Helper
+
+String Digit2_str(const uint16_t value) {
+  String result = "";
+  if (value < 10) result = '0';
+  result += value;
+  return result;
+}

@@ -38,6 +38,7 @@
     V2.2a  11/11/2021
        add begin in evHandles
 
+    V2.3    09/03/2022   isolation of evHandler for compatibility with dual core ESP32
 
     *************************************************/
 #pragma once

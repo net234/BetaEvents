@@ -47,6 +47,7 @@
        more arduino like lib with self built in instance
        TODO : faire une liste de get event separés
 
+    V2.3    09/03/2022   isolation of evHandler for compatibility with dual core ESP32
 
  *************************************************/
 #pragma once
@@ -106,26 +107,6 @@ struct stdEvent_t  {
   uint8_t code;       // code of the event
 };
 
-// Base structure for an EventItem in an EventList
-struct eventItem_t : public stdEvent_t {
-  eventItem_t(const uint8_t code = evNill, const int ext = 0) : stdEvent_t(code, ext), nextItemPtr(nullptr) {}
-  eventItem_t(const stdEvent_t& stdEvent) : stdEvent_t(stdEvent), nextItemPtr(nullptr) {}
-  eventItem_t* nextItemPtr;
-};
-
-struct delayEventItem_t : public stdEvent_t {
-  delayEventItem_t(const uint16_t aDelay, const uint8_t code, const int ext = 0) : stdEvent_t(code, ext), delay(aDelay), nextItemPtr(nullptr) {}
-  delayEventItem_t(const delayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , delay(stdEvent.delay), nextItemPtr(nullptr) {}
-  uint16_t delay;         // delay millis  thenth;
-  delayEventItem_t*  nextItemPtr;
-};
-
-struct longDelayEventItem_t : public stdEvent_t {
-  longDelayEventItem_t(const uint32_t aDelay, const uint8_t code, const int ext = 0) : stdEvent_t(code, ext), longDelay(aDelay), nextLongItemPtr(nullptr) {}
-  longDelayEventItem_t(const longDelayEventItem_t& stdEvent) : stdEvent_t(stdEvent) , longDelay(stdEvent.longDelay), nextLongItemPtr(nullptr) {}
-  uint32_t longDelay;         // delay seconds; up to 150 years :)
-  longDelayEventItem_t*  nextLongItemPtr;
-};
 
 
 
@@ -140,11 +121,14 @@ class eventHandler_t
     virtual byte get()   {
       return evNill;
     };
+//    EventManager evManager;
 };
 
 #include "evHandlers.h"
-
-
+#define evManager Events
+struct eventItem_t;
+struct delayEventItem_t;
+struct longDelayEventItem_t;
 class EventManager : public stdEvent_t
 {
   public:
@@ -172,7 +156,8 @@ class EventManager : public stdEvent_t
     friend byte   minute() ;
     friend byte   hour()   ;
 #endif
-    //    int freeRam();
+    size_t freeRam();
+    void   reset();
 #ifndef _Time_h
     uint32_t   timestamp = 0;   //timestamp en seconde  (more than 100 years)
 #endif
@@ -214,5 +199,5 @@ extern EventManager Events;
 #define D_print(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.print("', ");
 #define DX_println(x) Serial.print(F(#x " => '0x")); Serial.print(x,HEX); Serial.println("'");
 String Digit2_str(const uint16_t value);
-void   helperReset();
-int    helperFreeRam();
+//void   helperReset();
+//int    helperFreeRam();
