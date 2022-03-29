@@ -52,7 +52,7 @@
 
 #include "EventsManager.h"
 // Events Manager build an instance called "Events" who care about events
-
+EventManager Events = EventManager();
 
 // instance poussoir si evBP0 existe
 #ifdef DEFAULT_PIN 
@@ -62,7 +62,7 @@
 #if  defined(__AVR__)
 #define BP0_PIN 5
 #elif defined(ESP8266) || defined(ESP32)
-#define BP0_PIN D5 
+#define BP0_PIN D3 // (flash) 
 #endif
 #endif
 #endif

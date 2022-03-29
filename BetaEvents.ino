@@ -59,6 +59,7 @@
 
 
 
+#define DEFAULT_PIN 
 
 #include "EventsManager.h"
 // Preinstantiate Objects /// as Nicolas Zambetti with Wire.cpp /////

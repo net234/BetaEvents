@@ -46,7 +46,6 @@
 
 
 #include "EventsManager.h"
-//#define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
 
 // Base structure for an EventItem in an EventList
 struct eventItem_t : public stdEvent_t {
