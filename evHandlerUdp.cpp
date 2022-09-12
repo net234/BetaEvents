@@ -50,7 +50,8 @@ void evHandlerUdp::handle() {
     switch (evManager.ext) {
       case evxBcast: {
           if (unicastCnt == 0) return;
-          if (millis() - lastUDP > 500) {
+          // send udp after 200ms of silence
+          if (millis() - lastUDP > 200) {
             unicast(broadcastIP);
             --unicastCnt;
           } else D_println(unicastCnt);
@@ -76,20 +77,42 @@ void evHandlerUdp::handle() {
   char udpPacketBuffer[UDP_MAX_SIZE + 1]; //buffer to hold incoming packet,
   int size = UDP.read(udpPacketBuffer, UDP_MAX_SIZE);
 
-  //  // read the packet into packetBufffer
-  //  if (packetSize > UDP_MAX_SIZE) {
-  //    Serial.printf("UDP too big ");
-  //    return;
-  //  }
+  // read the packet into packetBufffer
+  if (packetSize > UDP_MAX_SIZE) {
+    Serial.printf("UDP too big ");
+    return;
+  }
 
   //TODO: clean this   cleanup line feed
   if (size > 0 && udpPacketBuffer[size - 1] == '\n') size--;
   udpPacketBuffer[size] = 0;
 
   String aStr = udpPacketBuffer;
-  D_println(aStr);
+ 
   lastUDP = millis();
-  
+
+  // filtrage des trame repetitive
+
+   String bStr = grabFromStringUntil(aStr, '\t'); // EVENT xxxx
+   String header = grabFromStringUntil(bStr, ' '); // header
+   String node = grabFromStringUntil(aStr, '\t'); // node
+
+     // UdpId is a mix of remote IP and EVENT number
+    IPAddress  aUdpId = UDP.remoteIP();
+    aUdpId[0] = bStr.toInt();
+
+    if (aUdpId == lastUdpId) {
+      Serial.println(F("Doublon UDP"));
+      return;
+    }
+    //Todo : filtrer les 5 dernier UdpID ?
+    lastUdpId = aUdpId;
+
+    D_print(header);
+    D_print(node);
+    D_println(aStr);
+
+
   //  // Broadcast
   //  if  ( MyUDP.destinationIP() == broadcastIP ) {
   //    // it is a reception broadcast

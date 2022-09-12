@@ -60,4 +60,5 @@ class evHandlerUdp : public eventHandler_t {
     time_t  lastUDP;
     uint8_t numTrameUDP = 0; // numeroteur de trame UDP
     uint8_t unicastCnt;      // compteur d'unicast a l'emission
+    IPAddress lastUdpId;      // udp ID composé du numero de trame et des 3 dernier octet de l'IP
 };

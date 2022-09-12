@@ -201,3 +201,7 @@ extern EventManager Events;
 String Digit2_str(const uint16_t value);
 //void   helperReset();
 //int    helperFreeRam();
+
+// extrait un element terminé pae aKey de la chaine aString
+// si aKey est absent toute la chaine est extaite
+String grabFromStringUntil(String & aString, const char aKey);
