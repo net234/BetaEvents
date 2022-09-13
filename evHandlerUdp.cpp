@@ -33,7 +33,13 @@ evHandlerUdp::evHandlerUdp(const uint8_t aEventCode, const uint16_t aPortNumber,
   evCode(aEventCode),
   localPortNumber(aPortNumber),
   nodename(aNodename) {
+  rxHeader.reserve(16);
+  rxNode.reserve(16);
+  rxJson.reserve(UDP_MAX_SIZE);
   messageUDP.reserve(UDP_MAX_SIZE);
+//  01:10:47.989 -> 01:10:47,CPU=18%,Loop=884,Nill=778,Ram=46456,Frag=15%,MaxMem=38984 Miss:16/0
+//  01:25:14.369 -> 01:25:13,CPU=22%,Loop=849,Nill=745,Ram=46464,Frag=2%,MaxMem=45608 Miss:12/0
+
 }
 
 const  IPAddress broadcastIP(255, 255, 255, 255);
