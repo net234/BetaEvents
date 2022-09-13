@@ -54,7 +54,7 @@ void evHandlerUdp::handle() {
           if (millis() - lastUDP > 200) {
             unicast(broadcastIP);
             --unicastCnt;
-          } else D_println(unicastCnt);
+          } // else D_println(unicastCnt);
           if (unicastCnt > 0) evManager.delayedPush(50, evCode, evxBcast);
         }
         break;
@@ -68,11 +68,11 @@ void evHandlerUdp::handle() {
   if (packetSize == 0) return;
 
   Serial.print("Received packet UDP");
-  Serial.printf("Received packet of size % d from % s: % d\n    (to % s: % d, free heap = % d B)\n",
-                packetSize,
-                UDP.remoteIP().toString().c_str(), UDP.remotePort(),
-                UDP.destinationIP().toString().c_str(), UDP.localPort(),
-                ESP.getFreeHeap());
+//  Serial.printf("Received packet of size % d from % s: % d\n    (to % s: % d, free heap = % d B)\n",
+//                packetSize,
+//                UDP.remoteIP().toString().c_str(), UDP.remotePort(),
+//                UDP.destinationIP().toString().c_str(), UDP.localPort(),
+//                ESP.getFreeHeap());
 
   char udpPacketBuffer[UDP_MAX_SIZE + 1]; //buffer to hold incoming packet,
   int size = UDP.read(udpPacketBuffer, UDP_MAX_SIZE);
@@ -94,8 +94,8 @@ void evHandlerUdp::handle() {
   // filtrage des trame repetitive
 
    String bStr = grabFromStringUntil(aStr, '\t'); // EVENT xxxx
-   String header = grabFromStringUntil(bStr, ' '); // header
-   String node = grabFromStringUntil(aStr, '\t'); // node
+   rxHeader = grabFromStringUntil(bStr, ' '); // header
+   rxNode = grabFromStringUntil(aStr, '\t'); // node
 
      // UdpId is a mix of remote IP and EVENT number
     IPAddress  aUdpId = UDP.remoteIP();
@@ -108,10 +108,14 @@ void evHandlerUdp::handle() {
     //Todo : filtrer les 5 dernier UdpID ?
     lastUdpId = aUdpId;
 
-    D_print(header);
-    D_print(node);
-    D_println(aStr);
 
+    bcast = ( UDP.destinationIP() == broadcastIP );
+    rxJson = aStr;
+//    D_print(rxHeader);
+//    D_print(rxNode);
+//    D_println(aStr);
+
+    evManager.push(evCode,evxUdpRxMessage);
 
   //  // Broadcast
   //  if  ( MyUDP.destinationIP() == broadcastIP ) {

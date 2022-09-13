@@ -33,7 +33,7 @@
 
 typedef enum   {
   // evenement recu
-  //evxUdpRBCast,           // broadcast recu
+  evxUdpRxMessage,           // broadcast recu
   //evxUdpRUCast,            // Unicast recu
   // evenements interne de gestion
   evxBcast,                // send broadcast
@@ -61,4 +61,9 @@ class evHandlerUdp : public eventHandler_t {
     uint8_t numTrameUDP = 0; // numeroteur de trame UDP
     uint8_t unicastCnt;      // compteur d'unicast a l'emission
     IPAddress lastUdpId;      // udp ID composé du numero de trame et des 3 dernier octet de l'IP
+  public:
+    bool bcast;   // true if rx is a bcast
+    String rxHeader;  // header of rxMessage
+    String rxNode;    // nodename of rxMessage
+    String rxJson;    // json of rxMessage
 };
