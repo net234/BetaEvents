@@ -51,17 +51,17 @@ void evHandlerUdp::begin() {
 void evHandlerUdp::handle() {
   if (evManager.code  == evCode) {
 
-    // broadcst out = send unicast  inicastCnt  fois
+    // broadcst out = send unicast  castCnt  fois
 
     switch (evManager.ext) {
       case evxBcast: {
-          if (unicastCnt == 0) return;
+          if (castCnt == 0) return;
           // send udp after 200ms of silence
           if (millis() - lastUDP > 200) {
-            unicast(broadcastIP);
-            --unicastCnt;
+            cast(txIPDest);
+            --castCnt;
           } // else D_println(unicastCnt);
-          if (unicastCnt > 0) evManager.delayedPush(50, evCode, evxBcast);
+          if (castCnt > 0) evManager.delayedPush(50, evCode, evxBcast);
         }
         break;
     }
@@ -83,11 +83,11 @@ void evHandlerUdp::handle() {
   char udpPacketBuffer[UDP_MAX_SIZE + 1]; //buffer to hold incoming packet,
   int size = UDP.read(udpPacketBuffer, UDP_MAX_SIZE);
 
-  // read the packet into packetBufffer
-  if (packetSize > UDP_MAX_SIZE) {
-    Serial.printf("UDP too big ");
-    return;
-  }
+//  // read the packet into packetBufffer
+//  if (packetSize > UDP_MAX_SIZE) {
+//    Serial.printf("UDP too big ");
+//    return;
+//  }
 
   //TODO: clean this   cleanup line feed
   if (size > 0 && udpPacketBuffer[size - 1] == '\n') size--;
@@ -104,7 +104,8 @@ void evHandlerUdp::handle() {
    rxNode = grabFromStringUntil(aStr, '\t'); // node
 
      // UdpId is a mix of remote IP and EVENT number
-    IPAddress  aUdpId = UDP.remoteIP();
+    rxIPSender = UDP.remoteIP();
+    IPAddress  aUdpId = rxIPSender;
     aUdpId[0] = bStr.toInt();
 
     if (aUdpId == lastUdpId) {
@@ -154,16 +155,23 @@ void evHandlerUdp::handle() {
 
 
 void evHandlerUdp::broadcast(const String & aJsonStr) {
-  Serial.print("Send broadcast ");
+  Serial.print(F("Send broadcast "));
+  unicast(broadcastIP,aJsonStr);
+} 
+
+void evHandlerUdp::unicast(const IPAddress aIPAddress,const String& aJsonStr) {
+  Serial.print(F("Send unicast "));
   D_println(aJsonStr);
   messageUDP = aJsonStr;
-  unicastCnt = 5;
+  castCnt = 5;
   if (++numTrameUDP == 0) numTrameUDP++;
-  Events.push(evCode, evxBcast);
+  txIPDest = aIPAddress;
+  evManager.delayedPush(0,evCode, evxBcast);  // clear pending bcast
 }
 
-void evHandlerUdp::unicast(const IPAddress aAddress) {
-  Serial.println("Send unicast ");
+
+void evHandlerUdp::cast(const IPAddress aAddress) {
+  Serial.println("Send cast ");
   String message = F("EVENT ");
   message += numTrameUDP;
   message += '\t';
@@ -171,7 +179,7 @@ void evHandlerUdp::unicast(const IPAddress aAddress) {
   message += '\t';
   message += messageUDP;
   message += '\n';
-  if ( !UDP.beginPacket(broadcastIP, localPortNumber) ) return ;
+  if ( !UDP.beginPacket(aAddress, localPortNumber) ) return ;
   UDP.write(message.c_str(), message.length());
   UDP.endPacket();
 }
