@@ -29,6 +29,11 @@
 
 #include  "evHandlerUdp.h"
 
+const uint16_t delaySilenceUdp = 100;  // delay de silence avant d'envoyer les trames
+const uint16_t delayInterUdp = 20;     // delay entre 2 trames
+const uint8_t  numberOfTrame = 4;      // nombre de trame repetitives
+
+
 evHandlerUdp::evHandlerUdp(const uint8_t aEventCode, const uint16_t aPortNumber,  String& aNodename) :
   evCode(aEventCode),
   localPortNumber(aPortNumber),
@@ -57,11 +62,11 @@ void evHandlerUdp::handle() {
       case evxBcast: {
           if (castCnt == 0) return;
           // send udp after 200ms of silence
-          if (millis() - lastUDP > 200) {
+          if (millis() - lastUDP > delaySilenceUdp) {
             cast(txIPDest);
             --castCnt;
           } // else D_println(unicastCnt);
-          if (castCnt > 0) evManager.delayedPush(50, evCode, evxBcast);
+          if (castCnt > 0) evManager.delayedPush(delayInterUdp, evCode, evxBcast);
         }
         break;
     }
@@ -124,33 +129,6 @@ void evHandlerUdp::handle() {
 
     evManager.push(evCode,evxUdpRxMessage);
 
-  //  // Broadcast
-  //  if  ( MyUDP.destinationIP() == broadcastIP ) {
-  //    // it is a reception broadcast
-  //    String bStr = grabFromStringUntil(aStr, '\t');
-  //    //aStr => 'cardreader  BetaPorte_2B  cardid  1626D989  user  Pierre H'
-  //    String cStr = "";
-  //    if ( bStr.equals(F("cardreader")) ) {
-  //      messageUDP += "      ";
-  //      cStr += grabFromStringUntil(aStr, '\t'); // event nodename
-  //      bStr = grabFromStringUntil(aStr, '\t'); // 'cardid'
-  //      bStr = grabFromStringUntil(aStr, '\t');  // cardid (value)
-  //      bStr = grabFromStringUntil(aStr, '\t');  // 'user'
-  //      cStr += " : ";
-  //      cStr += aStr;
-  //      D_println(cStr);
-  //
-  //      if (messageUDP.indexOf(cStr) < 0) {
-  //        messageUDP += "    ";
-  //        messageUDP += cStr;
-  //      }
-  //      Events.delayedPush(500, evNewStatus);
-  //      Events.delayedPush(3 * 60 * 1000, evEraseUdp);
-  //      return;
-  //    }
-  //  }
-
-
 }
 
 
@@ -163,7 +141,7 @@ void evHandlerUdp::unicast(const IPAddress aIPAddress,const String& aJsonStr) {
   Serial.print(F("Send unicast "));
   D_println(aJsonStr);
   messageUDP = aJsonStr;
-  castCnt = 5;
+  castCnt = numberOfTrame;
   if (++numTrameUDP == 0) numTrameUDP++;
   txIPDest = aIPAddress;
   evManager.delayedPush(0,evCode, evxBcast);  // clear pending bcast
@@ -183,57 +161,3 @@ void evHandlerUdp::cast(const IPAddress aAddress) {
   UDP.write(message.c_str(), message.length());
   UDP.endPacket();
 }
-/*******
-
-
-
-  String message = F("event\tbetaBrite\talive");
-
-  message += '\n';
-
-  if ( !MyUDP.beginPacket(broadcastIP, localUdpPort) ) return false;
-  MyUDP.write(message.c_str(), message.length());
-
-  MyUDP.endPacket();
-
-  delay(100);
-
-  if ( !MyUDP.beginPacket(broadcastIP, localUdpPort) ) return false;
-  MyUDP.write(message.c_str(), message.length());
-
-  MyUDP.endPacket();
-
-  delay(100);
-  if ( !MyUDP.beginPacket(broadcastIP, localUdpPort) ) return false;
-  MyUDP.write(message.c_str(), message.length());
-
-  MyUDP.endPacket();
-
-  Serial.print(message);
-  return true;
-  }
-
-
-
-  handleUdpPacket();        // handle UDP connection other betaporte
-
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//// port d'ecoute UDP
-//const unsigned int localUdpPort = 23423;      // local port to listen on
-////Objet UDP pour la liaison avec la console
-//WiFiUDP MyUDP;
