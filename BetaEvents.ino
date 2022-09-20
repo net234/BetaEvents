@@ -90,16 +90,16 @@ enum tUserEventCode {
   doReset,
 };
 
-#if  defined(__AVR__)
+//#if  defined(__AVR__)
 #define BP0_PIN 5
 #define BP1_PIN 6
 #define LED1_PIN 4
-#elif defined(ESP8266) || defined(ESP32)
-#define BP0_PIN D5 // D1
-#define BP1_PIN D6 // D2
-#define LED1_PIN D0 // GPIO16
+//#elif defined(ESP8266) || defined(ESP32)
+//#define BP0_PIN D5 // D1
+//#define BP1_PIN D6 // D2
+//#define LED1_PIN D0 // GPIO16
 
-#endif
+//#endif
 
 // instances poussoir
 evHandlerButton BP0(evBP0, BP0_PIN);

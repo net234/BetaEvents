@@ -53,6 +53,26 @@
 
  ***********************************************************/
 
+class evHandlerOutput : public eventHandler_t {
+
+  public:
+  evHandlerOutput(const uint8_t aEventCode, const uint8_t aPinNumber, const bool stateON = HIGH);
+    //virtual void begin()  override;
+    //virtual void handle()  override;
+    bool isOn()  {
+      return state;
+    };
+    virtual void   setOn(const bool status = true);  
+     private:
+    uint8_t pinNumber;
+    uint8_t evCode;
+    bool    state = false;
+    bool    stateON = HIGH;
+
+};
+
+
+
 
 typedef enum   {
   // evenement recu
@@ -61,15 +81,12 @@ typedef enum   {
 } tLedEventExt;
 
 
-class evHandlerLed : public eventHandler_t {
+class evHandlerLed : public evHandlerOutput {
   public:
-    evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool ledOn = HIGH, const uint8_t frequence = 0);
+    evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool stateON = HIGH, const uint8_t frequence = 0);
     //virtual void begin()  override;
     virtual void handle()  override;
-    bool isOn()  {
-      return ledOn;
-    };
-    void   setOn(const bool status = true);
+    virtual void   setOn(const bool status = true);
     void   setFrequence(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
     void   setMillisec(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
     void   pulse(const uint32_t millisecondes); // pulse d'allumage simple
