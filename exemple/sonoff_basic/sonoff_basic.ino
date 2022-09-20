@@ -74,7 +74,7 @@ evHandlerLed Relay0(evRelay0, RELAY0_PIN, true, 0);
 #define SERIAL_SPEED 115200
 #define SERIAL_BUFFERSIZE 100
 evHandlerSerial Keyboard(SERIAL_SPEED, SERIAL_BUFFERSIZE);
-
+evHandlerDebug  Debug;
 
 
 
@@ -92,7 +92,7 @@ void setup() {
   D_println(sizeof(size_t));
 }
 
-bool sleepOk = false;
+bool sleepOk = true;
 
 void loop() {
   Events.get(sleepOk);
@@ -110,8 +110,46 @@ void loop() {
 
     case ev24H:
       {
-         Serial.println(F("ev24H"));
+        Serial.println(F("ev24H"));
       }
       break;
-  }        
+
+    case evInChar:
+      {
+        if (Debug.trackTime < 2) {
+          char aChar = Keyboard.inputChar;
+          if (isPrintable(aChar)) {
+            D_println(aChar);
+          } else {
+            D_println(int(aChar));
+          }
+        }
+        switch (Keyboard.inputChar) {
+          case '0': delay(10); break;
+          case '1': delay(100); break;
+          case '2': delay(200); break;
+          case '3': delay(300); break;
+          case '4': delay(400); break;
+          case '5': delay(500); break;
+        }
+      }
+      break;
+
+    case evInString:
+      if (Debug.trackTime < 2) {
+        D_println(Keyboard.inputString);
+      }
+
+
+
+      if (Keyboard.inputString.equals(F("FREE"))) {
+        D_println(Events.freeRam());
+      }
+      if (Keyboard.inputString.equals("S")) {
+        sleepOk = !sleepOk;
+        D_println(sleepOk);
+      }
+      break;      
+      
+  }
 }
