@@ -54,21 +54,23 @@
  ***********************************************************/
 typedef enum {
   // evenement recu
-  evxOutOff,  // Led Off
-  evxOutOn,   // Led On
-  evxLedBlink,   // Led On
+  evxOutOff,    // Led Off
+  evxOutOn,     // Led On
+  evxLedBlink,  // Led On
 } tLOutEventExt;
 
 class evHandlerOutput : public eventHandler_t {
 
 public:
   evHandlerOutput(const uint8_t aEventCode, const uint8_t aPinNumber, const bool stateON = HIGH);
-  //virtual void begin()  override;
-  virtual void handle()  override;
+  virtual void begin() override;
+  virtual void handle() override;
   bool isOn() {
     return state;
   };
   void setOn(const bool status = true);
+  void pulse(const uint32_t millisecondes);  // pulse d'allumage simple
+
 protected:
   uint8_t evCode;
 private:
@@ -97,7 +99,6 @@ public:
   void setOn(const bool status = true);
   void setFrequence(const uint8_t frequence, const uint8_t percent = 10);      // frequence de la led
   void setMillisec(const uint16_t millisecondes, const uint8_t percent = 10);  // frequence de la led
-  void pulse(const uint32_t millisecondes);                                    // pulse d'allumage simple
 
 private:
   uint16_t millisecondes;
@@ -124,15 +125,17 @@ typedef enum {
 class evHandlerButton : public eventHandler_t {
 public:
   evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay = 1500);
-  //virtual void begin()  override;
+  virtual void begin() override;
   virtual void handle() override;
   bool isDown() {
     return BPDown;
   };
 
+protected:
+  uint8_t evCode;
+
 private:
   uint8_t pinNumber;
-  uint8_t evCode;
   bool BPDown = false;
   uint16_t longDelay;
 };

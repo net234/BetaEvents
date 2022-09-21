@@ -66,7 +66,7 @@ evHandlerButton BP0(evBP0, BP0_PIN);
 // led clignotante a 1Hz
 evHandlerLed Led0(evLed0, LED0_PIN, LOW, 1);
 // Commande relay
-evHandlerLed Relay0(evRelay0, RELAY0_PIN, LOW, 0);
+evHandlerOutput Relay0(evRelay0, RELAY0_PIN, HIGH);
 
 
 
@@ -74,7 +74,7 @@ evHandlerLed Relay0(evRelay0, RELAY0_PIN, LOW, 0);
 #define SERIAL_SPEED 115200
 #define SERIAL_BUFFERSIZE 100
 evHandlerSerial Keyboard(SERIAL_SPEED, SERIAL_BUFFERSIZE);
-evHandlerDebug  Debug;
+evHandlerDebug Debug;
 
 
 
@@ -93,6 +93,7 @@ void setup() {
 }
 
 bool sleepOk = true;
+bool relay0State = LOW;
 
 void loop() {
   Events.get(sleepOk);
@@ -106,6 +107,21 @@ void loop() {
     case evInit:
       Serial.println(F("Init"));
       break;
+
+    case evBP0:
+      {
+        switch (evManager.ext) {
+          case evxBPDown:
+            {
+              relay0State = !relay0State;
+              D_println(relay0State);
+              Relay0.setOn(relay0State);
+              Led0.setFrequence(1,relay0State ? 90 : 10 );
+            }
+            break;
+        }
+        break;
+      }
 
 
     case ev24H:
@@ -149,7 +165,11 @@ void loop() {
         sleepOk = !sleepOk;
         D_println(sleepOk);
       }
-      break;      
-      
+      if (Keyboard.inputString.equals("P")) {
+        Relay0.pulse(2000);
+        Serial.println(F("Pulse"));
+      }
+
+      break;
   }
 }

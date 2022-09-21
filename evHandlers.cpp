@@ -49,9 +49,12 @@
  ***********************************************************/
 
 evHandlerOutput::evHandlerOutput(const uint8_t aEventCode, const uint8_t aPinNumber, const bool aStateON)
-  : pinNumber(aPinNumber), stateON(aStateON), evCode(aEventCode) {
-  pinMode(aPinNumber, OUTPUT);
-};
+  : pinNumber(aPinNumber), stateON(aStateON), evCode(aEventCode){};
+
+void evHandlerOutput::begin() {
+  pinMode(pinNumber, OUTPUT);
+}
+
 
 void evHandlerOutput::handle() {
   if (evManager.code == evCode) {
@@ -71,10 +74,15 @@ void evHandlerOutput::handle() {
 
 void evHandlerOutput::setOn(const bool status) {
   state = status;
-  digitalWrite(pinNumber, (not status) xor stateON);  
+  digitalWrite(pinNumber, (not status) xor stateON);
 }
 
-
+void evHandlerOutput::pulse(const uint32_t aDelay) {  // pulse d'allumage simple
+  if (aDelay > 0) {
+    evManager.delayedPush(aDelay, evCode, evxOutOn);
+  }
+  evManager.delayedPush(aDelay, evCode, evxOutOff);
+}
 
 
 /**********************************************************
@@ -84,7 +92,7 @@ void evHandlerOutput::setOn(const bool status) {
  ***********************************************************/
 
 evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool revert, const uint8_t frequence)
-  : evHandlerOutput(aEventCode,aPinNumber,revert) {
+  : evHandlerOutput(aEventCode, aPinNumber, revert) {
   setFrequence(frequence);
 };
 
@@ -94,7 +102,7 @@ void evHandlerLed::handle() {
     switch (evManager.ext) {
 
       case evxLedBlink:
-        evManager.push(evCode, (percent>0) ? evxOutOn : evxOutOff);
+        evManager.push(evCode, (percent > 0) ? evxOutOn : evxOutOff);
         //digitalWrite(pinNumber, (percent == 0) xor levelON);
         if (percent > 0 && percent < 100) {
           evManager.delayedPush(millisecondes * percent / 100, evCode, evxOutOff);
@@ -125,12 +133,7 @@ void evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent) 
   setMillisec(1000U / frequence, percent);
 }
 
-void evHandlerLed::pulse(const uint32_t aDelay) {  // pulse d'allumage simple
-  if (aDelay > 0) {
-    evManager.delayedPush(aDelay, evCode, evxOutOn);
-  }
-  evManager.delayedPush(aDelay, evCode, evxOutOff);
-}
+
 /**********************************************************
 
    gestion d'un poussoir sur un port   genere evBPDown, evBPUp, evBPLongDown, evBPLongUp
@@ -140,10 +143,11 @@ void evHandlerLed::pulse(const uint32_t aDelay) {  // pulse d'allumage simple
 
 
 evHandlerButton::evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay)
-  : pinNumber(aPinNumber), evCode(aEventCode), longDelay(aLongDelay) {
+  : pinNumber(aPinNumber), evCode(aEventCode), longDelay(aLongDelay){};
+
+void evHandlerButton::begin() {
   pinMode(pinNumber, INPUT_PULLUP);
 };
-
 
 void evHandlerButton::handle() {
   if (evManager.code == ev10Hz) {
