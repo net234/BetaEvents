@@ -66,7 +66,7 @@ evHandlerButton BP0(evBP0, BP0_PIN);
 // led clignotante a 1Hz
 evHandlerLed Led0(evLed0, LED0_PIN, LOW, 1);
 // Commande relay
-evHandlerLed Relay0(evRelay0, RELAY0_PIN, true, 0);
+evHandlerLed Relay0(evRelay0, RELAY0_PIN, LOW, 0);
 
 
 
@@ -110,8 +110,46 @@ void loop() {
 
     case ev24H:
       {
-         Serial.println(F("ev24H"));
+        Serial.println(F("ev24H"));
       }
       break;
-  }        
+
+    case evInChar:
+      {
+        if (Debug.trackTime < 2) {
+          char aChar = Keyboard.inputChar;
+          if (isPrintable(aChar)) {
+            D_println(aChar);
+          } else {
+            D_println(int(aChar));
+          }
+        }
+        switch (Keyboard.inputChar) {
+          case '0': delay(10); break;
+          case '1': delay(100); break;
+          case '2': delay(200); break;
+          case '3': delay(300); break;
+          case '4': delay(400); break;
+          case '5': delay(500); break;
+        }
+      }
+      break;
+
+    case evInString:
+      if (Debug.trackTime < 2) {
+        D_println(Keyboard.inputString);
+      }
+
+
+
+      if (Keyboard.inputString.equals(F("FREE"))) {
+        D_println(Events.freeRam());
+      }
+      if (Keyboard.inputString.equals("S")) {
+        sleepOk = !sleepOk;
+        D_println(sleepOk);
+      }
+      break;      
+      
+  }
 }
