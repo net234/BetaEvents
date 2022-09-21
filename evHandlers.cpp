@@ -76,11 +76,13 @@ void evHandlerLed::handle() {
   if (evManager.code == evCode) {
     switch (evManager.ext) {
       case evxLedOff:
-        digitalWrite(pinNumber, not levelON);  // led off
+        evHandlerOutput::setOn(false);
+        //digitalWrite(pinNumber, not levelON);  // led off
         break;
 
       case evxLedOn:
-        digitalWrite(pinNumber, (percent == 0) xor levelON);
+        evHandlerOutput::setOn(true);
+        //digitalWrite(pinNumber, (percent == 0) xor levelON);
         if (percent > 0 && percent < 100) {
           evManager.delayedPush(millisecondes, evCode, evxLedOn);
           evManager.delayedPush(millisecondes * percent / 100, evCode, evxLedOff, true);
@@ -92,7 +94,7 @@ void evHandlerLed::handle() {
 
 void evHandlerLed::setOn(const bool status) {
   setMillisec(1000, status ? 100 : 0);
-  digitalWrite(pinNumber, (not status) xor levelON);  // make result instant needed  outside event loop
+  evHandlerOutput::setOn(status);  // make result instant needed  outside event loop
 }
 
 
