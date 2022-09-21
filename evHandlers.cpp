@@ -53,6 +53,22 @@ evHandlerOutput::evHandlerOutput(const uint8_t aEventCode, const uint8_t aPinNum
   pinMode(aPinNumber, OUTPUT);
 };
 
+void evHandlerOutput::handle() {
+  if (evManager.code == evCode) {
+    switch (evManager.ext) {
+      case evxOutOff:
+        setOn(false);
+        break;
+
+      case evxOutOn:
+        setOn(true);
+        //digitalWrite(pinNumber, (percent == 0) xor levelON);
+        break;
+    }
+  }
+}
+
+
 void evHandlerOutput::setOn(const bool status) {
   state = status;
   digitalWrite(pinNumber, (not status) xor stateON);  
@@ -74,18 +90,15 @@ evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, c
 
 void evHandlerLed::handle() {
   if (evManager.code == evCode) {
+    evHandlerOutput::handle();
     switch (evManager.ext) {
-      case evxLedOff:
-        evHandlerOutput::setOn(false);
-        //digitalWrite(pinNumber, not levelON);  // led off
-        break;
 
-      case evxLedOn:
-        evHandlerOutput::setOn(true);
+      case evxLedBlink:
+        evManager.push(evCode, (percent>0) ? evxOutOn : evxOutOff);
         //digitalWrite(pinNumber, (percent == 0) xor levelON);
         if (percent > 0 && percent < 100) {
-          evManager.delayedPush(millisecondes, evCode, evxLedOn);
-          evManager.delayedPush(millisecondes * percent / 100, evCode, evxLedOff, true);
+          evManager.delayedPush(millisecondes * percent / 100, evCode, evxOutOff);
+          evManager.delayedPush(millisecondes, evCode, evxLedBlink, true);
         }
         break;
     }
@@ -93,7 +106,7 @@ void evHandlerLed::handle() {
 }
 
 void evHandlerLed::setOn(const bool status) {
-  setMillisec(1000, status ? 100 : 0);
+  evManager.removeDelayEvent(evCode);
   evHandlerOutput::setOn(status);  // make result instant needed  outside event loop
 }
 
@@ -101,24 +114,22 @@ void evHandlerLed::setOn(const bool status) {
 void evHandlerLed::setMillisec(const uint16_t aMillisecondes, const uint8_t aPercent) {
   millisecondes = max(aMillisecondes, (uint16_t)2);
   percent = aPercent;
-  evManager.delayedPush(0, evCode, (percent > 0) ? evxLedOn : evxLedOff);
+  evManager.delayedPush(0, evCode, evxLedBlink);
 }
 
 void evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent) {
   if (frequence == 0) {
-    setOn(false);
+    setMillisec(0, 0);
     return;
   }
   setMillisec(1000U / frequence, percent);
 }
 
 void evHandlerLed::pulse(const uint32_t aDelay) {  // pulse d'allumage simple
-  if (aDelay == 0) {
-    setOn(false);
-    return;
+  if (aDelay > 0) {
+    evManager.delayedPush(aDelay, evCode, evxOutOn);
   }
-  setOn(true);
-  evManager.delayedPush(aDelay, evCode, evxLedOff);
+  evManager.delayedPush(aDelay, evCode, evxOutOff);
 }
 /**********************************************************
 

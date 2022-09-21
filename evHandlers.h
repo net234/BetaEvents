@@ -52,13 +52,19 @@
    gestion d'un output simple
 
  ***********************************************************/
+typedef enum {
+  // evenement recu
+  evxOutOff,  // Led Off
+  evxOutOn,   // Led On
+  evxLedBlink,   // Led On
+} tLOutEventExt;
 
 class evHandlerOutput : public eventHandler_t {
 
 public:
   evHandlerOutput(const uint8_t aEventCode, const uint8_t aPinNumber, const bool stateON = HIGH);
   //virtual void begin()  override;
-  //virtual void handle()  override;
+  virtual void handle()  override;
   bool isOn() {
     return state;
   };
@@ -80,11 +86,7 @@ private:
 
 
 
-typedef enum {
-  // evenement recu
-  evxLedOff,  // Led Off
-  evxLedOn,   // Led On
-} tLedEventExt;
+
 
 
 class evHandlerLed : private evHandlerOutput {
