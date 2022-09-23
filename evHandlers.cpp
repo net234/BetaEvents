@@ -59,11 +59,11 @@ void evHandlerOutput::begin() {
 void evHandlerOutput::handle() {
   if (evManager.code == evCode) {
     switch (evManager.ext) {
-      case evxOutOff:
+      case evxOff:
         setOn(false);
         break;
 
-      case evxOutOn:
+      case evxOn:
         setOn(true);
         //digitalWrite(pinNumber, (percent == 0) xor levelON);
         break;
@@ -71,6 +71,9 @@ void evHandlerOutput::handle() {
   }
 }
 
+bool evHandlerOutput::isOn() {
+  return state;
+};
 
 void evHandlerOutput::setOn(const bool status) {
   state = status;
@@ -79,9 +82,9 @@ void evHandlerOutput::setOn(const bool status) {
 
 void evHandlerOutput::pulse(const uint32_t aDelay) {  // pulse d'allumage simple
   if (aDelay > 0) {
-    evManager.delayedPush(aDelay, evCode, evxOutOn);
+    evManager.delayedPush(aDelay, evCode, evxOn);
   }
-  evManager.delayedPush(aDelay, evCode, evxOutOff);
+  evManager.delayedPush(aDelay, evCode, evxOff);
 }
 
 
@@ -101,12 +104,11 @@ void evHandlerLed::handle() {
     evHandlerOutput::handle();
     switch (evManager.ext) {
 
-      case evxLedBlink:
-        evManager.push(evCode, (percent > 0) ? evxOutOn : evxOutOff);
-        //digitalWrite(pinNumber, (percent == 0) xor levelON);
-        if (percent > 0 && percent < 100) {
-          evManager.delayedPush(millisecondes * percent / 100, evCode, evxOutOff);
-          evManager.delayedPush(millisecondes, evCode, evxLedBlink, true);
+      case evxBlink:
+        evManager.push(evCode, (percent > 0) ? evxOn : evxOff);  // si percent d'allumage = 0 on allume pas
+        if (percent > 0 && percent < 100) {                      // si percent = 0% ou 100% on ne clignote pas
+          evManager.delayedPush(millisecondes * percent / 100, evCode, evxOff);
+          evManager.delayedPush(millisecondes, evCode, evxBlink, true);
         }
         break;
     }
@@ -122,7 +124,7 @@ void evHandlerLed::setOn(const bool status) {
 void evHandlerLed::setMillisec(const uint16_t aMillisecondes, const uint8_t aPercent) {
   millisecondes = max(aMillisecondes, (uint16_t)2);
   percent = aPercent;
-  evManager.delayedPush(0, evCode, evxLedBlink);
+  evManager.delayedPush(0, evCode, evxBlink);
 }
 
 void evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent) {
@@ -151,14 +153,14 @@ void evHandlerButton::begin() {
 
 void evHandlerButton::handle() {
   if (evManager.code == ev10Hz) {
-    if (BPDown != (digitalRead(pinNumber) == LOW)) {  // changement d'etat BP0
-      BPDown = !BPDown;
-      if (BPDown) {
-        evManager.push(evCode, evxBPDown);
-        evManager.delayedPush(longDelay, evCode, evxBPLongDown);  // arme un event BP0 long down
+    if (state != (digitalRead(pinNumber) == LOW)) {  // changement d'etat BP0
+      state = !state;
+      if (state) {
+        evManager.push(evCode, evxOn);
+        evManager.delayedPush(longDelay, evCode, evxLongOn);  // arme un event BP long On
       } else {
-        evManager.push(evCode, evxBPUp);
-        evManager.delayedPush(longDelay, evCode, evxBPLongUp);  // arme un event BP0 long up
+        evManager.push(evCode, evxOff);
+        evManager.delayedPush(longDelay, evCode, evxLongOff);  // arme un event BP long Off
       }
     }
   }

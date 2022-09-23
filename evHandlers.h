@@ -53,11 +53,13 @@
 
  ***********************************************************/
 typedef enum {
-  // evenement recu
-  evxOutOff,    // Led Off
-  evxOutOn,     // Led On
-  evxLedBlink,  // Led On
-} tLOutEventExt;
+  // evenement etendus pour les Input Output
+  evxOff,      // IO Off (les ou Relais)
+  evxOn,       // IO on
+  evxBlink,    // clignotement actif (LED)
+  evxLongOff,  // poussoir relaché longtemp
+  evxLongOn,   // pousoir enfoncé longtemps
+} tIOEventExt;
 
 class evHandlerOutput : public eventHandler_t {
 
@@ -65,9 +67,7 @@ public:
   evHandlerOutput(const uint8_t aEventCode, const uint8_t aPinNumber, const bool stateON = HIGH);
   virtual void begin() override;
   virtual void handle() override;
-  bool isOn() {
-    return state;
-  };
+  bool isOn();
   void setOn(const bool status = true);
   void pulse(const uint32_t millisecondes);  // pulse d'allumage simple
 
@@ -91,7 +91,7 @@ private:
 
 
 
-class evHandlerLed : private evHandlerOutput {
+class evHandlerLed : public evHandlerOutput {
 public:
   evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool stateON = HIGH, const uint8_t frequence = 0);
   //virtual void begin()  override;
@@ -108,18 +108,11 @@ private:
 
 /**********************************************************
 
-   gestion d'un poussoir sur un port   genere evBPDown, evBPUp, evBPLongDown, evBPLongUp
+   gestion d'un poussoir sur un port   genere evxOn, evxOff, evxLongOn, evxLongOff
 
  ***********************************************************/
 
 
-typedef enum {
-  // evenement ext of button
-  evxBPDown,      // BP0 est appuyé
-  evxBPUp,        // BP0 est relaché
-  evxBPLongDown,  // BP0 est maintenus appuyé plus de 3 secondes
-  evxBPLongUp,    // BP0 est relaché plus de 3 secondes
-} tBPEventExt;
 
 
 class evHandlerButton : public eventHandler_t {
@@ -127,8 +120,8 @@ public:
   evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay = 1500);
   virtual void begin() override;
   virtual void handle() override;
-  bool isDown() {
-    return BPDown;
+  bool isOn() {
+    return state;
   };
 
 protected:
@@ -136,7 +129,7 @@ protected:
 
 private:
   uint8_t pinNumber;
-  bool BPDown = false;
+  bool state = HIGH;
   uint16_t longDelay;
 };
 

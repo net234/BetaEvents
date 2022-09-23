@@ -169,7 +169,7 @@ void loop() {
 
     case evBP0:
       switch (Events.ext) {
-        case evxBPDown:
+        case evxOn:
           Led0.setMillisec(500, 50);
           BP0Multi++;
           Serial.println(F("BP0 Down"));
@@ -177,11 +177,11 @@ void loop() {
             D_println(BP0Multi);
           }
           break;
-        case evxBPUp:
+        case evxOff:
           Led0.setMillisec(1000, 10);
           Serial.println(F("BP0 Up"));
           break;
-        case evxBPLongDown:
+        case evxLongOn:
           if (BP0Multi == 5) {
             Serial.println(F("RESET"));
             Events.push(doReset);
@@ -189,7 +189,7 @@ void loop() {
 
           Serial.println(F("BP0 Long Down"));
           break;
-        case evxBPLongUp:
+        case evxLongOff:
           BP0Multi = 0;
           Serial.println(F("BP0 Long Up"));
           break;
@@ -198,20 +198,20 @@ void loop() {
       break;
     case evBP1:
       switch (Events.ext) {
-        case evxBPDown:
+        case evxOn:
           Led1.setFrequence(3, 50);
           Serial.print(F("BP1 Down "));
-          Serial.println(BP0.isDown() ? "and BP0 Down" : "and BP0 Up");
+          Serial.println(BP0.isOn() ? "and BP0 Down" : "and BP0 Up");
           break;
-        case evxBPUp:
+        case evxOff :
           Led1.setOn(false);
           Serial.println(F("BP1 Up"));
           break;
-        case evxBPLongDown:
+        case evxLongOn:
           Led1.setFrequence(1, 50);
           Serial.println(F("BP1 Long Down"));
           break;
-        case evxBPLongUp:  Serial.println(F("BP1 Long Up")); break;
+        case evxLongOff:  Serial.println(F("BP1 Long Up")); break;
 
       }
       break;
