@@ -44,7 +44,7 @@
        add begin in evHandles  
 
     V2.3    09/03/2022   isolation of evHandler for compatibility with dual core ESP32
-
+    V2.4    30/09/2022   Isolation des IO (evhandlerOutput)
     *************************************************/
 
 #define APP_NAME "betaEvents V3.0"
