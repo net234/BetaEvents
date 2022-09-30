@@ -39,7 +39,53 @@
     V2.3    09/03/2022   isolation of evHandler for compatibility with dual core ESP32
 
     *************************************************/
-#include  "evHandlers.h"
+#include "evHandlers.h"
+
+
+/**********************************************************
+
+   gestion d'un output generique
+
+ ***********************************************************/
+
+evHandlerOutput::evHandlerOutput(const uint8_t aEventCode, const uint8_t aPinNumber, const bool aStateON)
+  : pinNumber(aPinNumber), stateON(aStateON), evCode(aEventCode){};
+
+void evHandlerOutput::begin() {
+  pinMode(pinNumber, OUTPUT);
+}
+
+
+void evHandlerOutput::handle() {
+  if (evManager.code == evCode) {
+    switch (evManager.ext) {
+      case evxOff:
+        setOn(false);
+        break;
+
+      case evxOn:
+        setOn(true);
+        //digitalWrite(pinNumber, (percent == 0) xor levelON);
+        break;
+    }
+  }
+}
+
+bool evHandlerOutput::isOn() {
+  return state;
+};
+
+void evHandlerOutput::setOn(const bool status) {
+  state = status;
+  digitalWrite(pinNumber, (not status) xor stateON);
+}
+
+void evHandlerOutput::pulse(const uint32_t aDelay) {  // pulse d'allumage simple
+  if (aDelay > 0) {
+    evManager.delayedPush(aDelay, evCode, evxOn);
+  }
+  evManager.delayedPush(aDelay, evCode, evxOff);
+}
 
 
 /**********************************************************
@@ -48,58 +94,48 @@
 
  ***********************************************************/
 
-evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool ledOn, const uint8_t frequence) :
-  pinNumber(aPinNumber), levelON(ledOn), evCode(aEventCode) {
-  pinMode(pinNumber, OUTPUT);
+evHandlerLed::evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool revert, const uint8_t frequence)
+  : evHandlerOutput(aEventCode, aPinNumber, revert) {
   setFrequence(frequence);
 };
 
-void evHandlerLed::handle()  {
+void evHandlerLed::handle() {
   if (evManager.code == evCode) {
+    evHandlerOutput::handle();
     switch (evManager.ext) {
-      case evxLedOff:
-        digitalWrite(pinNumber,  not levelON);   // led off
-        break;
 
-      case evxLedOn:
-        digitalWrite(pinNumber, (percent == 0) xor levelON );
-        if (percent > 0 && percent < 100) {
-          evManager.delayedPush(millisecondes, evCode, evxLedOn);
-          evManager.delayedPush(millisecondes * percent / 100, evCode, evxLedOff, true);
+      case evxBlink:
+        evManager.push(evCode, (percent > 0) ? evxOn : evxOff);  // si percent d'allumage = 0 on allume pas
+        if (percent > 0 && percent < 100) {                      // si percent = 0% ou 100% on ne clignote pas
+          evManager.delayedPush(millisecondes * percent / 100, evCode, evxOff);
+          evManager.delayedPush(millisecondes, evCode, evxBlink, true);
         }
         break;
     }
   }
 }
 
-void  evHandlerLed::setOn(const bool status) {
-  setMillisec(1000, status ? 100 : 0);
-  digitalWrite(pinNumber, (not status) xor levelON );  // make result instant needed  outside event loop
+void evHandlerLed::setOn(const bool status) {
+  evManager.removeDelayEvent(evCode);
+  evHandlerOutput::setOn(status);  // make result instant needed  outside event loop
 }
 
 
-void  evHandlerLed::setMillisec(const uint16_t aMillisecondes, const uint8_t aPercent) {
+void evHandlerLed::setMillisec(const uint16_t aMillisecondes, const uint8_t aPercent) {
   millisecondes = max(aMillisecondes, (uint16_t)2);
   percent = aPercent;
-  evManager.delayedPush(0, evCode, (percent > 0) ? evxLedOn : evxLedOff );
+  evManager.delayedPush(0, evCode, evxBlink);
 }
 
-void  evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent) {
+void evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent) {
   if (frequence == 0) {
-    setOn(false);
+    setMillisec(0, 0);
     return;
   }
   setMillisec(1000U / frequence, percent);
 }
 
-void   evHandlerLed::pulse(const uint32_t aDelay) { // pulse d'allumage simple
-   if (aDelay == 0) {
-    setOn(false);
-    return;
-  }
-  setOn(true);
-  evManager.delayedPush(aDelay,evCode,evxLedOff);
-}
+
 /**********************************************************
 
    gestion d'un poussoir sur un port   genere evBPDown, evBPUp, evBPLongDown, evBPLongUp
@@ -108,22 +144,23 @@ void   evHandlerLed::pulse(const uint32_t aDelay) { // pulse d'allumage simple
 
 
 
-evHandlerButton::evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay) :
-  pinNumber(aPinNumber), evCode(aEventCode), longDelay(aLongDelay) {
+evHandlerButton::evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay)
+  : pinNumber(aPinNumber), evCode(aEventCode), longDelay(aLongDelay){};
+
+void evHandlerButton::begin() {
   pinMode(pinNumber, INPUT_PULLUP);
 };
 
-
-void evHandlerButton::handle()  {
+void evHandlerButton::handle() {
   if (evManager.code == ev10Hz) {
-    if ( BPDown != (digitalRead(pinNumber) == LOW)) { // changement d'etat BP0
-      BPDown = !BPDown;
-      if (BPDown) {
-        evManager.push(evCode, evxBPDown);
-        evManager.delayedPush(longDelay, evCode, evxBPLongDown); // arme un event BP0 long down
+    if (state != (digitalRead(pinNumber) == LOW)) {  // changement d'etat BP0
+      state = !state;
+      if (state) {
+        evManager.push(evCode, evxOn);
+        evManager.delayedPush(longDelay, evCode, evxLongOn);  // arme un event BP long On
       } else {
-        evManager.push(evCode, evxBPUp);
-        evManager.delayedPush(longDelay, evCode, evxBPLongUp); // arme un event BP0 long up
+        evManager.push(evCode, evxOff);
+        evManager.delayedPush(longDelay, evCode, evxLongOff);  // arme un event BP long Off
       }
     }
   }
@@ -136,10 +173,9 @@ void evHandlerButton::handle()  {
 
  ***********************************************************/
 
-evHandlerSerial::evHandlerSerial(const uint32_t aSerialSpeed, const uint8_t inputStringSize) :
-  serialSpeed(aSerialSpeed),
-  inputStringSizeMax (inputStringSize)
-{
+evHandlerSerial::evHandlerSerial(const uint32_t aSerialSpeed, const uint8_t inputStringSize)
+  : serialSpeed(aSerialSpeed),
+    inputStringSizeMax(inputStringSize) {
   inputString.reserve(inputStringSize);
   //evManager.(this);
 }
@@ -148,14 +184,14 @@ void evHandlerSerial::begin() {
   Serial.begin(serialSpeed);
 }
 
-byte evHandlerSerial::get()  {
-  if (stringComplete)   {
+byte evHandlerSerial::get() {
+  if (stringComplete) {
     stringComplete = false;
-    stringErase = true;      // la chaine sera effacee au prochain caractere recu
+    stringErase = true;  // la chaine sera effacee au prochain caractere recu
     evManager.StringPtr = &inputString;
     return (evManager.code = evInString);
   }
-  if (Serial.available())   {
+  if (Serial.available()) {
     inputChar = Serial.read();
     if (stringErase) {
       inputString = "";
@@ -164,7 +200,7 @@ byte evHandlerSerial::get()  {
     if (isPrintable(inputChar) && (inputString.length() <= inputStringSizeMax)) {
       inputString += inputChar;
     };
-    if (inputChar == '\n' || inputChar == '\r' ) {
+    if (inputChar == '\n' || inputChar == '\r') {
       stringComplete = (inputString.length() > 0);
     }
     evManager.charExt = inputChar;
@@ -204,7 +240,7 @@ void evHandlerDebug::handle() {
           Serial.print(evManager.freeRam());
 #ifdef ESP8266
           Serial.print(F(",Frag="));
-          Serial.print(ESP.getHeapFragmentation() );
+          Serial.print(ESP.getHeapFragmentation());
           Serial.print(F("%,MaxMem="));
           Serial.print(ESP.getMaxFreeBlockSize());
 #endif
@@ -225,7 +261,7 @@ void evHandlerDebug::handle() {
     case ev10Hz:
 
       ev10HzMissed += evManager.intExt - 1;
-      if (trackTime > 1 ) {
+      if (trackTime > 1) {
 
         if (evManager.intExt > 1) {
           //        for (int N = 2; N<currentEvent.param; N++) Serial.print(' ');
@@ -240,8 +276,7 @@ void evHandlerDebug::handle() {
     case ev100Hz:
       ev100HzMissed += evManager.intExt - 1;
 
-      if (trackTime > 2)
-      {
+      if (trackTime > 2) {
 
         if (evManager.intExt > 1) {
           //      for (int N = 3; N<currentEvent.param; N++) Serial.print(' ');
@@ -254,7 +289,7 @@ void evHandlerDebug::handle() {
       break;
     case evInString:
       if (evManager.StringPtr->equals("T")) {
-        if ( ++(trackTime) > 3 ) {
+        if (++(trackTime) > 3) {
 
           trackTime = 0;
         }

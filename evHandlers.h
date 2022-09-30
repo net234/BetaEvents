@@ -40,12 +40,47 @@
 
     V2.3    09/03/2022   isolation of evHandler for compatibility with dual core ESP32
 
+    V2.4    30/09/2022   Isolation des IO (evhandlerOutput)
+
     *************************************************/
 #pragma once
 #include <Arduino.h>
-#include  "EventsManager.h"
+#include "EventsManager.h"
 
 
+
+/**********************************************************
+
+   gestion d'un output simple
+
+ ***********************************************************/
+typedef enum {
+  // evenement etendus pour les Input Output
+  evxOff,      // IO Off (les ou Relais)
+  evxOn,       // IO on
+  evxBlink,    // clignotement actif (LED)
+  evxLongOff,  // poussoir relaché longtemp
+  evxLongOn,   // pousoir enfoncé longtemps
+} tIOEventExt;
+
+class evHandlerOutput : public eventHandler_t {
+
+public:
+  evHandlerOutput(const uint8_t aEventCode, const uint8_t aPinNumber, const bool stateON = HIGH);
+  virtual void begin() override;
+  virtual void handle() override;
+  bool isOn();
+  void setOn(const bool status = true);
+  void pulse(const uint32_t millisecondes);  // pulse d'allumage simple
+
+protected:
+  uint8_t evCode;
+private:
+  uint8_t pinNumber;
+
+  bool state = false;
+  bool stateON = HIGH;
+};
 
 /**********************************************************
 
@@ -54,67 +89,50 @@
  ***********************************************************/
 
 
-typedef enum   {
-  // evenement recu
-  evxLedOff,           // Led Off
-  evxLedOn,            // Led On
-} tLedEventExt;
 
 
-class evHandlerLed : public eventHandler_t {
-  public:
-    evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool ledOn = HIGH, const uint8_t frequence = 0);
-    //virtual void begin()  override;
-    virtual void handle()  override;
-    bool isOn()  {
-      return ledOn;
-    };
-    void   setOn(const bool status = true);
-    void   setFrequence(const uint8_t frequence, const uint8_t percent = 10); // frequence de la led
-    void   setMillisec(const uint16_t millisecondes, const uint8_t percent = 10); // frequence de la led
-    void   pulse(const uint32_t millisecondes); // pulse d'allumage simple
 
-  private:
-    uint8_t pinNumber;
-    uint8_t evCode;
-    uint16_t millisecondes;
-    uint8_t percent;
-    bool    ledOn = false;
-    bool    levelON = false;
 
+class evHandlerLed : public evHandlerOutput {
+public:
+  evHandlerLed(const uint8_t aEventCode, const uint8_t aPinNumber, const bool stateON = HIGH, const uint8_t frequence = 0);
+  //virtual void begin()  override;
+  virtual void handle() override;
+  void setOn(const bool status = true);
+  void setFrequence(const uint8_t frequence, const uint8_t percent = 10);      // frequence de la led
+  void setMillisec(const uint16_t millisecondes, const uint8_t percent = 10);  // frequence de la led
+
+private:
+  uint16_t millisecondes;
+  uint8_t percent;
 };
 
 
 /**********************************************************
 
-   gestion d'un poussoir sur un port   genere evBPDown, evBPUp, evBPLongDown, evBPLongUp
+   gestion d'un poussoir sur un port   genere evxOn, evxOff, evxLongOn, evxLongOff
 
  ***********************************************************/
 
 
-typedef enum  {
-  // evenement ext of button
-  evxBPDown,         // BP0 est appuyé
-  evxBPUp,            // BP0 est relaché
-  evxBPLongDown,      // BP0 est maintenus appuyé plus de 3 secondes
-  evxBPLongUp,        // BP0 est relaché plus de 3 secondes
-} tBPEventExt ;
 
 
 class evHandlerButton : public eventHandler_t {
-  public:
-    evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay = 1500);
-    //virtual void begin()  override;
-    virtual void handle()  override;
-    bool isDown()  {
-      return BPDown;
-    };
+public:
+  evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay = 1500);
+  virtual void begin() override;
+  virtual void handle() override;
+  bool isOn() {
+    return state;
+  };
 
-  private:
-    uint8_t pinNumber;
-    uint8_t evCode;
-    bool    BPDown = false;
-    uint16_t longDelay;
+protected:
+  uint8_t evCode;
+
+private:
+  uint8_t pinNumber;
+  bool state = HIGH;
+  uint16_t longDelay;
 };
 
 #ifndef __AVR_ATtiny85__
@@ -125,19 +143,18 @@ class evHandlerButton : public eventHandler_t {
  ***********************************************************/
 
 class evHandlerSerial : public eventHandler_t {
-  public:
-    evHandlerSerial(const uint32_t aSerialSpeed = 115200, const uint8_t inputStringSize = 20);
-    virtual void begin()  override;
-    //virtual void handle()  override;
-    virtual byte get()  override;
-    String inputString = "";
-    char   inputChar = '\0';
-  private:
-    uint8_t inputStringSizeMax;
-    bool stringComplete = false;
-    bool stringErase = false;
-    uint32_t serialSpeed;
-
+public:
+  evHandlerSerial(const uint32_t aSerialSpeed = 115200, const uint8_t inputStringSize = 20);
+  virtual void begin() override;
+  //virtual void handle()  override;
+  virtual byte get() override;
+  String inputString = "";
+  char inputChar = '\0';
+private:
+  uint8_t inputStringSizeMax;
+  bool stringComplete = false;
+  bool stringErase = false;
+  uint32_t serialSpeed;
 };
 
 
@@ -153,14 +170,13 @@ class evHandlerSerial : public eventHandler_t {
 
 
 class evHandlerDebug : public eventHandler_t {
-  public:
-    //evHandlerDebug();
-    virtual void handle()  override;
-    uint8_t trackTime = 0;
-  private:
-    uint16_t ev100HzMissed = 0;
-    uint16_t ev10HzMissed = 0;
-
+public:
+  //evHandlerDebug();
+  virtual void handle() override;
+  uint8_t trackTime = 0;
+private:
+  uint16_t ev100HzMissed = 0;
+  uint16_t ev10HzMissed = 0;
 };
 
 #endif
