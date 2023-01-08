@@ -3,15 +3,38 @@
 #pragma once
 #include <arduino.h>
 
+#ifdef DEBUG_ON 
+
 // D_println(variable); permet d'afficher le nom de variable suivit de sa valeur
-
+#define T_println(x) Serial.println(F(#x));
 #define D_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
+#define TD_println(x,y) Serial.print(F(#x " => '")); Serial.print(y); Serial.println("'");
 
-//idem sans retour chario
+//idem sans retour chariot
 #define D_print(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.print("', ");
+#define TD_print(x,y) Serial.print(F(#x " => '")); Serial.print(y); Serial.print("', ");
 
 //idem mais en HEXA
-#define DX_println(x) Serial.print(F(#x " => '0x")); Serial.print(x,HEX); Serial.println("'");
+#define X_println(x) Serial.print(F(#x " => '0x")); Serial.print(x,HEX); Serial.println("'");
+
+
+#else
+
+#define D_print(...)    while(0) {  };
+#define D_println(...)  while(0) {  };
+#define TD_println(...)  while(0) {  };
+#define X_println(...)    while(0) {  };
+
+#endif
+
+#define T1_println(x) Serial.println(F(#x));
+#define D1_println(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.println("'");
+#define D1_print(x) Serial.print(F(#x " => '")); Serial.print(x); Serial.print("', ");
+#define TD1_println(x,y) Serial.print(F(#x " => '")); Serial.print(y); Serial.println("'");
+#define TD1_print(x,y) Serial.print(F(#x " => '")); Serial.print(y); Serial.print("', ");
+#define X1_println(x) Serial.print(F(#x " => '0x")); Serial.print(x,HEX); Serial.println("'");
+
+
 
 String Digit2_str(const uint16_t value);
 //void   helperReset();
