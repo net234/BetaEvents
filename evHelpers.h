@@ -20,8 +20,10 @@
 
 #else
 
+#define T_println(...)  ;
 #define D_print(...)    while(0) {  };
 #define D_println(...)  while(0) {  };
+#define TD_print(...)   ;
 #define TD_println(...)  while(0) {  };
 #define X_println(...)    while(0) {  };
 
