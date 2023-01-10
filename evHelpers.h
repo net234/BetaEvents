@@ -37,7 +37,7 @@
 #define X1_println(x) Serial.print(F(#x " => '0x")); Serial.print(x,HEX); Serial.println("'");
 
 
-
+String niceDisplayDelay(time_t aDelay);
 String Digit2_str(const uint16_t value);
 //void   helperReset();
 //int    helperFreeRam();
