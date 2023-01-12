@@ -1,7 +1,7 @@
 /*************************************************
      Header betaEvents.h   helper yo use a Event system with EventManager
     Copyright 2020 Pierre HENRY net23@frdev.com All - right reserved.
-
+ 
   This file is part of betaEvents.
 
     betaEvents is free software: you can redistribute it and/or modify

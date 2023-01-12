@@ -73,14 +73,15 @@ class evHandlerOutput : public eventHandler_t {
     void setOn(const bool status = true);
     void pulse(const uint32_t millisecondes);  // pulse d'allumage simple
 
-  protected:
-    uint8_t evCode;
-
+ 
 
   private:
     uint8_t pinNumber;
-    bool state; // = false;
     bool stateON; // = HIGH;
+    bool state; // = false;
+    
+ protected:
+    uint8_t evCode;
 
 
 };
@@ -134,8 +135,8 @@ class evHandlerButton : public eventHandler_t {
 
   private:
     uint8_t pinNumber;
-    bool state = HIGH;
     uint16_t longDelay;
+    bool state = HIGH;
 };
 
 #ifndef __AVR_ATtiny85__
@@ -154,10 +155,12 @@ class evHandlerSerial : public eventHandler_t {
     String inputString = "";
     char inputChar = '\0';
   private:
+    
+    uint32_t serialSpeed;
     uint8_t inputStringSizeMax;
     bool stringComplete = false;
     bool stringErase = false;
-    uint32_t serialSpeed;
+    
 };
 
 

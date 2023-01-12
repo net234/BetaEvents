@@ -78,7 +78,7 @@ void evHandlerUdp::handle() {
   int packetSize = UDP.parsePacket();
   if (packetSize == 0) return;
 
-  Serial.print("Received packet UDP");
+  T_println("Received packet UDP");
 //  Serial.printf("Received packet of size % d from % s: % d\n    (to % s: % d, free heap = % d B)\n",
 //                packetSize,
 //                UDP.remoteIP().toString().c_str(), UDP.remotePort(),
@@ -114,7 +114,7 @@ void evHandlerUdp::handle() {
     aUdpId[0] = bStr.toInt();
 
     if (aUdpId == lastUdpId) {
-      Serial.println(F("Doublon UDP"));
+      T_println(F("Doublon UDP"));
       return;
     }
     //Todo : filtrer les 5 dernier UdpID ?
@@ -133,13 +133,12 @@ void evHandlerUdp::handle() {
 
 
 void evHandlerUdp::broadcast(const String & aJsonStr) {
-  Serial.print(F("Send broadcast "));
+  T_println("Send broadcast ");
   unicast(broadcastIP,aJsonStr);
 } 
 
 void evHandlerUdp::unicast(const IPAddress aIPAddress,const String& aJsonStr) {
-  Serial.print(F("Send unicast "));
-  D_println(aJsonStr);
+  TD_println("Send unicast ",aJsonStr);
   messageUDP = aJsonStr;
   castCnt = numberOfTrame;
   if (++numTrameUDP == 0) numTrameUDP++;
@@ -149,7 +148,7 @@ void evHandlerUdp::unicast(const IPAddress aIPAddress,const String& aJsonStr) {
 
 
 void evHandlerUdp::cast(const IPAddress aAddress) {
-  Serial.println("Send cast ");
+  T_println("Send cast ");
   String message = F("EVENT ");
   message += numTrameUDP;
   message += '\t';

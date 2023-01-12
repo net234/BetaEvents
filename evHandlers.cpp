@@ -145,7 +145,7 @@ void evHandlerLed::setFrequence(const uint8_t frequence, const uint8_t percent) 
 
 
 evHandlerButton::evHandlerButton(const uint8_t aEventCode, const uint8_t aPinNumber, const uint16_t aLongDelay)
-  : pinNumber(aPinNumber), evCode(aEventCode), longDelay(aLongDelay){};
+  : evCode(aEventCode), pinNumber(aPinNumber),  longDelay(aLongDelay){};
 
 void evHandlerButton::begin() {
   pinMode(pinNumber, INPUT_PULLUP);
