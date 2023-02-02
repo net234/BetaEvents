@@ -54,6 +54,27 @@
 // Events Manager build an instance called "Events" who care about events
 EventManager Events = EventManager();
 
+
+
+//if SERIAL is needed it should be declare first othewise others evHandler cant print during begin
+#ifndef NO_SERIAL
+// instance Serial
+#ifndef SERIAL_SPEED
+#define SERIAL_SPEED 115200
+#endif
+
+#define SERIAL_BUFFERSIZE 100
+
+evHandlerSerial Keyboard(SERIAL_SPEED,SERIAL_BUFFERSIZE);
+
+#ifndef NO_DEBUG
+
+// instance debugger
+evHandlerDebug  Debug;
+#endif
+#endif
+
+
 // instance poussoir si evBP0 existe
 #ifdef DEFAULT_PIN 
 
@@ -94,23 +115,4 @@ evHandlerButton BP0(evBP0, BP0_PIN);
 // led clignotante a 1Hz 
 evHandlerLed    Led0(evLed0, LED0_PIN, Led0Revert , 1);
 
-#endif
-
-
-
-#ifndef NO_SERIAL
-// instance Serial
-#ifndef SERIAL_SPEED
-#define SERIAL_SPEED 115200
-#endif
-
-#define SERIAL_BUFFERSIZE 100
-
-evHandlerSerial Keyboard(SERIAL_SPEED,SERIAL_BUFFERSIZE);
-
-#ifndef NO_DEBUG
-
-// instance debugger
-evHandlerDebug  Debug;
-#endif
 #endif

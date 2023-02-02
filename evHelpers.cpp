@@ -29,6 +29,22 @@ String grabFromStringUntil(String & aString, const char aKey) {
   return (result);
 }
 
+String grabFromStringUntil(String & aString, const String aKey) {
+  String result;
+  int pos = aString.indexOf(aKey);
+  if ( pos == -1 ) {
+    result = aString;
+    aString = "";
+    return (result);  // not match
+  }
+  result = aString.substring(0, pos);
+  aString = aString.substring(pos + aKey.length());
+  //aString = aString.substring(pos + 1);
+  return (result);
+}
+
+
+
 // affichage d'un delay en secondes sous la forme
 // xx s             si < 1 minute
 // xx m yy s        si < 1 heure
