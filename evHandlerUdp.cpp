@@ -28,6 +28,9 @@
      *************************************************/
 
 #include  "evHandlerUdp.h"
+//#include <WiFiUdp.h>
+
+//WiFiUDP UDP;
 
 const uint16_t delaySilenceUdp = 100;  // delay de silence avant d'envoyer les trames
 const uint16_t delayInterUdp = 20;     // delay entre 2 trames
