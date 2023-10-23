@@ -66,7 +66,7 @@ String niceDisplayDelay(time_t aDelay) {
     txt += " s";
     return txt;
   }
-   if (aDelay < 3600*24) {
+   if (aDelay < 3600L*24) {
     aDelay = aDelay / 60;
     txt = String(aDelay / 60);
     txt += " h ";

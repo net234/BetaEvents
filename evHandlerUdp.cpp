@@ -26,6 +26,7 @@
     - gestion de message UDP pour communiquer en node avec des events
 
      *************************************************/
+#if defined(ESP8266) || defined(ESP32)
 
 #include  "evHandlerUdp.h"
 //#include <WiFiUdp.h>
@@ -163,3 +164,5 @@ void evHandlerUdp::cast(const IPAddress aAddress) {
   UDP.write(message.c_str(), message.length());
   UDP.endPacket();
 }
+
+#endif

@@ -3,6 +3,11 @@
 #pragma once
 #include <arduino.h>
 
+//#ifndef time_t
+//#define time_t unsigned long
+//#endif
+
+
 #ifdef DEBUG_ON 
 
 // D_println(variable); permet d'afficher le nom de variable suivit de sa valeur
@@ -45,3 +50,4 @@ String Digit2_str(const uint16_t value);
 // extrait un element terminé par aKey de la chaine aString
 // si aKey est absent toute la chaine est extaite
 String grabFromStringUntil(String & aString, const char aKey);
+String grabFromStringUntil(String & aString, const String aKey);

@@ -26,9 +26,9 @@
  *************************************************/
 
 #define APP_NAME "event_minimal V2.0"
-
+#define DEFAULT_PIN 
 #include "EventsManager.h"
-
+EventManager Events = EventManager();
 /* Evenements du Manager (voir BetaEvents.h)
   evNill = 0,      // No event  about 1 every milisecond but do not use them for delay Use pushDelayEvent(delay,event)
   ev100Hz,         // tick 100HZ    non cumulative (see betaEvent.h)
@@ -46,7 +46,7 @@ enum tUserEventCode {
   evLed0,
 };
 
-#define BP0_PIN 1
+#define BP0_PIN 500
 //#endif
 
 // instances poussoir
@@ -56,9 +56,12 @@ evHandlerButton BP0(evBP0,BP0_PIN);
 // instance LED
 evHandlerLed    Led0(evLed0, LED_BUILTIN,false);
 
+evHandlerSerial Keyboard;
+
 void setup() {
   Serial.begin(115200);
   Serial.println(F("\r\n\n" APP_NAME));
+  delay(2000);
   // Start instance
   Events.begin();
   Led0.setFrequence(1, 10);
@@ -74,19 +77,19 @@ void loop() {
 
     case evBP0:
       switch (Events.ext) {
-        case evxBPDown:
+        case evxOn:
           Led0.setMillisec(500, 50);
-          Serial.println(F("BP0 Down"));
+          Serial.println(F("BP0 Down (On)"));
           break;
-        case evxBPUp:
+        case evxOff:
           Led0.setMillisec(1000, 10);
-          Serial.println(F("BP0 Up"));
+          Serial.println(F("BP0 Up (Off)"));
           break;
-        case evxBPLongDown:
-          Serial.println(F("BP0 Long Down"));
+        case evxLongOn:
+          Serial.println(F("BP0 Long Down (long On)"));
           break;
-        case evxBPLongUp:
-          Serial.println(F("BP0 Long Up"));
+        case evxLongOff:
+          Serial.println(F("BP0 Long Up (long Off)"));
           break;
 
       }

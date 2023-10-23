@@ -93,8 +93,6 @@ evHandlerButton BP0(evBP0, BP0_PIN);
 
 #endif
 
-
-
 // instance LED si evLed0 existe
 #ifdef DEFAULT_PIN 
 

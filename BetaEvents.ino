@@ -47,7 +47,7 @@
     V2.4    30/09/2022   Isolation des IO (evhandlerOutput)
     *************************************************/
 
-#define APP_NAME "betaEvents V3.0"
+#define APP_NAME "betaEvents V3.0."
 
 #if  defined(__AVR__)
 #include <avr/wdt.h>
@@ -128,10 +128,14 @@ void setup() {
 #endif
   Serial.begin(115200);
   Serial.println(F("\r\n\n" APP_NAME));
+  Serial.println(F("Test1"));
   // Start instance
   Events.begin();
+  Serial.println(F("Test2"));
   Led0.setFrequence(1, 10);
+    Serial.println(F("Test3"));
   Led1.setMillisec(2000, 10);
+    Serial.println(F("Test4"));
   Serial.println("Bonjour ....");
   D_println(sizeof(stdEvent_t));
   D_println(sizeof(size_t));
