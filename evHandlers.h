@@ -152,6 +152,7 @@ class evHandlerSerial : public eventHandler_t {
     virtual void begin() override;
     //virtual void handle()  override;
     virtual byte get() override;
+    void  setInputString(const String aStr);
     String inputString = "";
     char inputChar = '\0';
   private:

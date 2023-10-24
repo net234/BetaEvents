@@ -212,6 +212,18 @@ byte evHandlerSerial::get() {
 }
 
 
+/**********************
+ * 
+ * forcage d'une inputstring
+ */
+
+void  evHandlerSerial::setInputString(const String aStr) {
+  inputString = aStr;
+  stringComplete = (inputString.length() > 0);
+}
+
+
+
 /**********************************************************
 
    gestion d'un traceur de debugage touche 'T' pour visualiser la charge CPU
