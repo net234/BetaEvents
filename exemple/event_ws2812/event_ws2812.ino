@@ -90,12 +90,21 @@ WS2812rvb_t leds[ledsMAX];
 #include <EEPROM.h>
 
 
+
+
 void setup() {
 
   //Serial.begin(115200);
   //Serial.println("Bonjour");
   Events.begin();
   Serial.println(F(APP_VERSION));
+
+  //init eeprom a 16 caracteres pour l'ESP  (2 seulement sont utilisé)
+  #if defined(ESP8266)
+  #define EEPROM_SIZE 16
+  EEPROM.begin(EEPROM_SIZE);
+
+  #endif 
 
 
   //  toute les led a blanc a l'init
