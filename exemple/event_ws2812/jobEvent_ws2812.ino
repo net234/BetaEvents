@@ -2,37 +2,37 @@ void jobStartAnim() {
   displayStep = 0;
 
   currentMode = displayMode;
-}
-TD_print("jobStartAnim", currentMode);
 
-Events.push(evNextStep);
-switch (currentMode) {
-  case modeFeu:
-    baseColor = rvb_red;
-    speedAnim = 300;
-    break;
-  case modeGlace:
-    baseColor = rvb_blue;
-    speedAnim = 800;
-    break;
-  case modeVent:
-    baseColor = rvb_green;
-    speedAnim = 80;
-    break;
-  case modeTerre:
-    baseColor = rvb_brown;
-    speedAnim = 300;
-    break;
-  case modeLumiere:
-    baseColor = rvb_white;
-    speedAnim = 300;
-    break;
-  case modeTenebre:
-    baseColor = rvb_purple;
-    speedAnim = 500;
-    break;
-}
+  TD_print("jobStartAnim", currentMode);
 
+  Events.push(evNextStep);
+  switch (currentMode) {
+    case modeFeu:
+      baseColor = rvb_red;
+      speedAnim = 300;
+      break;
+    case modeGlace:
+      baseColor = rvb_blue;
+      speedAnim = 800;
+      break;
+    case modeVent:
+      baseColor = rvb_green;
+      speedAnim = 80;
+      break;
+    case modeTerre:
+      baseColor = rvb_brown;
+      speedAnim = 300;
+      break;
+    case modeLumiere:
+      baseColor = rvb_white;
+      speedAnim = 300;
+      break;
+    case modeTenebre:
+      baseColor = rvb_purple;
+      speedAnim = 500;
+      break;
+  }
+}
 
 void jobNextStep() {
   //D_print(displayStep);
@@ -91,14 +91,9 @@ void jobNextStep() {
       }
       break;
   }
-  if (modeProg > 0) {
-    leds[0].setcolor(rvb_blue, 100, 0, 1000);
-  }
-  if (modeProg > 1) {
-    leds[1].setcolor(rvb_blue, 100, 0, 1000);
-  }
+ 
 
-  if (currentMode or modeProg) {
+  if (currentMode ) {
     if (displayStep < ledsMAX - 1) {
       displayStep++;
       Events.delayedPush(speedAnim, evNextStep);
@@ -126,13 +121,12 @@ void jobRefreshLeds(const uint8_t delta) {
 
 
 void getDisplayMode() {
-  // lecture de  l'EEPROM pour le choix de l'animation
-  currentMode = 0;
+  // lecture de  l'EEPROM pour le choix de l'animation  currentMode = 0;
   displayMode = modeLumiere;
 
   // check if a stored value
   if (EEPROM.read(1) == 'B') {
-    displayMode = (mode_t)EEPROM.read(2);
+    displayMode = (modeDsp_t)EEPROM.read(2);
     if (displayMode == 0 or displayMode > maxMode) displayMode = modeLumiere;
     TD_println("Saved displayMode", displayMode);
   }
