@@ -53,7 +53,7 @@ enum myEvent {
 
 
 // varibale modifiables
-const uint8_t ledsMAX = 7;        // nombre de led sur le bandeau
+const uint8_t ledsMAX = 20;        // nombre de led sur le bandeau
 const uint8_t autoOffDelay = 60;  // delais d'auto extinction en secondes (0 = pas d'autoextinction)
 // varibale modifiables (fin)
 
@@ -81,7 +81,9 @@ bool sleepOk = true;
 modeDsp_t displayMode;
 
 
-
+WS2812rvb_t ledFixe1;
+WS2812rvb_t ledFixe2;
+WS2812rvb_t ledFixe3;
 // Array contenant les leds du medaillon
 WS2812rvb_t leds[ledsMAX];
 // deux leds en rab pour la programmation
@@ -109,6 +111,9 @@ void setup() {
 
   //  toute les led a blanc a l'init
   pinMode(WS2812_PIN, OUTPUT);
+  ledFixe1.setcolor(rvb_red,80,5000,5000);
+  ledFixe2.setcolor(rvb_orange,80,5000,5000);
+  ledFixe3.setcolor(rvb_green,80,5000,5000);
   for (uint8_t N = 0; N < ledsMAX; N++) {
     leds[N].setcolor(rvb_white, 80, 2000, 2000);
   }
@@ -130,7 +135,7 @@ void loop() {
       Serial.println(F("Init Ok"));
       multiPush = -1;
 
-      Events.delayedPush(5000, evStartAnim);
+      Events.delayedPush(5000, evNextAnim);
 
 
       break;
@@ -163,7 +168,6 @@ void loop() {
     // passage a l'animation suivante
     case evNextAnim:
       jobStartAnim();
-      TD_println("nexted Anim", currentMode);
       break;
 
     case evNextStep:
