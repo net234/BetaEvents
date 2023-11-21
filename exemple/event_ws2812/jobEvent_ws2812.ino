@@ -119,6 +119,7 @@ void jobRefreshLeds(const uint8_t delta) {
     leds[N].write();
     
   }
+  ledFixe1.write();
   leds[0].reset();  // obligatoire
   ledFixe1.anime(delta);
   ledFixe2.anime(delta);
