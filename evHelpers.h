@@ -3,9 +3,12 @@
 #pragma once
 #include <arduino.h>
 
-//#ifndef time_t
-//#define time_t unsigned long
-//#endif
+#ifndef time_t
+#if  defined(__AVR__)
+
+#define time_t unsigned long
+#endif
+#endif
 
 
 #ifdef DEBUG_ON 
