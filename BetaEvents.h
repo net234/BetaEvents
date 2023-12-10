@@ -44,7 +44,7 @@
     V2.2  27/10/2021
        more arduino like lib with self built in instance
 
-    V2.3    09/03/2022   isolation of evHandler for compatibility with dual core ESP32
+    V2.2.1    12/10/2023   isolation of evHandler for compatibility with dual core ESP32
 
  *************************************************/
 #pragma once
