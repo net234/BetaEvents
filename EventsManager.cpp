@@ -104,6 +104,7 @@ void  EventManager::begin() {
   // parse event list
   eventHandler_t** ItemPtr = &handleEventList;
   while (*ItemPtr) {
+    //Serial.print(".");
     (*ItemPtr)->begin();
     ItemPtr = &((*ItemPtr)->next);
   }

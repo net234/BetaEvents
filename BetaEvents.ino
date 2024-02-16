@@ -46,11 +46,11 @@
     V2.3    09/03/2022   isolation of evHandler for compatibility with dual core ESP32
     V2.4    30/09/2022   Isolation des IO (evhandlerOutput)
     V3.0    Octobre 2024   Preparation d'un fork  BetaEvents / BetaEvent32
-     corrrection keyboard pour forcer une ligne de commande : setInputString(aStr);
-    
+     corrrection keyboard pour forcer une ligne de commande : setInputString(aStr
+    V3.0.B2   10/02/2024  insertion evHandlerUDP   en cas de probleme ajouter un #NO_UDP 
     *************************************************/
 
-#define APP_NAME "betaEvents V3.0.B1"
+#define APP_NAME "betaEvents V3.0.B2"
 
 #if  defined(__AVR__)
 #include <avr/wdt.h>
@@ -93,16 +93,16 @@ enum tUserEventCode {
   doReset,
 };
 
-//#if  defined(__AVR__)
+#if  defined(__AVR__)
 #define BP0_PIN 5
 #define BP1_PIN 6
 #define LED1_PIN 4
-//#elif defined(ESP8266) || defined(ESP32)
-//#define BP0_PIN D5 // D1
-//#define BP1_PIN D6 // D2
-//#define LED1_PIN D0 // GPIO16
+#elif defined(ESP8266) || defined(ESP32)
+#define BP0_PIN D5 // D1
+#define BP1_PIN D6 // D2
+#define LED1_PIN D0 // GPIO16
 
-//#endif
+#endif
 
 // instances poussoir
 evHandlerButton BP0(evBP0, BP0_PIN);
