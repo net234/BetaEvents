@@ -27,6 +27,7 @@
 
      *************************************************/
 #pragma once
+#define DEBUG_ON
 #include <Arduino.h>
 #include  "EventsManager.h"
 #include <WiFiUdp.h>
@@ -51,6 +52,7 @@ class evHandlerUdp : public eventHandler_t {
     virtual void begin()  override;
     virtual void handle()  override;
     void broadcast(const String& aJsonStr);
+    void broadcastInfo(const String& aText);                           // broadcast just a text
     void unicast(const IPAddress aIPAddress,const String& aJsonStr);
   private:
     void cast(const IPAddress aIPAddress);

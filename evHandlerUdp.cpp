@@ -1,3 +1,4 @@
+
 /*************************************************
  *************************************************
     handler evUdp.h   validation of lib betaEvents to deal nicely with events programing with Arduino
@@ -28,48 +29,49 @@
      *************************************************/
 #if defined(ESP8266) || defined(ESP32)
 
-#include  "evHandlerUdp.h"
+#include "evHandlerUdp.h"
+#include "evHelpers.h"
 //#include <WiFiUdp.h>
 
 //WiFiUDP UDP;
 
 const uint16_t delaySilenceUdp = 100;  // delay de silence avant d'envoyer les trames
 const uint16_t delayInterUdp = 20;     // delay entre 2 trames
-const uint8_t  numberOfTrame = 4;      // nombre de trame repetitives
+const uint8_t numberOfTrame = 4;       // nombre de trame repetitives
 
 
-evHandlerUdp::evHandlerUdp(const uint8_t aEventCode, const uint16_t aPortNumber,  String& aNodename) :
-  evCode(aEventCode),
-  localPortNumber(aPortNumber),
-  nodename(aNodename) {
+evHandlerUdp::evHandlerUdp(const uint8_t aEventCode, const uint16_t aPortNumber, String& aNodename)
+  : evCode(aEventCode),
+    localPortNumber(aPortNumber),
+    nodename(aNodename) {
   rxHeader.reserve(16);
   rxNode.reserve(16);
   rxJson.reserve(UDP_MAX_SIZE);
   messageUDP.reserve(UDP_MAX_SIZE);
-//  01:10:47.989 -> 01:10:47,CPU=18%,Loop=884,Nill=778,Ram=46456,Frag=15%,MaxMem=38984 Miss:16/0
-//  01:25:14.369 -> 01:25:13,CPU=22%,Loop=849,Nill=745,Ram=46464,Frag=2%,MaxMem=45608 Miss:12/0
-
+  //  01:10:47.989 -> 01:10:47,CPU=18%,Loop=884,Nill=778,Ram=46456,Frag=15%,MaxMem=38984 Miss:16/0
+  //  01:25:14.369 -> 01:25:13,CPU=22%,Loop=849,Nill=745,Ram=46464,Frag=2%,MaxMem=45608 Miss:12/0
 }
 
-const  IPAddress broadcastIP(255, 255, 255, 255);
+const IPAddress broadcastIP(255, 255, 255, 255);
 
 void evHandlerUdp::begin() {
   UDP.begin(localPortNumber);
 }
 
 void evHandlerUdp::handle() {
-  if (evManager.code  == evCode) {
+  if (evManager.code == evCode) {
 
     // broadcst out = send unicast  castCnt  fois
 
     switch (evManager.ext) {
-      case evxBcast: {
+      case evxBcast:
+        {
           if (castCnt == 0) return;
           // send udp after 200ms of silence
           if (millis() - lastUDP > delaySilenceUdp) {
             cast(txIPDest);
             --castCnt;
-          } // else D_println(unicastCnt);
+          }  // else D_println(unicastCnt);
           if (castCnt > 0) evManager.delayedPush(delayInterUdp, evCode, evxBcast);
         }
         break;
@@ -83,71 +85,96 @@ void evHandlerUdp::handle() {
   if (packetSize == 0) return;
 
   T_println("Received packet UDP");
-//  Serial.printf("Received packet of size % d from % s: % d\n    (to % s: % d, free heap = % d B)\n",
-//                packetSize,
-//                UDP.remoteIP().toString().c_str(), UDP.remotePort(),
-//                UDP.destinationIP().toString().c_str(), UDP.localPort(),
-//                ESP.getFreeHeap());
+  //  Serial.printf("Received packet of size % d from % s: % d\n    (to % s: % d, free heap = % d B)\n",
+  //                packetSize,
+  //                UDP.remoteIP().toString().c_str(), UDP.remotePort(),
+  //                UDP.destinationIP().toString().c_str(), UDP.localPort(),
+  //                ESP.getFreeHeap());
 
-  char udpPacketBuffer[UDP_MAX_SIZE + 1]; //buffer to hold incoming packet,
+  char udpPacketBuffer[UDP_MAX_SIZE + 1];  //buffer to hold incoming packet,
   int size = UDP.read(udpPacketBuffer, UDP_MAX_SIZE);
 
-//  // read the packet into packetBufffer
-//  if (packetSize > UDP_MAX_SIZE) {
-//    Serial.printf("UDP too big ");
-//    return;
-//  }
+  //  // read the packet into packetBufffer
+  //  if (packetSize > UDP_MAX_SIZE) {
+  //    Serial.printf("UDP too big ");
+  //    return;
+  //  }
 
   //TODO: clean this   cleanup line feed
   if (size > 0 && udpPacketBuffer[size - 1] == '\n') size--;
   udpPacketBuffer[size] = 0;
 
   String aStr = udpPacketBuffer;
- 
+
   lastUDP = millis();
 
   // filtrage des trame repetitive
+  String bStr;
+  if (aStr.startsWith("EVENT")) {
+    bStr = grabFromStringUntil(aStr, '\t');     // EVENT xxxx
+    rxHeader = grabFromStringUntil(bStr, ' ');  // header    bstr=num trame
+    rxNode = grabFromStringUntil(aStr, '\t');   // node
+  } else if (aStr.startsWith("{\"TRAME\"")) {
+    rxHeader = "TRAME";
+    grabFromStringUntil(aStr, ':');
+    bStr = grabFromStringUntil(aStr, ",\"");  // bstr=num trame   astr = start of nodename
+    rxNode = grabFromStringUntil(aStr, "\"");
+    //D_println(rxNode);
+    //D_println(bStr);
+   
+    aStr.remove(0,1);
+    aStr.remove(aStr.length()-1,1);
+     D_println(aStr);
+  } else {
+    TD_print("Bad paquet", bStr);
 
-   String bStr = grabFromStringUntil(aStr, '\t'); // EVENT xxxx
-   rxHeader = grabFromStringUntil(bStr, ' '); // header
-   rxNode = grabFromStringUntil(aStr, '\t'); // node
+    return;
+  }
+  // UdpId is a mix of remote IP and EVENT number
+  rxIPSender = UDP.remoteIP();
+  IPAddress aUdpId = rxIPSender;
+  aUdpId[0] = bStr.toInt();
 
-     // UdpId is a mix of remote IP and EVENT number
-    rxIPSender = UDP.remoteIP();
-    IPAddress  aUdpId = rxIPSender;
-    aUdpId[0] = bStr.toInt();
-
-    if (aUdpId == lastUdpId) {
-      T_println(F("Doublon UDP"));
-      return;
-    }
-    //Todo : filtrer les 5 dernier UdpID ?
-    lastUdpId = aUdpId;
+  if (aUdpId == lastUdpId) {
+    T_println("Doublon UDP");
+    return;
+  }
+  //Todo : filtrer les 5 dernier UdpID ?
+  lastUdpId = aUdpId;
 
 
-    bcast = ( UDP.destinationIP() == broadcastIP );
-    rxJson = aStr;
-//    D_print(rxHeader);
-//    D_print(rxNode);
-//    D_println(aStr);
+  bcast = (UDP.destinationIP() == broadcastIP);
+  rxJson = aStr;
+  //    D_print(rxHeader);
+  //    D_print(rxNode);
+  //    D_println(aStr);
 
-    evManager.push(evCode,evxUdpRxMessage);
-
+  evManager.push(evCode, evxUdpRxMessage);
 }
 
 
-void evHandlerUdp::broadcast(const String & aJsonStr) {
+void evHandlerUdp::broadcast(const String& aJsonStr) {
   T_println("Send broadcast ");
-  unicast(broadcastIP,aJsonStr);
-} 
+  unicast(broadcastIP, aJsonStr);
+}
 
-void evHandlerUdp::unicast(const IPAddress aIPAddress,const String& aJsonStr) {
-  TD_println("Send unicast ",aJsonStr);
+void evHandlerUdp::broadcastInfo(const String& aTxt) {
+  //{"info":"Boot"}
+  String aJsonStr = F("{\"info\":\"");
+  aJsonStr += aTxt;
+  aJsonStr += "\"}";
+  broadcast(aJsonStr);
+}
+
+
+
+void evHandlerUdp::unicast(const IPAddress aIPAddress, const String& aJsonStr) {
+  TD_println("Send unicast ", aJsonStr);
   messageUDP = aJsonStr;
   castCnt = numberOfTrame;
   if (++numTrameUDP == 0) numTrameUDP++;
   txIPDest = aIPAddress;
-  evManager.delayedPush(0,evCode, evxBcast);  // clear pending bcast
+  evManager.delayedPush(0, evCode, evxBcast);  // clear pending bcast
 }
 
 
@@ -160,7 +187,7 @@ void evHandlerUdp::cast(const IPAddress aAddress) {
   message += '\t';
   message += messageUDP;
   message += '\n';
-  if ( !UDP.beginPacket(aAddress, localPortNumber) ) return ;
+  if (!UDP.beginPacket(aAddress, localPortNumber)) return;
   UDP.write(message.c_str(), message.length());
   UDP.endPacket();
 }
