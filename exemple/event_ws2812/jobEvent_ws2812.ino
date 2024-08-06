@@ -146,9 +146,11 @@ void getDisplayMode() {
 void saveDisplayMode() {
   EEPROM.write(1, 'B');
   EEPROM.write(2, displayMode);
+  /*
   if (EEPROM.commit()) {
     TD_println("Save displayMode1 ", displayMode);
   } else {
     T1_println("!!!Error EEPROM Write!!!");
   }
+  */
 }

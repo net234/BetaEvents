@@ -25,7 +25,7 @@
 #define LED_ON  HIGH
 
 #define BP0_PIN D7
-#define PIN_WS2812 D8  //Uniquement D8..D13
+#define WS2812_PIN D8  //Uniquement D8..D13
 //---------------------
 
 //#define USE_RVBW   Si les led sont des WS2812W

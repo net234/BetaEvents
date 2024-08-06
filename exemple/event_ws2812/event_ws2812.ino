@@ -28,7 +28,7 @@
 
 
 #include <Arduino.h>
-#include "ESP8266.h"
+#include "Nano.h"
 #include "WS2812.h"
 
 
@@ -48,7 +48,7 @@ enum myEvent {
 
 // Gestionaire d'evenemnt
 #define DEBUG_ON
-#include <BetaEvents.h>0
+#include <BetaEvents.h>
 
 
 

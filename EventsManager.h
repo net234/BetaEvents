@@ -79,9 +79,6 @@ enum tEventCode {
   evInit,          // event pushed par MyEvent.begin()
   evInChar,
   evInString,
-  //evPB0,
-  //evLED0
-  //  evWEB = 20,
   //  evUser = 100,
 };
 
