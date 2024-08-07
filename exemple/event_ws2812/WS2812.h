@@ -70,7 +70,7 @@ const rvb_t map_color[MAX_e_rvb] = {
   {150,   0, 150}, // rvb_purple
   {  0,   0,   0}, // rvb_black
 };
-
+  
 
 struct WS2812rvb_t : rvbLed {
   void  reset();

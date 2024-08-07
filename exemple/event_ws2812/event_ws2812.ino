@@ -53,7 +53,7 @@ enum myEvent {
 
 
 // varibale modifiables
-const uint8_t ledsMAX = 20;        // nombre de led sur le bandeau
+const uint8_t ledsMAX = 70;        // nombre de led sur le bandeau
 const uint8_t autoOffDelay = 60;  // delais d'auto extinction en secondes (0 = pas d'autoextinction)
 // varibale modifiables (fin)
 
