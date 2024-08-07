@@ -36,7 +36,7 @@
 #include "WS2812.h"
 // 10 µsec pulse
 
-#define MSK_WS2812 (1 << (PIN_WS2812-8))  //N° pin portB donc D8..D13 sur nano
+#define MSK_WS2812 (1 << (WS2812_PIN-8))  //N° pin portB donc D8..D13 sur nano
 #define PORT_WS2812 PORTB
 
 inline  void WS2812_LOW() __attribute__((always_inline));
